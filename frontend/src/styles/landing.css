@@ -1,0 +1,911 @@
+/* ==========================================================================
+   Landing Page (Swiss Editorial Style)
+   ========================================================================== */
+
+.hero {
+  margin-top: 64px;
+  display: grid;
+  grid-template-columns: 58% 42%;
+  min-height: calc(100vh - 64px);
+  border-bottom: 1px solid #111;
+}
+
+.hero-copy {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid #111;
+}
+
+.eyebrow,
+.section-head small,
+.hero small {
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #111;
+  background: #fff;
+  padding: 7px;
+  width: max-content;
+}
+
+.eyebrow span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+.lead {
+  font-size: 18px;
+  max-width: 630px;
+}
+
+.hero-bottom {
+  padding-top: 30px;
+}
+
+.micro {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  border-top: 1px solid #ccc;
+  padding-top: 18px;
+  margin-top: 35px;
+}
+
+.micro span,
+.twins span {
+  font-size: 11px;
+  color: #777;
+}
+
+.micro strong {
+  display: block;
+  color: #111;
+  margin-top: 5px;
+}
+
+/* Terminal Mockup */
+.terminal {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.terminal-head,
+.terminal-foot {
+  padding: 16px;
+  border-bottom: 1px solid #111;
+  background: var(--paper);
+  font-size: 11px;
+  letter-spacing: .08em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.terminal-head > span:first-child {
+  color: var(--orange);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-head > span:last-child {
+  color: #777;
+  text-align: right;
+}
+
+.terminal-body {
+  padding: 24px;
+  position: relative;
+}
+
+.terminal-body:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0 5px, rgba(255, 77, 37, .035) 6px);
+  mix-blend-mode: multiply;
+}
+
+.terminal-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-scan {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--orange);
+  box-shadow: 0 0 14px 2px var(--orange);
+  opacity: .8;
+  pointer-events: none;
+}
+
+.worth {
+  border: 2px solid var(--orange);
+  padding: 16px;
+}
+
+.worth small {
+  display: flex;
+  justify-content: space-between;
+  color: #777;
+}
+
+.worth strong {
+  font-size: 34px;
+  display: block;
+  margin: 10px 0;
+}
+
+.worth span,
+.allocation span {
+  font-size: 11px;
+  color: #777;
+}
+
+.twins {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #111;
+  margin-top: 24px;
+}
+
+.twins > div {
+  padding: 16px;
+  background: var(--paper);
+}
+
+.twins > div + div {
+  border-left: 1px solid #111;
+}
+
+.twins b {
+  display: block;
+  margin: 8px 0;
+}
+
+.allocation {
+  border: 1px solid #111;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.allocation > small {
+  display: block;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.allocation span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 0;
+  margin-top: 14px;
+}
+
+.allocation b {
+  color: #111;
+}
+
+.allocation i,
+.bar {
+  display: block;
+  background: #efece6;
+  border: 1px solid #111;
+  height: 9px;
+  margin-top: 5px;
+}
+
+.allocation span > i {
+  flex: 1 0 100%;
+}
+
+.allocation em,
+.bar i {
+  display: block;
+  height: 100%;
+  background: #111;
+}
+
+.terminal-foot {
+  border-top: 1px solid #111;
+  border-bottom: 0;
+}
+
+.terminal-foot b {
+  color: #111;
+}
+
+/* Metrics Section */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid #111;
+}
+
+.metric {
+  padding: 25px;
+  border-right: 1px solid #111;
+}
+
+.metric:last-child {
+  border: 0;
+}
+
+.metric strong {
+  font-size: 34px;
+  display: block;
+  margin: 8px 0;
+}
+
+.metric p {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Swiss Design System: Sections (Lab, Matrix, Telemetry)
+   ========================================================================== */
+
+.swiss-section-meta {
+  padding: 12px 40px;
+  background: #111;
+  color: #fcf9f3;
+  font-size: 10px;
+  letter-spacing: .12em;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #111;
+}
+
+.swiss-index-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: var(--orange);
+  background: #fff;
+  border: 1px solid #111;
+  padding: 4px 8px;
+  margin-bottom: 14px;
+}
+
+/* 1. Swiss Lab Section */
+.swiss-lab-section {
+  background: var(--paper);
+  border-bottom: 1px solid #111;
+}
+
+.swiss-lab-grid {
+  display: grid;
+  grid-template-columns: 48% 52%;
+}
+
+.swiss-lab-manifesto {
+  padding: 50px 40px;
+  border-right: 1px solid #111;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.swiss-lab-manifesto h2 {
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: .98;
+  letter-spacing: -.04em;
+  margin: 12px 0 20px;
+  font-weight: 800;
+  color: #111;
+}
+
+.swiss-manifesto-pillars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 36px;
+  border-top: 1px solid #111;
+  padding-top: 24px;
+}
+
+.swiss-pillar {
+  padding-left: 14px;
+  border-left: 3px solid #111;
+}
+
+.swiss-pillar:nth-child(2) {
+  border-left-color: var(--orange);
+}
+
+.swiss-pillar:nth-child(3) {
+  border-left-color: #008547;
+}
+
+.swiss-pillar small {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.swiss-pillar h4 {
+  font-size: 14px;
+  margin: 0 0 4px;
+  letter-spacing: -.01em;
+}
+
+.swiss-pillar p {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.4;
+  color: #666;
+}
+
+.swiss-lab-calculator {
+  padding: 40px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.swiss-calc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #111;
+}
+
+.swiss-calc-header h3 {
+  font-size: 22px;
+  margin: 4px 0 0;
+  font-weight: 800;
+}
+
+.swiss-calc-status {
+  font-size: 10px;
+  letter-spacing: .1em;
+  font-weight: 700;
+  color: #008547;
+  background: #f0fdf4;
+  border: 1px solid #008547;
+  padding: 4px 8px;
+}
+
+.swiss-preset-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 24px 0;
+}
+
+.swiss-chip {
+  padding: 12px 14px;
+  border: 1px solid #111;
+  background: var(--paper);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: inherit;
+}
+
+.swiss-chip span {
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: #777;
+  text-transform: uppercase;
+}
+
+.swiss-chip strong {
+  font-size: 15px;
+  color: #111;
+}
+
+.swiss-chip:hover {
+  background: #efece6;
+}
+
+.swiss-chip.active {
+  background: #111;
+  border-color: #111;
+}
+
+.swiss-chip.active span {
+  color: var(--orange);
+}
+
+.swiss-chip.active strong {
+  color: #fff;
+}
+
+.swiss-calc-display {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.swiss-calc-card {
+  border: 1px solid #111;
+  padding: 16px 20px;
+  background: var(--paper);
+}
+
+.swiss-calc-card.primary-output {
+  background: #fff;
+  border: 2px solid var(--orange);
+}
+
+.swiss-calc-card small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: #777;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.swiss-calc-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.swiss-calc-value strong {
+  font-size: clamp(28px, 3vw, 38px);
+  color: #111;
+  letter-spacing: -.03em;
+}
+
+.swiss-calc-value .status-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  background: #111;
+  color: #fff;
+  padding: 3px 8px;
+}
+
+.swiss-calc-desc {
+  font-size: 13px;
+  color: #555;
+  margin: 8px 0 0;
+  line-height: 1.4;
+}
+
+.swiss-calc-twins {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.swiss-calc-twins .swiss-calc-card strong {
+  font-size: 20px;
+  display: block;
+  color: var(--orange);
+  margin: 4px 0 2px;
+}
+
+.swiss-calc-twins .swiss-calc-card span {
+  font-size: 11px;
+  color: #777;
+  display: block;
+}
+
+.swiss-subtext {
+  font-size: 11px;
+  color: #333;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ccc;
+  line-height: 1.35;
+}
+
+.allocation-strip {
+  padding: 14px 18px;
+}
+
+.swiss-ratio-bars {
+  display: flex;
+  height: 22px;
+  border: 1px solid #111;
+  overflow: hidden;
+  margin: 8px 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: #fff;
+  text-align: center;
+  line-height: 22px;
+}
+
+.ratio-segment.needs {
+  background: #111;
+}
+
+.ratio-segment.wants {
+  background: var(--orange);
+}
+
+.ratio-segment.savings {
+  background: #008547;
+}
+
+.swiss-ratio-legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  font-size: 11px;
+  color: #666;
+  margin-top: 6px;
+}
+
+.swiss-ratio-legend b {
+  color: #111;
+}
+
+.swiss-calc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #111;
+  padding-top: 16px;
+  margin-top: auto;
+  font-size: 11px;
+  color: #555;
+}
+
+.mini-btn {
+  padding: 9px 16px !important;
+  font-size: 11px !important;
+  letter-spacing: .08em !important;
+}
+
+/* 2. Swiss Matrix Table Section */
+.swiss-matrix-section {
+  background: #fff;
+  border-bottom: 1px solid #111;
+}
+
+.swiss-matrix-header {
+  padding: 40px;
+  border-bottom: 1px solid #111;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+}
+
+.swiss-matrix-header h2 {
+  font-size: clamp(26px, 3.5vw, 42px);
+  margin: 6px 0 0;
+  letter-spacing: -.03em;
+  font-weight: 800;
+}
+
+.swiss-matrix-header p {
+  max-width: 440px;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Editorial Narrative Protocol Layout */
+.swiss-protocols-editorial {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #111;
+  background: #111;
+  gap: 1px;
+}
+
+.swiss-protocol-item {
+  display: grid;
+  grid-template-columns: 75px 1fr;
+  gap: 20px;
+  padding: 40px;
+  background: #fff;
+  transition: background 0.2s ease;
+}
+
+.swiss-protocol-item:hover {
+  background: #fbfbf9;
+}
+
+.protocol-index {
+  font-size: clamp(38px, 4.5vw, 54px);
+  font-weight: 900;
+  line-height: .95;
+  letter-spacing: -.05em;
+  color: #111;
+  font-feature-settings: "tnum";
+}
+
+.protocol-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.protocol-content small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: .1em;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.protocol-content h3 {
+  font-size: clamp(17px, 1.8vw, 21px);
+  line-height: 1.25;
+  letter-spacing: -.02em;
+  margin: 4px 0 12px;
+  font-weight: 800;
+  color: #111;
+}
+
+.protocol-quote {
+  font-size: 13.5px;
+  font-style: italic;
+  color: #222;
+  margin: 0 0 14px;
+  border-left: 3px solid var(--orange);
+  line-height: 1.45;
+  background: #fffbf9;
+  padding: 10px 14px;
+}
+
+.protocol-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  margin: 0 0 20px;
+}
+
+.protocol-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 14px;
+  margin-top: auto;
+  font-size: 11px;
+  color: #666;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.protocol-foot b {
+  color: #111;
+}
+
+.swiss-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  border: 1px solid #111;
+  text-transform: uppercase;
+}
+
+.swiss-tag.green {
+  background: #f0fdf4;
+  color: #008547;
+  border-color: #008547;
+}
+
+.swiss-tag.orange {
+  background: #fff7ed;
+  color: var(--orange);
+  border-color: var(--orange);
+}
+
+.swiss-tag.dark {
+  background: #111;
+  color: #fff;
+}
+
+/* 3. Swiss Telemetry Bento Section */
+.swiss-telemetry-section {
+  background: var(--paper);
+  border-bottom: 1px solid #111;
+}
+
+.swiss-telemetry-grid {
+  display: grid;
+  grid-template-columns: 52% 48%;
+}
+
+.swiss-telemetry-card {
+  padding: 45px 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.swiss-telemetry-card.leak-audit {
+  border-right: 1px solid #111;
+  background: #fff;
+}
+
+.swiss-telemetry-card h3 {
+  font-size: 24px;
+  margin: 0 0 8px;
+  letter-spacing: -.03em;
+  font-weight: 800;
+}
+
+.swiss-leak-meter {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1.2fr;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0;
+  padding: 20px;
+  background: var(--paper);
+  border: 1px solid #111;
+}
+
+.leak-stat small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: .08em;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+.leak-stat strong {
+  display: block;
+  font-size: 20px;
+  color: #111;
+}
+
+.leak-stat span {
+  display: block;
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.leak-stat.highlight strong {
+  color: var(--orange);
+  font-size: 24px;
+}
+
+.leak-arrow {
+  font-size: 16px;
+  font-weight: 800;
+  color: #999;
+}
+
+.swiss-leak-insight {
+  border-top: 1px solid #111;
+  padding-top: 16px;
+  margin-top: auto;
+}
+
+.swiss-pill-marker {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  background: #111;
+  color: #fff;
+  padding: 2px 7px;
+  margin-bottom: 8px;
+}
+
+.swiss-leak-insight p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #444;
+  margin: 0;
+}
+
+.swiss-security-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.swiss-sec-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #111;
+}
+
+.swiss-sec-item .sec-icon {
+  width: 32px;
+  height: 32px;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.swiss-sec-item strong {
+  display: block;
+  font-size: 12px;
+  letter-spacing: .05em;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.swiss-sec-item p {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.4;
+  color: #666;
+}
+
+/* CTA */
+.cta {
+  margin: 40px;
+  padding: 65px;
+  background: #fff;
+  border: 1px solid #111;
+}
+
+.cta form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  max-width: 650px;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cta-actions .pill,
+.cta-actions .outline {
+  flex: 1;
+  margin: 0;
+  min-height: 48px;
+  padding: 14px 22px;
+}
+
+.cta label {
+  font-size: 11px;
+  letter-spacing: .08em;
+  flex: 1;
+}
+
+.cta input {
+  display: block;
+  width: 100%;
+  border: 1px solid #111;
+  padding: 14px;
+  margin-top: 6px;
+  font: inherit;
+}

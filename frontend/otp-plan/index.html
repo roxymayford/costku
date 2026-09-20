@@ -1,0 +1,1268 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OTP Plan — Verifikasi Registrasi / Backend Implementation Plan</title>
+<meta name="description" content="Rencana implementasi fitur OTP untuk verifikasi akun saat registrasi — backend: API, database, service, keamanan, testing." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="./swiss.css" />
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+<script>document.documentElement.className+=' js';</script>
+</head>
+<body>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- =====================================================================
+     MASTHEAD
+     ===================================================================== -->
+<header class="masthead">
+  <div class="shell">
+    <div class="masthead__inner">
+      <div class="masthead__mark">
+        <svg width="30" height="16" viewBox="0 0 60 32" aria-hidden="true" style="flex:0 0 auto">
+          <g fill="#e8420b">
+            <rect x="0" y="14" width="24" height="4" transform="rotate(-28 12 16)"/>
+            <rect x="0" y="14" width="24" height="4" transform="rotate(0 12 16)"/>
+            <rect x="0" y="14" width="24" height="4" transform="rotate(28 12 16)"/>
+          </g>
+          <rect x="34" y="0" width="4" height="32" fill="#111"/>
+        </svg>
+        <b>OTP&nbsp;Plan</b>
+      </div>
+      <div class="masthead__meta">
+        <span class="t-label">Verifikasi Registrasi</span>
+        <span class="t-label">Scope&nbsp;/&nbsp;Backend</span>
+        <span class="t-label t-label--accent">Status&nbsp;/&nbsp;Draft</span>
+      </div>
+      <div class="masthead__cta">
+        <span class="t-label">v1.0&nbsp;·&nbsp;Rev.A</span>
+      </div>
+    </div>
+  </div>
+  <nav class="rail" aria-label="Navigasi bagian">
+    <div class="shell">
+      <div class="rail__inner" id="rail">
+        <a href="#s1"><span class="rail__num">01</span>Tujuan</a>
+        <a href="#s2"><span class="rail__num">02</span>Asumsi</a>
+        <a href="#s3"><span class="rail__num">03</span>Alur</a>
+        <a href="#s4"><span class="rail__num">04</span>Desain Teknis</a>
+        <a href="#s5"><span class="rail__num">05</span>Keamanan</a>
+        <a href="#s6"><span class="rail__num">06</span>Konfigurasi</a>
+        <a href="#s7"><span class="rail__num">07</span>Struktur</a>
+        <a href="#s8"><span class="rail__num">08</span>Observability</a>
+        <a href="#s9"><span class="rail__num">09</span>Testing</a>
+        <a href="#s10"><span class="rail__num">10</span>Keputusan</a>
+        <a href="#s11"><span class="rail__num">11</span>Estimasi</a>
+        <a href="#s12"><span class="rail__num">12</span>DoD</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+<!-- =====================================================================
+     HERO
+     ===================================================================== -->
+<section class="hero shell" id="top">
+  <div class="row">
+    <div class="hero__display">
+      <p class="t-label t-label--accent mb-m">Rencana Implementasi / Fitur Keamanan Akun</p>
+      <h1 class="t-mega">
+        <span class="accent-bar"></span>Verifikasi<br />Registrasi<br />dengan OTP.
+      </h1>
+    </div>
+
+    <aside class="hero__aside">
+      <div>
+        <p class="t-label mb-s">Dokumen</p>
+        <p class="t-body" style="font-size:13px">Rencana implementasi fitur One-Time Password untuk memverifikasi akun saat registrasi.</p>
+      </div>
+      <div>
+        <p class="t-label mb-s">Status</p>
+        <span class="chip chip--accent"><span class="dot"></span>Draft</span>
+      </div>
+      <div>
+        <p class="t-label mb-s">Scope</p>
+        <p class="t-body" style="font-size:13px">API · Database · Service · Keamanan · Testing</p>
+      </div>
+    </aside>
+
+    <div class="hero__lede">
+      <h2 class="t-lg mb-m" style="text-transform:none">Email atau nomor HP yang didaftarkan harus benar-benar milik pengguna.</h2>
+      <p class="t-body">
+        Akun baru ditahan pada status <code class="lt">PENDING_VERIFICATION</code> sampai OTP berhasil
+        diverifikasi. Rancangan ini menutup akun palsu, spam, bot, dan enumerasi — dengan TTL pendek,
+        batas percobaan, serta penyimpanan kode dalam bentuk hash.
+      </p>
+    </div>
+
+    <div class="hero__facts">
+      <p class="t-label mb-m">Parameter Inti</p>
+      <div class="grid-2" style="gap:20px">
+        <div><p class="t-label t-label--ink mb-s">Panjang kode</p><p class="stat__v t-num">6</p></div>
+        <div><p class="t-label t-label--ink mb-s">TTL kode</p><p class="stat__v t-num">5<span style="font-size:.5em;letter-spacing:0"> mnt</span></p></div>
+        <div><p class="t-label t-label--ink mb-s">Maks. percobaan</p><p class="stat__v t-num">5×</p></div>
+        <div><p class="t-label t-label--ink mb-s">Cooldown resend</p><p class="stat__v t-num">60<span style="font-size:.5em;letter-spacing:0"> s</span></p></div>
+      </div>
+    </div>
+
+    <div class="hero__bottom">
+      <div class="stat">
+        <p class="t-label stat__k">Channel</p>
+        <p class="stat__v" style="font-size:19px">Email / SMS / WA</p>
+        <p class="stat__s">Lewat interface <code class="lt">OtpSender</code></p>
+      </div>
+      <div class="stat">
+        <p class="t-label stat__k">Penyimpanan</p>
+        <p class="stat__v" style="font-size:19px">HMAC-SHA256</p>
+        <p class="stat__s">Hash + pepper — bukan plaintext</p>
+      </div>
+      <div class="stat">
+        <p class="t-label stat__k">Stack</p>
+        <p class="stat__v" style="font-size:19px">PostgreSQL + Redis</p>
+        <p class="stat__s">Redis untuk rate limit &amp; cooldown</p>
+      </div>
+      <div class="stat">
+        <p class="t-label stat__k">Estimasi</p>
+        <p class="stat__v" style="font-size:19px">± 7 hari</p>
+        <p class="stat__s">10 task terurut</p>
+      </div>
+      <div class="stat">
+        <p class="t-label stat__k">Endpoint</p>
+        <p class="stat__v" style="font-size:19px">3 rute</p>
+        <p class="stat__s">register · verify-otp · resend-otp</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule rule--ink" />
+
+
+<!-- =====================================================================
+     01 — TUJUAN
+     ===================================================================== -->
+<section class="sec shell" id="s1">
+  <div class="shead reveal">
+    <div class="shead__no">01</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Tujuan</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Tiga hasil yang harus dicapai rancangan ini.</p>
+  </div>
+
+  <div class="row">
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Kepemilikan</p>
+        <h3 class="t-md mb-s">Bukti kepemilikan aset</h3>
+        <p class="t-body" style="font-size:13.5px">Memastikan email / nomor HP yang didaftarkan benar-benar milik pengguna.</p>
+      </div>
+    </div>
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Abuse</p>
+        <h3 class="t-md mb-s">Cegah akun palsu</h3>
+        <p class="t-body" style="font-size:13.5px">Menutup spam, bot, dan enumerasi akun sebelum masuk ke sistem.</p>
+      </div>
+    </div>
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Lifecycle</p>
+        <h3 class="t-md mb-s">Status terkendali</h3>
+        <p class="t-body" style="font-size:13.5px">Akun baru berstatus <code class="lt">PENDING_VERIFICATION</code> sampai OTP berhasil diverifikasi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     02 — ASUMSI
+     ===================================================================== -->
+<section class="sec shell" id="s2">
+  <div class="shead reveal">
+    <div class="shead__no">02</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Asumsi</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Sesuaikan dengan proyek. Semua nilai dapat dioverride lewat environment variable pada bagian 06.</p>
+  </div>
+
+  <div class="reveal tbl-wrap">
+    <table class="swiss">
+      <caption>Tabel 02 — Parameter rancangan</caption>
+      <thead>
+        <tr>
+          <th style="width:22%">Item</th>
+          <th style="width:38%">Asumsi</th>
+          <th>Catatan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Channel OTP</td>
+          <td>Email, SMS, atau WhatsApp</td>
+          <td>Lewat interface <code class="lt">OtpSender</code> — provider bisa diganti tanpa ubah logika inti.</td>
+        </tr>
+        <tr>
+          <td>Panjang kode</td>
+          <td>6 digit numerik</td>
+          <td>Leading zero dipertahankan <span class="muted">(mis. <code class="lt">004821</code>)</span>.</td>
+        </tr>
+        <tr>
+          <td>Masa berlaku / TTL</td>
+          <td>5 menit</td>
+          <td><span class="chip chip--ghost">Configurable</span></td>
+        </tr>
+        <tr>
+          <td>Maks. percobaan verifikasi</td>
+          <td>5 kali per OTP</td>
+          <td>Setelah habis, OTP hangus — user harus resend.</td>
+        </tr>
+        <tr>
+          <td>Cooldown resend</td>
+          <td>60 detik</td>
+          <td>Dikombinasikan dengan rate limit per tujuan dan per IP.</td>
+        </tr>
+        <tr>
+          <td>Database</td>
+          <td>Relasional (PostgreSQL / MySQL) + Redis</td>
+          <td>Redis untuk rate limit. OTP dapat disimpan di Redis saja — lihat bagian 04.3.</td>
+        </tr>
+        <tr>
+          <td>Auth setelah verifikasi</td>
+          <td>Token diterbitkan setelah OTP valid</td>
+          <td>JWT / session. Alternatifnya user diminta login ulang.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     03 — ALUR
+     ===================================================================== -->
+<section class="sec shell" id="s3">
+  <div class="shead reveal">
+    <div class="shead__no">03</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Alur</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Tiga urutan interaksi: register, verify, dan resend — dipetakan per aktor.</p>
+  </div>
+
+  <div class="flow reveal" role="img" aria-label="Diagram alur register, verify, dan resend OTP antar aktor">
+    <div class="flow__lane">
+      <div class="flow__head">
+        <span class="t-label t-label--ink">Client</span>
+        <span class="t-label t-label--accent t-num">C</span>
+      </div>
+      <div class="flow__body">
+        <div class="msg"><b>1.</b> <code>POST /auth/register</code></div>
+        <div class="msg msg--muted"><b>2.</b> Terima <span class="mono">201</span> + <span class="mono">userId, expiresIn, resendAvailableIn</span></div>
+        <div class="msg msg--muted"><b>3.</b> OTP diterima user</div>
+        <div class="msg"><b>4.</b> <code>POST /auth/register/verify-otp</code></div>
+        <div class="msg msg--muted"><b>5.</b> Terima <span class="mono">200</span> + <span class="mono">verified, token</span></div>
+        <div class="msg"><b>6.</b> <code>POST /auth/register/resend-otp</code></div>
+        <div class="msg msg--muted"><b>7.</b> Terima <span class="mono">200</span> + <span class="mono">resendAvailableIn</span></div>
+      </div>
+    </div>
+
+    <div class="flow__lane">
+      <div class="flow__head">
+        <span class="t-label t-label--ink">API</span>
+        <span class="t-label t-label--accent t-num">A</span>
+      </div>
+      <div class="flow__body">
+        <div class="msg msg--accent"><b>a.</b> Simpan user <span class="mono">PENDING_VERIFICATION</span></div>
+        <div class="msg msg--accent"><b>b.</b> Generate OTP + hash</div>
+        <div class="msg msg--accent"><b>c.</b> Simpan <span class="mono">otp_codes</span></div>
+        <div class="msg msg--accent"><b>d.</b> Enqueue kirim OTP</div>
+        <div class="msg msg--accent"><b>e.</b> Ambil OTP aktif, cek expiry &amp; attempts</div>
+        <div class="msg msg--accent"><b>f.</b> Bandingkan hash <span class="nowrap">(constant-time)</span></div>
+        <div class="msg msg--accent"><b>g.</b> Tandai consumed, user → <span class="mono">ACTIVE</span></div>
+        <div class="msg msg--accent"><b>h.</b> Cek cooldown &amp; rate limit</div>
+        <div class="msg msg--accent"><b>i.</b> Invalidate OTP lama, buat baru</div>
+      </div>
+    </div>
+
+    <div class="flow__lane">
+      <div class="flow__head">
+        <span class="t-label t-label--ink">Database</span>
+        <span class="t-label t-label--accent t-num">DB</span>
+      </div>
+      <div class="flow__body">
+        <div class="msg"><span class="mono">INSERT</span> users</div>
+        <div class="msg"><span class="mono">INSERT</span> otp_codes</div>
+        <div class="msg"><span class="mono">SELECT</span> OTP aktif + row lock</div>
+        <div class="msg"><span class="mono">UPDATE</span> consumed_at, status, verified_at</div>
+        <div class="msg"><span class="mono">UPDATE</span> invalidated_at (resend)</div>
+      </div>
+    </div>
+
+    <div class="flow__lane">
+      <div class="flow__head">
+        <span class="t-label t-label--ink">Queue</span>
+        <span class="t-label t-label--accent t-num">Q</span>
+      </div>
+      <div class="flow__body">
+        <div class="msg">Enqueue <span class="mono">SendOtpJob</span></div>
+        <div class="msg msg--muted">Retry exponential backoff</div>
+      </div>
+    </div>
+
+    <div class="flow__lane">
+      <div class="flow__head">
+        <span class="t-label t-label--ink">Sender</span>
+        <span class="t-label t-label--accent t-num">S</span>
+      </div>
+      <div class="flow__body">
+        <div class="msg">Kirim OTP via Email / SMS / WhatsApp</div>
+        <div class="msg msg--muted">TTL ditampilkan pada pesan (5 menit)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">Ringkasan Status User</p>
+    <div class="statebar">
+      <div class="state state--active">
+        <p class="t-label mb-s">Status awal</p>
+        <p class="state__name">PENDING_VERIFICATION</p>
+        <p class="state__note">Menunggu verifikasi OTP.</p>
+      </div>
+      <div class="state">
+        <p class="t-label mb-s">Transisi / OTP valid</p>
+        <p class="state__name">ACTIVE</p>
+        <p class="state__note">Akun aktif, token diterbitkan.</p>
+      </div>
+      <div class="state">
+        <p class="t-label mb-s">Transisi / tidak verifikasi &gt; N hari</p>
+        <p class="state__name">CLEANUP</p>
+        <p class="state__note">Dihapus oleh cleanup job.</p>
+      </div>
+      <div class="state">
+        <p class="t-label mb-s">Cadangan</p>
+        <p class="state__name">SUSPENDED</p>
+        <p class="state__note">Ditahan di luar alur registrasi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     04 — DESAIN TEKNIS
+     ===================================================================== -->
+<section class="sec shell" id="s4">
+  <div class="shead reveal">
+    <div class="shead__no">04</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Desain Teknis</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Endpoint, kode error, model data, generate &amp; verifikasi, resend, dan pengiriman.</p>
+  </div>
+
+  <!-- ---------- 4.1 ENDPOINT ---------- -->
+  <div class="reveal">
+    <p class="t-label t-label--ink mb-l">4.1 &nbsp;/&nbsp; Endpoint API</p>
+
+    <!-- EP 1 -->
+    <article class="ep">
+      <div class="ep__head">
+        <span class="method">POST</span>
+        <span class="ep__path">/api/v1/auth/register</span>
+        <span class="chip chip--ghost">201 Created</span>
+        <span class="chip chip--ghost">Idempotent-ish</span>
+      </div>
+
+      <div class="ep__grid">
+        <div class="ep__col">
+          <div class="block-head block-head--light"><span>Request body</span><b>JSON</b></div>
+          <pre class="block block--light"><span class="kw">{</span>
+  <span class="st">"name"</span>:     "Budi",
+  <span class="st">"email"</span>:    "budi@example.com",
+  <span class="st">"phone"</span>:    "+6281234567890",
+  <span class="st">"password"</span>: "********"
+<span class="kw">}</span></pre>
+        </div>
+        <div class="ep__col">
+          <div class="block-head block-head--light"><span>Response 201</span><b>JSON</b></div>
+          <pre class="block block--light"><span class="kw">{</span>
+  <span class="st">"userId"</span>: "b3f1c9e2-...",
+  <span class="st">"status"</span>: "PENDING_VERIFICATION",
+  <span class="st">"otp"</span>: <span class="kw">{</span>
+    <span class="st">"channel"</span>:                 "EMAIL",
+    <span class="st">"destination"</span>:             "b***@example.com",
+    <span class="st">"expiresInSeconds"</span>:        300,
+    <span class="st">"resendAvailableInSeconds"</span>: 60
+  <span class="kw">}</span>
+<span class="kw">}</span></pre>
+        </div>
+      </div>
+
+      <div class="mt-m">
+        <p class="t-label mb-s">Catatan</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Password di-hash (<b>argon2id</b> / bcrypt) sebelum disimpan.</span></li>
+          <li><span class="box"></span><span>Jika email/HP sudah terdaftar tapi masih <code class="lt">PENDING_VERIFICATION</code>: perbarui data lalu kirim OTP baru — <b>bukan error</b>.</span></li>
+          <li><span class="box"></span><span>Jika sudah <code class="lt">ACTIVE</code>: kembalikan <b>409</b>, atau respons generik bila ingin mencegah enumerasi — putuskan di bagian 10.</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- EP 2 -->
+    <article class="ep">
+      <div class="ep__head">
+        <span class="method">POST</span>
+        <span class="ep__path">/api/v1/auth/register/verify-otp</span>
+        <span class="chip chip--ghost">200 OK</span>
+      </div>
+
+      <div class="ep__grid">
+        <div class="ep__col">
+          <div class="block-head block-head--light"><span>Request body</span><b>JSON</b></div>
+          <pre class="block block--light"><span class="kw">{</span> <span class="st">"userId"</span>: "b3f1c9e2-...", <span class="st">"code"</span>: "123456" <span class="kw">}</span></pre>
+          <p class="t-body" style="font-size:12.5px">
+            <span class="accent-c">▲</span> Verifikasi memakai transaksi + row lock untuk mencegah race condition.
+          </p>
+        </div>
+        <div class="ep__col">
+          <div class="block-head block-head--light"><span>Response 200</span><b>JSON</b></div>
+          <pre class="block block--light"><span class="kw">{</span>
+  <span class="st">"status"</span>:       "ACTIVE",
+  <span class="st">"accessToken"</span>:  "...",
+  <span class="st">"refreshToken"</span>: "..."
+<span class="kw">}</span></pre>
+        </div>
+      </div>
+    </article>
+
+    <!-- EP 3 -->
+    <article class="ep">
+      <div class="ep__head">
+        <span class="method">POST</span>
+        <span class="ep__path">/api/v1/auth/register/resend-otp</span>
+        <span class="chip chip--ghost">200 OK</span>
+      </div>
+
+      <div class="ep__grid">
+        <div class="ep__col">
+          <div class="block-head block-head--light"><span>Request body</span><b>JSON</b></div>
+          <pre class="block block--light"><span class="kw">{</span> <span class="st">"userId"</span>: "b3f1c9e2-..." <span class="kw">}</span></pre>
+        </div>
+        <div class="ep__col">
+          <div class="block-head block-head--light"><span>Response 200</span><b>JSON</b></div>
+          <pre class="block block--light"><span class="kw">{</span>
+  <span class="st">"expiresInSeconds"</span>:        300,
+  <span class="st">"resendAvailableInSeconds"</span>: 60
+<span class="kw">}</span></pre>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- ---------- 4.2 ERROR ---------- -->
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">4.2 &nbsp;/&nbsp; Kode Error</p>
+
+    <div class="row">
+      <div class="c8">
+        <div class="tbl-wrap">
+          <table class="swiss">
+            <caption>Tabel 04.2 — Daftar kode error</caption>
+            <thead>
+              <tr>
+                <th class="num" style="width:13%">HTTP</th>
+                <th style="width:34%">Code</th>
+                <th>Kapan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="num">400</td><td><code class="lt">VALIDATION_ERROR</code></td><td>Input tidak valid</td></tr>
+              <tr><td class="num">400</td><td><code class="lt">OTP_INVALID</code></td><td>Kode salah</td></tr>
+              <tr><td class="num">400</td><td><code class="lt">OTP_EXPIRED</code></td><td>Kode sudah kedaluwarsa / tidak ada OTP aktif</td></tr>
+              <tr><td class="num">409</td><td><code class="lt">USER_ALREADY_VERIFIED</code></td><td>Akun sudah aktif</td></tr>
+              <tr><td class="num">429</td><td><code class="lt">OTP_MAX_ATTEMPTS</code></td><td>Percobaan verifikasi melebihi batas</td></tr>
+              <tr><td class="num">429</td><td><code class="lt">OTP_RESEND_COOLDOWN</code></td><td>Resend sebelum cooldown selesai — sertakan <span class="mono">retryAfter</span></td></tr>
+              <tr><td class="num">429</td><td><code class="lt">OTP_RATE_LIMITED</code></td><td>Terlalu banyak permintaan OTP (per tujuan / IP)</td></tr>
+              <tr><td class="num">502/503</td><td><code class="lt">OTP_DELIVERY_FAILED</code></td><td>Provider gagal mengirim</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="c4">
+        <div class="card card--boxed" style="height:100%">
+          <p class="t-label t-label--accent mb-m">Format error konsisten</p>
+          <pre class="block block--light" style="background:var(--paper-2)"><span class="kw">{</span>
+  <span class="st">"error"</span>: <span class="kw">{</span>
+    <span class="st">"code"</span>:              "OTP_INVALID",
+    <span class="st">"message"</span>:           "Kode OTP salah.",
+    <span class="st">"remainingAttempts"</span>: 3
+  <span class="kw">}</span>
+<span class="kw">}</span></pre>
+          <p class="t-body mt-m" style="font-size:12.5px">
+            Seluruh respons error memakai amplop <code class="lt">error</code> yang sama agar klien
+            dapat menangani tanpa parsing khusus per endpoint.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- 4.3 MODEL DATA ---------- -->
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">4.3 &nbsp;/&nbsp; Model Data</p>
+
+    <div class="row">
+      <div class="c4">
+        <div class="card">
+          <p class="t-label t-label--accent mb-m">Tabel <code class="lt">users</code> — tambahan kolom</p>
+          <div class="tbl-wrap">
+            <table class="swiss" style="min-width:0">
+              <thead>
+                <tr><th style="width:38%">Kolom</th><th style="width:24%">Tipe</th><th>Keterangan</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code class="lt">status</code></td><td>enum</td><td><span class="mono">PENDING_VERIFICATION</span>, <span class="mono">ACTIVE</span>, <span class="mono">SUSPENDED</span></td></tr>
+                <tr><td><code class="lt">verified_at</code></td><td>timestamp null</td><td>Waktu verifikasi OTP berhasil</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="c8">
+        <div class="block-head"><span>Tabel <b>otp_codes</b></span><b>SQL / DDL</b></div>
+        <pre class="block"><span class="kw">CREATE TABLE</span> otp_codes (
+  id              UUID <span class="kw">PRIMARY KEY</span>,
+  user_id         UUID <span class="kw">NOT NULL REFERENCES</span> users(id) <span class="kw">ON DELETE CASCADE</span>,
+  purpose         VARCHAR(30)  <span class="kw">NOT NULL DEFAULT</span> 'REGISTER',
+  channel         VARCHAR(10)  <span class="kw">NOT NULL</span>,            <span class="cm">-- EMAIL | SMS | WHATSAPP</span>
+  destination     VARCHAR(255) <span class="kw">NOT NULL</span>,
+  code_hash       CHAR(64)     <span class="kw">NOT NULL</span>,            <span class="cm">-- HMAC-SHA256, bukan plaintext</span>
+  expires_at      TIMESTAMPTZ  <span class="kw">NOT NULL</span>,
+  attempts        SMALLINT     <span class="kw">NOT NULL DEFAULT</span> 0,
+  max_attempts    SMALLINT     <span class="kw">NOT NULL DEFAULT</span> 5,
+  consumed_at     TIMESTAMPTZ  <span class="kw">NULL</span>,
+  invalidated_at  TIMESTAMPTZ  <span class="kw">NULL</span>,
+  request_ip      INET         <span class="kw">NULL</span>,
+  created_at      TIMESTAMPTZ  <span class="kw">NOT NULL DEFAULT</span> now()
+);
+
+<span class="kw">CREATE INDEX</span> idx_otp_user_purpose_created
+  <span class="kw">ON</span> otp_codes (user_id, purpose, created_at <span class="kw">DESC</span>);
+<span class="kw">CREATE INDEX</span> idx_otp_expires_at <span class="kw">ON</span> otp_codes (expires_at);</pre>
+      </div>
+    </div>
+
+    <div class="row mt-m">
+      <div class="c7">
+        <div class="card card--boxed">
+          <p class="t-label t-label--accent mb-m">Alternatif Redis — lebih ringan, TTL otomatis</p>
+          <ul class="checklist">
+            <li><span class="box"></span><span>Key <code class="lt">otp:register:{userId}</code> → hash <span class="mono">{codeHash, attempts, createdAt}</span> dengan TTL <b>300 detik</b>.</span></li>
+            <li><span class="box"></span><span>Key cooldown <code class="lt">otp:cooldown:{userId}</code> dengan TTL <b>60 detik</b>.</span></li>
+          </ul>
+          <div class="note mt-m">
+            <p class="t-label">Kekurangan</p>
+            <p class="t-body" style="font-size:13px">Tidak ada audit trail permanen kecuali dicatat terpisah.</p>
+          </div>
+        </div>
+      </div>
+      <div class="c5">
+        <div class="card card--ink" style="height:100%;padding:22px">
+          <p class="t-label mb-m">Pilihan penyimpanan</p>
+          <div class="row" style="row-gap:14px">
+            <div class="c12">
+              <p class="t-label" style="color:rgba(255,255,255,.5)">Opsi A — Relasional</p>
+              <p class="t-body" style="font-size:13px">Audit trail penuh. Perlu cleanup job untuk menghapus baris kedaluwarsa.</p>
+            </div>
+            <div class="c12">
+              <p class="t-label" style="color:rgba(255,255,255,.5)">Opsi B — Redis saja</p>
+              <p class="t-body" style="font-size:13px">Ekspirasi otomatis, tanpa tabel tambahan. Audit harus dicatat terpisah.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- 4.4 GENERATE ---------- -->
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">4.4 &nbsp;/&nbsp; Generate &amp; Penyimpanan OTP</p>
+
+    <div class="row">
+      <div class="c5">
+        <ul class="checklist">
+          <li><span class="box"></span><span>Gunakan <b>CSPRNG</b> — mis. <code class="lt">crypto.randomInt</code>, <code class="lt">secrets.randbelow</code>, <code class="lt">SecureRandom</code>. Jangan <code class="lt">Math.random()</code> / <code class="lt">rand()</code>.</span></li>
+          <li><span class="box"></span><span>Kode 6 digit dengan leading zero dipertahankan <span class="muted">(<code class="lt">"004821"</code>)</span>.</span></li>
+          <li><span class="box"></span><span>Simpan <b>hash</b>, bukan plaintext: <code class="lt">HMAC_SHA256(pepper, otpId + ":" + code)</code>.</span></li>
+          <li><span class="box"></span><span><code class="lt">OTP_PEPPER</code> disimpan di secret manager / env — <b>bukan</b> di database.</span></li>
+          <li><span class="box"></span><span>Satu OTP aktif per <span class="mono">(user, purpose)</span>: saat resend, OTP lama di-set <code class="lt">invalidated_at</code>.</span></li>
+          <li><span class="box"></span><span>OTP bersifat <b>single-use</b>: setelah valid langsung <code class="lt">consumed_at</code>.</span></li>
+        </ul>
+      </div>
+      <div class="c7">
+        <div class="card card--accent" style="padding:22px;height:100%">
+          <p class="t-label mb-m">Prinsip penyimpanan</p>
+          <p class="t-lg mb-m" style="text-transform:none;font-size:clamp(20px,2.2vw,30px)">
+            Kode plaintext tidak pernah menyentuh disk, log, maupun respons API.
+          </p>
+          <p class="t-body" style="font-size:13.5px">
+            Yang tersimpan hanyalah hash 64 karakter. Kode asli hanya hidup di memori saat
+            pembuatan dan di dalam payload job pengiriman.
+          </p>
+          <div class="row mt-l" style="row-gap:12px">
+            <div class="c6"><p class="t-label">Algoritma</p><p style="margin:4px 0 0;font-weight:700">HMAC-SHA256</p></div>
+            <div class="c6"><p class="t-label">Perbandingan</p><p style="margin:4px 0 0;font-weight:700">timing-safe</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- 4.5 VERIFY ---------- -->
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">4.5 &nbsp;/&nbsp; Logika Verifikasi (pseudocode)</p>
+    <div class="row">
+      <div class="c8">
+        <div class="block-head"><span>verifyOtp</span><b>Pseudocode</b></div>
+        <pre class="block">verifyOtp(userId, code):
+  <span class="kw">BEGIN TRANSACTION</span>
+    user = users.findById(userId) <span class="kw">FOR UPDATE</span>
+    <span class="kw">if</span> user.status == ACTIVE          -> <span class="kw">throw</span> USER_ALREADY_VERIFIED
+
+    otp = otpCodes.findLatestActive(userId, 'REGISTER')   <span class="cm">-- belum consumed &amp; belum invalidated</span>
+    <span class="kw">if</span> otp == null                    -> <span class="kw">throw</span> OTP_EXPIRED
+    <span class="kw">if</span> otp.expiresAt &lt; now()          -> <span class="kw">throw</span> OTP_EXPIRED
+    <span class="kw">if</span> otp.attempts &gt;= otp.maxAttempts -> <span class="kw">throw</span> OTP_MAX_ATTEMPTS
+
+    otp.attempts += 1                 <span class="cm">-- naikkan SEBELUM membandingkan</span>
+    save(otp)
+
+    <span class="kw">if</span> !timingSafeEqual(hmac(otp.id, code), otp.codeHash)
+      -> <span class="kw">throw</span> OTP_INVALID(remaining = otp.maxAttempts - otp.attempts)
+
+    otp.consumedAt  = now()
+    user.status     = ACTIVE
+    user.verifiedAt = now()
+    save(otp, user)
+  <span class="kw">COMMIT</span>
+
+  <span class="kw">return</span> issueTokens(user)</pre>
+      </div>
+      <div class="c4">
+        <div class="card card--boxed">
+          <p class="t-label t-label--accent mb-m">Poin penting</p>
+          <p class="t-body">
+            Transaksi + <strong>row lock</strong> untuk mencegah race condition — dua request paralel
+            dengan kode benar/salah tidak boleh dua-duanya lolos.
+          </p>
+          <div class="rule mt-l mb-m"></div>
+          <p class="t-label mb-s">Konsekuensi</p>
+          <p class="t-body" style="font-size:13px">
+            Pada concurrency test, hanya satu request verify yang boleh sukses; sisanya menerima
+            <code class="lt">USER_ALREADY_VERIFIED</code> atau <code class="lt">OTP_EXPIRED</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- 4.6 RESEND ---------- -->
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">4.6 &nbsp;/&nbsp; Logika Resend (pseudocode)</p>
+    <div class="row">
+      <div class="c8">
+        <div class="block-head"><span>resendOtp</span><b>Pseudocode</b></div>
+        <pre class="block">resendOtp(userId, ip):
+  user = users.findById(userId)
+  <span class="kw">if</span> user.status == ACTIVE -> <span class="kw">throw</span> USER_ALREADY_VERIFIED
+
+  <span class="kw">if</span> redis.exists("otp:cooldown:" + userId)  -> <span class="kw">throw</span> OTP_RESEND_COOLDOWN(retryAfter)
+  rateLimit.check("otp:dest:" + destination, max=5,  window=1h)  -> OTP_RATE_LIMITED
+  rateLimit.check("otp:ip:"   + ip,          max=10, window=1h)  -> OTP_RATE_LIMITED
+
+  otpCodes.invalidateActive(userId, 'REGISTER')
+  otp = createOtp(user)
+  redis.set("otp:cooldown:" + userId, 1, ttl=60)
+  queue.enqueue(SendOtpJob(otp.id, plainCode))   <span class="cm">-- plainCode hanya ada di memori/job, tidak di DB</span></pre>
+      </div>
+      <div class="c4">
+        <div class="card">
+          <p class="t-label t-label--accent mb-m">Batas berlapis</p>
+          <div class="grid-2" style="gap:16px">
+            <div>
+              <p class="stat__v t-num" style="font-size:24px">60s</p>
+              <p class="stat__s">Cooldown per user</p>
+            </div>
+            <div>
+              <p class="stat__v t-num" style="font-size:24px">5/h</p>
+              <p class="stat__s">Per tujuan</p>
+            </div>
+            <div>
+              <p class="stat__v t-num" style="font-size:24px">10/h</p>
+              <p class="stat__s">Per IP</p>
+            </div>
+            <div>
+              <p class="stat__v t-num" style="font-size:24px">1</p>
+              <p class="stat__s">OTP aktif per (user, purpose)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- 4.7 PENGIRIMAN ---------- -->
+  <div class="mt-l reveal">
+    <p class="t-label t-label--ink mb-m">4.7 &nbsp;/&nbsp; Pengiriman OTP</p>
+
+    <div class="row">
+      <div class="c6">
+        <div class="block-head block-head--light"><span>Kontrak sender</span><b>TypeScript</b></div>
+        <pre class="block block--light"><span class="kw">interface</span> OtpSender {
+  send(destination: <span class="kw">string</span>, code: <span class="kw">string</span>, ttlMinutes: <span class="kw">number</span>): Promise&lt;<span class="kw">void</span>&gt;
+}
+<span class="cm">// Implementasi: EmailOtpSender, SmsOtpSender, WhatsappOtpSender</span></pre>
+      </div>
+      <div class="c6">
+        <div class="card card--boxed">
+          <p class="t-label t-label--accent mb-m">Template pesan</p>
+          <p class="t-md" style="font-weight:500;line-height:1.5">
+            “Kode verifikasi Anda: <b class="accent-c">123456</b>. Berlaku 5 menit.
+            Jangan bagikan kode ini kepada siapa pun.”
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-m">
+      <div class="c4">
+        <div class="card">
+          <p class="t-label t-label--accent mb-s">Async</p>
+          <p class="t-body" style="font-size:13.5px">Pengiriman lewat <strong>queue / background job</strong> agar endpoint register tidak menunggu provider.</p>
+        </div>
+      </div>
+      <div class="c4">
+        <div class="card">
+          <p class="t-label t-label--accent mb-s">Retry</p>
+          <p class="t-body" style="font-size:13.5px">Exponential backoff, mis. 3×. Jika tetap gagal: catat, user bisa menekan resend.</p>
+        </div>
+      </div>
+      <div class="c4">
+        <div class="card">
+          <p class="t-label t-label--accent mb-s">Payload</p>
+          <p class="t-body" style="font-size:13.5px">Job berisi kode plaintext → jangan biarkan queue mem-persist log payload sembarangan, atau enkripsi payload.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     05 — KEAMANAN
+     ===================================================================== -->
+<section class="sec shell" id="s5">
+  <div class="shead reveal">
+    <div class="shead__no">05</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Keamanan</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Checklist wajib. Seluruh item harus terpenuhi sebelum fitur dinyatakan selesai.</p>
+  </div>
+
+  <div class="row">
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-m">Kriptografi &amp; penyimpanan</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>OTP dibuat dengan <b>CSPRNG</b>.</span></li>
+          <li><span class="box"></span><span>OTP disimpan sebagai <b>HMAC hash + pepper</b>.</span></li>
+          <li><span class="box"></span><span>Perbandingan kode memakai <b>constant-time compare</b>.</span></li>
+          <li><span class="box"></span><span>TTL pendek (5 menit) dan <b>single-use</b>.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-m">Pembatasan &amp; abuse</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Batas percobaan verifikasi per OTP (5×), lalu OTP hangus dan user harus resend.</span></li>
+          <li><span class="box"></span><span>Cooldown resend 60 detik + batas per jam <b>per tujuan</b> dan <b>per IP</b>.</span></li>
+          <li><span class="box"></span><span>Rate limit endpoint <code class="lt">register</code> per IP.</span></li>
+          <li><span class="box"></span><span>Pertimbangkan CAPTCHA / device fingerprint di <code class="lt">register</code> untuk mencegah bot dan <b>SMS pumping</b>.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-m">Eksposur &amp; audit</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Kode OTP <b>tidak pernah</b> muncul di respons API produksi maupun log — mask di logger.</span></li>
+          <li><span class="box"></span><span>Destinasi di-mask pada respons <span class="muted">(<code class="lt">b***@example.com</code>, <code class="lt">+62812****890</code>)</span>.</span></li>
+          <li><span class="box"></span><span>HTTPS wajib; header keamanan standar aktif.</span></li>
+          <li><span class="box"></span><span>Audit log: <span class="mono">otp_requested</span>, <span class="mono">otp_verified</span>, <span class="mono">otp_failed</span>, <span class="mono">otp_locked</span> — tanpa menyimpan kode.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-l reveal">
+    <div class="c12">
+      <div class="card card--ink" style="padding:22px 24px">
+        <div class="row" style="align-items:center;row-gap:14px">
+          <div class="c2">
+            <p class="t-label">Lingkungan dev</p>
+          </div>
+          <div class="c10">
+            <p class="t-body" style="font-size:14px">
+              Mode dev/staging boleh memakai kode tetap atau menampilkan OTP di log —
+              dikontrol env flag dan <strong style="color:#fff">nonaktif di produksi</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     06 — KONFIGURASI (dark band)
+     ===================================================================== -->
+<section class="sec dark-band" id="s6">
+  <div class="shell">
+    <div class="shead reveal" style="border-bottom-color:rgba(255,255,255,.35)">
+      <div class="shead__no">06</div>
+      <h2 class="shead__title t-xl" style="text-transform:none;color:#fff">Konfigurasi</h2>
+      <p class="shead__desc t-body" style="font-size:13.5px">Environment variables beserta nilai default.</p>
+    </div>
+
+    <div class="reveal">
+      <div class="envrow envrow--head">
+        <p class="t-label">Variable</p>
+        <p class="t-label">Default</p>
+        <p class="t-label">Keterangan</p>
+      </div>
+
+      <div class="envrow"><p class="envrow__k"><code>OTP_LENGTH</code></p><p class="envrow__v t-num">6</p><p class="envrow__v">Panjang kode</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_TTL_SECONDS</code></p><p class="envrow__v t-num">300</p><p class="envrow__v">Masa berlaku</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_MAX_ATTEMPTS</code></p><p class="envrow__v t-num">5</p><p class="envrow__v">Maks. percobaan verifikasi</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_RESEND_COOLDOWN_SECONDS</code></p><p class="envrow__v t-num">60</p><p class="envrow__v">Jeda minimal resend</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_MAX_REQUESTS_PER_HOUR_DEST</code></p><p class="envrow__v t-num">5</p><p class="envrow__v">Batas per email/HP</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_MAX_REQUESTS_PER_HOUR_IP</code></p><p class="envrow__v t-num">10</p><p class="envrow__v">Batas per IP</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_PEPPER</code></p><p class="envrow__v t-num accent-c">—</p><p class="envrow__v"><b style="color:#fff">Wajib.</b> Secret untuk HMAC, dari secret manager.</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_CHANNEL</code></p><p class="envrow__v">EMAIL</p><p class="envrow__v">EMAIL / SMS / WHATSAPP</p></div>
+      <div class="envrow"><p class="envrow__k"><code>OTP_DEV_FIXED_CODE</code></p><p class="envrow__v accent-c">kosong</p><p class="envrow__v">Hanya dev/test</p></div>
+      <div class="envrow"><p class="envrow__k"><code>UNVERIFIED_USER_TTL_DAYS</code></p><p class="envrow__v t-num">3</p><p class="envrow__v">Hapus user yang tidak verifikasi</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     07 — STRUKTUR MODUL (accent band)
+     ===================================================================== -->
+<section class="sec accent-band" id="s7">
+  <div class="shell">
+    <div class="shead reveal" style="border-bottom-color:rgba(255,255,255,.45)">
+      <div class="shead__no" style="color:#fff">07</div>
+      <h2 class="shead__title t-xl" style="text-transform:none;color:#fff">Struktur Modul</h2>
+      <p class="shead__desc t-body" style="font-size:13.5px">Saran pemisahan tanggung jawab antara modul <span class="mono">auth</span>, <span class="mono">otp</span>, dan <span class="mono">jobs</span>.</p>
+    </div>
+
+    <div class="row reveal">
+      <div class="c7">
+        <pre class="block" style="background:#111">src/
+  modules/
+    auth/
+      auth.controller        <span class="cm"># register, verify-otp, resend-otp</span>
+      auth.service           <span class="cm"># orkestrasi alur registrasi</span>
+    otp/
+      otp.service            <span class="cm"># generate, hash, verify, invalidate</span>
+      otp.repository         <span class="cm"># akses tabel otp_codes</span>
+      otp.rate-limiter       <span class="cm"># cooldown + limit per dest/IP</span>
+      otp.constants          <span class="cm"># purpose, channel, error code</span>
+      senders/
+        otp-sender.interface
+        email.sender
+        sms.sender
+        whatsapp.sender
+      jobs/
+        send-otp.job         <span class="cm"># worker queue + retry</span>
+    jobs/
+      cleanup-otp.job        <span class="cm"># hapus OTP kedaluwarsa &amp; user unverified</span></pre>
+      </div>
+      <div class="c5">
+        <div class="row" style="row-gap:22px">
+          <div class="c12">
+            <p class="t-label mb-s">auth /</p>
+            <p class="t-body" style="font-size:13.5px">Lapisan HTTP dan orkestrasi. Tidak tahu detail kriptografi maupun provider pengiriman.</p>
+          </div>
+          <div class="c12" style="border-top:1px solid rgba(255,255,255,.3);padding-top:18px">
+            <p class="t-label mb-s">otp /</p>
+            <p class="t-body" style="font-size:13.5px">Seluruh logika OTP: pembuatan, hashing, verifikasi, pembatalan, serta pembatasan laju.</p>
+          </div>
+          <div class="c12" style="border-top:1px solid rgba(255,255,255,.3);padding-top:18px">
+            <p class="t-label mb-s">senders /</p>
+            <p class="t-body" style="font-size:13.5px">Implementasi <span class="mono">OtpSender</span> per provider — dapat diganti tanpa menyentuh logika inti.</p>
+          </div>
+          <div class="c12" style="border-top:1px solid rgba(255,255,255,.3);padding-top:18px">
+            <p class="t-label mb-s">jobs /</p>
+            <p class="t-body" style="font-size:13.5px">Worker asinkron: pengiriman dengan retry, dan pembersihan berkala.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     08 — OBSERVABILITY
+     ===================================================================== -->
+<section class="sec shell" id="s8">
+  <div class="shead reveal">
+    <div class="shead__no">08</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Observability &amp; Operasional</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Metrics, alert, dan cleanup job harian.</p>
+  </div>
+
+  <div class="row">
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-m">Metrics</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Jumlah OTP terkirim</span></li>
+          <li><span class="box"></span><span>Success rate verifikasi</span></li>
+          <li><span class="box"></span><span>Rasio <span class="mono">OTP_INVALID</span> / <span class="mono">OTP_EXPIRED</span></span></li>
+          <li><span class="box"></span><span>Latency &amp; error rate provider</span></li>
+          <li><span class="box"></span><span>Jumlah kena rate limit</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-m">Alert</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Lonjakan permintaan OTP dari satu IP / prefix nomor — indikasi abuse.</span></li>
+          <li><span class="box"></span><span><span class="mono">delivery failure</span> melebihi ambang batas.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c4 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-m">Cleanup job — harian</p>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Hapus <code class="lt">otp_codes</code> dengan <span class="mono">expires_at &lt; now − 24 jam</span>.</span></li>
+          <li><span class="box"></span><span>Hapus user <span class="mono">PENDING_VERIFICATION</span> yang lebih tua dari <code class="lt">UNVERIFIED_USER_TTL_DAYS</code>.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     09 — TESTING
+     ===================================================================== -->
+<section class="sec shell" id="s9">
+  <div class="shead reveal">
+    <div class="shead__no">09</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Rencana Testing</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Empat lapis pengujian: unit, integration, concurrency, dan security.</p>
+  </div>
+
+  <div class="row">
+    <div class="c3 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Layer 01</p>
+        <h3 class="t-md mb-m">Unit test</h3>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Generate OTP: panjang benar, hanya digit, leading zero aman.</span></li>
+          <li><span class="box"></span><span>Hash &amp; verify: kode benar → lolos; kode salah → gagal.</span></li>
+          <li><span class="box"></span><span>Expiry: OTP kedaluwarsa ditolak (gunakan <b>fake clock</b>).</span></li>
+          <li><span class="box"></span><span>Attempts: percobaan ke-6 → <span class="mono">OTP_MAX_ATTEMPTS</span>.</span></li>
+          <li><span class="box"></span><span>Resend: OTP lama invalid setelah OTP baru dibuat.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c3 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Layer 02</p>
+        <h3 class="t-md mb-m">Integration test</h3>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Register → verify → status <span class="mono">ACTIVE</span> dan token terbit.</span></li>
+          <li><span class="box"></span><span>Verify dengan kode salah berulang → terkunci, <span class="mono">attempts</span> tercatat.</span></li>
+          <li><span class="box"></span><span>Resend sebelum cooldown → <b>429</b>; setelah cooldown → <b>200</b>.</span></li>
+          <li><span class="box"></span><span>Verify OTP yang sudah <span class="mono">consumed</span> → ditolak (tidak bisa dipakai ulang).</span></li>
+          <li><span class="box"></span><span>Register ulang untuk akun <span class="mono">PENDING_VERIFICATION</span> → OTP baru terkirim.</span></li>
+          <li><span class="box"></span><span>Kegagalan provider → job retry, endpoint tetap merespons dengan benar.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c3 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Layer 03</p>
+        <h3 class="t-md mb-m">Concurrency test</h3>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Dua request verify paralel dengan kode benar → hanya satu yang sukses.</span></li>
+          <li><span class="box"></span><span>Request resend paralel → hanya satu OTP aktif tersisa.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="c3 reveal">
+      <div class="card">
+        <p class="t-label t-label--accent mb-s">Layer 04</p>
+        <h3 class="t-md mb-m">Security test</h3>
+        <ul class="checklist">
+          <li><span class="box"></span><span>Brute-force <span class="mono">000000–999999</span> tidak mungkin selesai karena batas attempts.</span></li>
+          <li><span class="box"></span><span>OTP tidak muncul di log/response (grep pada log test).</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     10 — KEPUTUSAN TERBUKA
+     ===================================================================== -->
+<section class="sec shell" id="s10">
+  <div class="shead reveal">
+    <div class="shead__no">10</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Keputusan Terbuka</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Perlu dikonfirmasi sebelum implementasi dimulai.</p>
+  </div>
+
+  <div class="row">
+    <div class="c7 reveal">
+      <div class="qitem">
+        <span class="qitem__no">01</span>
+        <p>Channel utama OTP: email, SMS, atau WhatsApp? Provider apa?</p>
+      </div>
+      <div class="qitem">
+        <span class="qitem__no">02</span>
+        <p>Identifier verifikasi: <span class="mono">userId</span> dari respons register, atau token verifikasi opaque berumur pendek (lebih aman terhadap enumerasi)?</p>
+      </div>
+      <div class="qitem">
+        <span class="qitem__no">03</span>
+        <p>Email/HP yang sudah terdaftar dan <span class="mono">ACTIVE</span>: kembalikan <b>409</b> (UX lebih jelas) atau respons generik (anti-enumerasi)?</p>
+      </div>
+      <div class="qitem">
+        <span class="qitem__no">04</span>
+        <p>Setelah verifikasi: langsung terbitkan token, atau minta user login?</p>
+      </div>
+    </div>
+    <div class="c5 reveal">
+      <div class="qitem">
+        <span class="qitem__no">05</span>
+        <p>Perlu verifikasi dua channel (email <b>dan</b> HP) atau cukup satu?</p>
+      </div>
+      <div class="qitem">
+        <span class="qitem__no">06</span>
+        <p>Butuh CAPTCHA di register? Batas anggaran SMS/WA per hari?</p>
+      </div>
+      <div class="card card--boxed mt-l">
+        <p class="t-label t-label--accent mb-s">Blocker</p>
+        <p class="t-body" style="font-size:13.5px">
+          Butir 01 dan 02 memengaruhi kontrak API serta skema verifikasi. Keduanya sebaiknya
+          diputuskan sebelum task 6 (endpoint) dimulai.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- =====================================================================
+     11 — BREAKDOWN TASK
+     ===================================================================== -->
+<section class="sec shell" id="s11">
+  <div class="shead reveal">
+    <div class="shead__no">11</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Breakdown Task &amp; Estimasi</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Sepuluh task terurut dengan bobot relatif terhadap total ± 7 hari.</p>
+  </div>
+
+  <div class="row">
+    <div class="c8 reveal">
+      <div class="tasks">
+        <div class="task">
+          <span class="task__no">01</span>
+          <span class="task__name">Migrasi DB — <span class="mono">users.status</span>, <span class="mono">verified_at</span>, tabel <span class="mono">otp_codes</span></span>
+          <span class="task__est">0.5 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">02</span>
+          <span class="task__name"><span class="mono">OtpService</span> (generate, hash, verify, invalidate) + unit test</span>
+          <span class="task__est">1 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">03</span>
+          <span class="task__name">Rate limiter &amp; cooldown (Redis)</span>
+          <span class="task__est">0.5 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">04</span>
+          <span class="task__name">Interface <span class="mono">OtpSender</span> + 1 implementasi provider</span>
+          <span class="task__est">1 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">05</span>
+          <span class="task__name">Queue job kirim OTP + retry</span>
+          <span class="task__est">0.5 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">06</span>
+          <span class="task__name">Endpoint register / verify-otp / resend-otp</span>
+          <span class="task__est">1 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">07</span>
+          <span class="task__name">Error handling, validasi, masking, logging aman</span>
+          <span class="task__est">0.5 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">08</span>
+          <span class="task__name">Integration &amp; concurrency test</span>
+          <span class="task__est">1 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">09</span>
+          <span class="task__name">Cleanup job + metrics/alert</span>
+          <span class="task__est">0.5 hari</span>
+        </div>
+        <div class="task">
+          <span class="task__no">10</span>
+          <span class="task__name">Dokumentasi API (OpenAPI) + review keamanan</span>
+          <span class="task__est">0.5 hari</span>
+        </div>
+        <div class="task task--total">
+          <span class="task__no">Σ</span>
+          <span class="task__name">Total</span>
+          <span class="task__est">± 7 hari</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="c4 reveal">
+      <div class="card card--ink" style="padding:22px">
+        <p class="t-label mb-m">Distribusi bobot</p>
+
+        <p class="t-label mb-s" style="color:rgba(255,255,255,.55)">Coding &amp; service</p>
+        <div class="bar mb-m" style="background:rgba(255,255,255,.18)">
+          <span style="width:57%"></span>
+        </div>
+        <p class="t-body mb-m" style="font-size:12.5px;color:rgba(255,255,255,.7)">Task 02–07 · ±4 hari</p>
+
+        <p class="t-label mb-s" style="color:rgba(255,255,255,.55)">Testing</p>
+        <div class="bar mb-m" style="background:rgba(255,255,255,.18)">
+          <span style="width:29%"></span>
+        </div>
+        <p class="t-body mb-m" style="font-size:12.5px;color:rgba(255,255,255,.7)">Task 08 (+ unit test di 02) · ±2 hari</p>
+
+        <p class="t-label mb-s" style="color:rgba(255,255,255,.55)">Infra, ops &amp; dokumen</p>
+        <div class="bar mb-m" style="background:rgba(255,255,255,.18)">
+          <span style="width:14%"></span>
+        </div>
+        <p class="t-body" style="font-size:12.5px;color:rgba(255,255,255,.7)">Task 01, 09, 10 · ±1 hari</p>
+
+        <div class="rule mt-l mb-m" style="background:rgba(255,255,255,.2)"></div>
+        <p class="t-body" style="font-size:12.5px;color:rgba(255,255,255,.7)">
+          Estimasi belum termasuk waktu tunggu review keamanan dan setup kredensial provider.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+
+<!-- =====================================================================
+     12 — DEFINITION OF DONE
+     ===================================================================== -->
+<section class="sec shell" id="s12">
+  <div class="shead reveal">
+    <div class="shead__no">12</div>
+    <h2 class="shead__title t-xl" style="text-transform:none">Definition of Done</h2>
+    <p class="shead__desc t-body" style="font-size:13.5px">Enam syarat yang harus benar-benar terpenuhi sebelum fitur dinyatakan selesai.</p>
+  </div>
+
+  <div class="row">
+    <div class="c6 reveal">
+      <ul class="checklist">
+        <li><span class="box"></span><span>Semua endpoint berjalan sesuai kontrak dan <b>terdokumentasi</b>.</span></li>
+        <li><span class="box"></span><span>Seluruh checklist keamanan (bagian 05) <b>terpenuhi</b>.</span></li>
+        <li><span class="box"></span><span>Unit, integration, dan concurrency test <b>lulus di CI</b>.</span></li>
+      </ul>
+    </div>
+    <div class="c6 reveal">
+      <ul class="checklist">
+        <li><span class="box"></span><span>OTP <b>tidak pernah</b> tercatat di log produksi.</span></li>
+        <li><span class="box"></span><span>Metrics &amp; alert dasar <b>aktif</b>.</span></li>
+        <li><span class="box"></span><span>Konfigurasi dan secret (<code class="lt">OTP_PEPPER</code>, kredensial provider) tersedia di <b>semua environment</b>.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- =====================================================================
+     FOOTER
+     ===================================================================== -->
+<footer class="foot">
+  <div class="shell">
+    <div class="row">
+      <div class="c12">
+        <p class="t-label t-label--accent mb-s">Selesai</p>
+        <p class="foot__big">Verifikasi<br />Registrasi<br />dengan OTP.</p>
+      </div>
+
+      <div class="c12">
+        <div class="foot__meta">
+          <div>
+            <p class="t-label mb-s">Dokumen</p>
+            <p class="t-body" style="font-size:13px">OTP Plan — Verifikasi Registrasi (Backend)</p>
+          </div>
+          <div>
+            <p class="t-label mb-s">Status</p>
+            <p class="t-body" style="font-size:13px">Draft · Rev. A</p>
+          </div>
+          <div>
+            <p class="t-label mb-s">Scope</p>
+            <p class="t-body" style="font-size:13px">API · Database · Service · Keamanan · Testing</p>
+          </div>
+          <div>
+            <p class="t-label mb-s">Total estimasi</p>
+            <p class="t-body" style="font-size:13px">± 7 hari · 10 task</p>
+          </div>
+          <div>
+            <p class="t-label mb-s">Tipografi</p>
+            <p class="t-body" style="font-size:13px">Helvetica Neue / Akzidenz-Grotesk</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<button class="totop" id="totop" aria-label="Kembali ke atas">↑</button>
+
+<script src="./swiss.js"></script>
+</body>
+</html>

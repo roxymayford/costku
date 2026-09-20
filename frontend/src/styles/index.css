@@ -1,0 +1,20 @@
+/* ==========================================================================
+   FATrack / SmartSpend ID — Main Style Manifest
+   Organized into modular stylesheets to prevent monolithic CSS bloat
+   ========================================================================== */
+
+@import 'tailwindcss';
+@import './base.css';
+@import './components.css';
+@import './layout.css';
+@import './landing.css';
+@import './auth.css';
+@import './otp.css';
+@import './onboarding.css';
+@import './dashboard.css';
+@import './allocation.css';
+@import './recommendations.css';
+@import './transactions.css';
+@import './subscription.css';
+@import './animations.css';
+@import './responsive.css';
