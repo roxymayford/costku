@@ -21,37 +21,37 @@ export const DailyLimitCard: React.FC<DailyLimitCardProps> = ({
   const isOverLimit = spentToday > dailyLimit;
 
   let statusClass = 'green';
-  let statusText = 'AMAN / DALAM BATAS';
+  let statusText = 'Aman';
 
   if (isOverLimit) {
     statusClass = 'red';
-    statusText = 'OVER-BUDGET HARIAN';
+    statusText = 'Sudah lewat batas';
   } else if (percentSpentToday > 75) {
     statusClass = 'orange';
-    statusText = 'MENDEKATI LIMIT';
+    statusText = 'Mendekati batas';
   }
 
   return (
     <div className="daily-limit-widget terminal-card">
       <div className="widget-top">
         <div>
-          <small className="accent">ALGORITMA DISIPLIN / SAFE-TO-SPEND</small>
+          <small className="accent">UNTUK HARI INI</small>
           <h4>BATAS JAJAN HARIAN</h4>
         </div>
         <span className={`status-pill ${statusClass}`}>{statusText}</span>
       </div>
 
       <div className="daily-amount-display">
-        <span className="unit-label">BATAS MAKSIMAL HARI INI</span>
+        <span className="unit-label">BOLEH JAJAN MAKSIMAL</span>
         <strong className="limit-amount">{formatRupiah(dailyLimit)}</strong>
         <span className="formula-hint">
-          (Gaji Netto − Fixed Exp − Tabungan) ÷ Hari dalam Siklus
+          Dihitung dari gaji bersih − biaya tetap − target tabungan, dibagi sisa hari sampai gajian
         </span>
       </div>
 
       <div className="daily-progress-section">
         <div className="progress-labels">
-          <span>Terpakai Hari Ini: <b>{formatRupiah(spentToday)}</b></span>
+          <span>Sudah dipakai: <b>{formatRupiah(spentToday)}</b></span>
           <span>Sisa: <b className={isOverLimit ? 'red-text' : 'green-text'}>{formatRupiah(remainingToday)}</b></span>
         </div>
         <div className="swiss-progress-bar">
@@ -64,16 +64,16 @@ export const DailyLimitCard: React.FC<DailyLimitCardProps> = ({
 
       <div className="cycle-metadata-grid">
         <div>
-          <small>SIKLUS GAJIAN</small>
-          <b>TGL {paydayDate} TIAP BULAN</b>
+          <small>TANGGAL GAJIAN</small>
+          <b>Setiap tanggal {paydayDate}</b>
         </div>
         <div>
-          <small>SISA HARI SIKLUS</small>
-          <b className="accent">{daysRemaining} HARI LAGI</b>
+          <small>SISA HARI</small>
+          <b className="accent">{daysRemaining} hari lagi</b>
         </div>
         <div>
-          <small>TOTAL DISPOSABLE</small>
-          <b>{formatRupiah(disposableMonthly)}/BLN</b>
+          <small>UANG BEBAS BULAN INI</small>
+          <b>{formatRupiah(disposableMonthly)}</b>
         </div>
       </div>
     </div>

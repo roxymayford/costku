@@ -72,7 +72,7 @@ export const OnboardingPage: React.FC = () => {
     try {
       await upsertProfile({
         id: user.id,
-        name: user.name || 'Pengguna FATrack',
+        name: user.name || 'Pengguna costKu',
         monthly_salary: salary,
         payday_date: paydayDate,
         fixed_expenses: totalFixedExpenses,
@@ -91,22 +91,22 @@ export const OnboardingPage: React.FC = () => {
       <header className="onboarding-header">
         <div className="brand">
           <span className="avatar">FA</span>
-          <b>FATRACK</b>
+          <b>COSTKU</b>
           <i>/</i>
-          <span>SETUP PROFIL KEUANGAN</span>
+          <span>ATUR PROFIL KEUANGAN</span>
         </div>
         <button type="button" className="nav-link" onClick={() => navigate('/dashboard')}>
-          <span className="inline-flex items-center gap-1.5">LEWATI KE DASHBOARD <Icon name="arrowRight" size={14} /></span>
+          <span className="inline-flex items-center gap-1.5">Lewati ke dashboard <Icon name="arrowRight" size={14} /></span>
         </button>
       </header>
 
       <main className="onboarding-container">
         <div className="onboarding-intro">
-          <small className="accent">LANGKAH 01 / ENGINE SETUP</small>
-          <h1>STRUKTURKAN ARUS KAS ANDA.</h1>
+          <small className="accent">Langkah 1 dari 1 · Atur sekali saja</small>
+          <h1>Atur gajimu, biar kami hitung sisanya.</h1>
           <p>
-            Masukkan pemasukan netto, siklus gajian, dan komitmen pengeluaran tetap bulanan.
-            Sistem akan menghitung kapasitas likuiditas dan batas pengeluaran harian Anda.
+            Masukkan gaji bersih, tanggal gajian, dan biaya tetap bulananmu.
+            Setelah itu costKu otomatis menghitung batas jajan harian dan pembagian gajimu.
           </p>
         </div>
 
@@ -115,9 +115,9 @@ export const OnboardingPage: React.FC = () => {
           <div className="onboarding-inputs-column">
             {/* 1. GAJI */}
             <div className="setup-card">
-              <small className="accent">01 / PEMASUKAN BULANAN (NET INCOME)</small>
-              <h3>BERAPA TOTAL GAJI BERSIH ANDA?</h3>
-              <p>Gaji netto bulanan yang masuk ke rekening utama Anda.</p>
+              <small className="accent">01 / Gaji bulanan</small>
+              <h3>Berapa gaji bersihmu per bulan?</h3>
+              <p>Gaji bersih yang benar-benar masuk ke rekening (setelah pajak dan potongan).</p>
 
               <CurrencyInput
                 value={salary}
@@ -127,7 +127,7 @@ export const OnboardingPage: React.FC = () => {
               />
 
               <div className="quick-salary-presets">
-                <span>Rekomendasi preset:</span>
+                <span>Pilih cepat:</span>
                 {[3000000, 5000000, 7500000, 10000000].map((val) => (
                   <button
                     key={val}
@@ -143,13 +143,13 @@ export const OnboardingPage: React.FC = () => {
 
             {/* 2. SIKLUS GAJIAN */}
             <div className="setup-card">
-              <small className="accent">02 / SIKLUS GAJIAN (PAYDAY CYCLE)</small>
-              <h3>KAPAN TANGGAL GAJIAN ANDA?</h3>
-              <p>Tanggal setiap bulan di mana siklus anggaran baru di-reset.</p>
+              <small className="accent">02 / Tanggal gajian</small>
+              <h3>Tanggal berapa kamu gajian?</h3>
+              <p>Setiap tanggal ini, anggaran bulan baru akan dimulai.</p>
 
               <div className="payday-selector-wrap">
                 <label>
-                  TANGGAL GAJIAN SETIAP BULAN:
+                  Tanggal gajian:
                   <select
                     value={paydayDate}
                     onChange={(e) => setPaydayDate(Number(e.target.value))}
@@ -157,13 +157,13 @@ export const OnboardingPage: React.FC = () => {
                   >
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
                       <option key={day} value={day}>
-                        Tanggal {day} (Tiap Bulan)
+                        Tanggal {day} setiap bulan
                       </option>
                     ))}
                   </select>
                 </label>
                 <small className="muted-text">
-                  Sebagian besar perusahaan menggaji antara tanggal 25 s/d 28.
+                  Kebanyakan perusahaan gajian antara tanggal 25 sampai 28.
                 </small>
               </div>
             </div>
@@ -172,13 +172,14 @@ export const OnboardingPage: React.FC = () => {
             <div className="setup-card">
               <div className="flex-between">
                 <div>
-                  <small className="accent">03 / PENGELUARAN TETAP (FIXED EXPENSES)</small>
-                  <h3>KOMITMEN PENGELUARAN WAJIB</h3>
+                  <small className="accent">03 / Biaya tetap</small>
+                  <h3>Pengeluaran wajib tiap bulan</h3>
                 </div>
                 <strong className="accent-total">{formatRupiah(totalFixedExpenses)}</strong>
               </div>
               <p>
-                Cicilan, BPJS, kiriman orang tua, internet, dan kewajiban lain yang harus dibayar setiap bulan (di luar sewa kost dan jajan).
+                Cicilan, BPJS, kiriman ke orang tua, internet, dan kewajiban bulanan lain —
+                di luar sewa kost dan uang jajan.
               </p>
 
               <div className="expense-items-list">
@@ -193,8 +194,9 @@ export const OnboardingPage: React.FC = () => {
                         type="button"
                         className="delete-item-btn"
                         onClick={() => removeExpenseItem(item.id)}
+                        aria-label={`Hapus ${item.name}`}
                       >
-                        ×
+                        <Icon name="trash" size={14} />
                       </button>
                     </div>
                   </div>
@@ -215,62 +217,62 @@ export const OnboardingPage: React.FC = () => {
                   placeholder="Nominal"
                 />
                 <button type="button" className="tag-btn active" onClick={addExpenseItem}>
-                  + TAMBAH
+                  <Icon name="plus" size={13} /> Tambah
                 </button>
               </div>
             </div>
 
             <button type="submit" className="pill dark submit-setup-btn" disabled={isSaving}>
-              {isSaving ? 'MENYIMPAN STRUKTUR...' : <span className="inline-flex items-center gap-1.5">SIMPAN & AKTIFKAN DASHBOARD <Icon name="arrowRight" size={14} /></span>}
+              {isSaving ? 'Menyimpan…' : <span className="inline-flex items-center gap-1.5">Simpan &amp; Buka Dashboard <Icon name="arrowRight" size={14} /></span>}
             </button>
           </div>
 
-          {/* RIGHT: LIVE CALCULATION TELEMETRY PREVIEW */}
+          {/* RIGHT: LIVE CALCULATION PREVIEW */}
           <aside className="onboarding-preview-column terminal">
             <div className="terminal-head">
-              <span className="terminal-pulse">■</span> TELEMETRI PREVIEW ARUS KAS
-              <span>LIVE ALKORITMA</span>
+              <span className="terminal-pulse" aria-hidden="true" /> HASIL OTOMATIS
+              <span>TERHITUNG LANGSUNG</span>
             </div>
 
             <div className="terminal-body">
               <div className="worth terminal-card">
                 <span className="terminal-scan" />
-                <small>ESTIMASI BATAS JAJAN HARIAN (SAFE-TO-SPEND)</small>
+                <small>PERKIRAAN BATAS JAJAN HARIAN</small>
                 <strong>{formatRupiah(simulatedDailyLimit)} <small>/ hari</small></strong>
-                <span>FORMULA: (GAJI NETTO − FIXED EXP − 20% TABUNGAN) ÷ 30 HARI</span>
+                <span>Dihitung dari gaji bersih − biaya tetap − tabungan 20%, dibagi 30 hari</span>
               </div>
 
               <div className="twins terminal-card">
                 <div>
                   <small>GAJI BERSIH</small>
                   <b>{formatRupiah(salary)}</b>
-                  <span>Siklus Tgl {paydayDate}</span>
+                  <span>Gajian tiap tanggal {paydayDate}</span>
                 </div>
                 <div>
                   <small>TOTAL BIAYA TETAP</small>
                   <b className="red-text">{formatRupiah(totalFixedExpenses)}</b>
-                  <span>{salary > 0 ? ((totalFixedExpenses / salary) * 100).toFixed(1) : 0}% Gaji</span>
+                  <span>{salary > 0 ? ((totalFixedExpenses / salary) * 100).toFixed(1) : 0}% dari gaji</span>
                 </div>
               </div>
 
               <div className="allocation terminal-card">
-                <small>SISA DANA BEBAS (DISPOSABLE POOL)</small>
+                <small>UANG BEBAS SETELAH BIAYA TETAP</small>
                 <div style={{ margin: '10px 0' }}>
                   <strong style={{ fontSize: '24px' }}>{formatRupiah(disposablePool)}</strong>
                 </div>
                 <span>
-                  Target Tabungan 20% <b>{formatRupiah(simulatedSavings)}</b>
+                  Target tabungan 20% <b>{formatRupiah(simulatedSavings)}</b>
                   <i><em style={{ width: '20%', backgroundColor: '#008547' }} /></i>
                 </span>
                 <span>
-                  Alokasi Kost Maksimal (25% Gaji) <b>{formatRupiah(salary * 0.25)}</b>
+                  Batas sewa kost (25% gaji) <b>{formatRupiah(salary * 0.25)}</b>
                   <i><em style={{ width: '25%', backgroundColor: 'var(--orange)' }} /></i>
                 </span>
               </div>
             </div>
 
             <div className="terminal-foot">
-              STRUKTUR DATA TERSINKRONISASI <b>STATUS: READY</b>
+              DATA SIAP DISIMPAN <b className="green">OTOMATIS TERISI</b>
             </div>
           </aside>
         </form>

@@ -26,8 +26,8 @@ a {
 }
 
 p {
-  line-height: 1.5;
-  color: #777;
+  line-height: 1.55;
+  color: #4f4f4f;
 }
 
 h1 {
@@ -62,7 +62,7 @@ small {
 }
 
 .muted-text {
-  color: #777 !important;
+  color: #5a5a5a !important;
 }
 
 .bold-excess {
@@ -71,11 +71,11 @@ small {
 }
 
 .accent {
-  color: var(--orange);
+  color: #d63a15;
 }
 
 .red {
-  color: var(--orange);
+  color: #d63a15;
 }
 
 /* Safety overrides so utility classes do not bleed into pills */
@@ -95,4 +95,25 @@ small {
 
 .mobile-only {
   display: none !important;
+}
+
+/* ==========================================================================
+   Inline Icon Helpers
+   SVG icons used inline inside headings and status text. Sizes are tuned so a
+   glyph never pushes a line box taller than the surrounding type.
+   ========================================================================== */
+
+.heading-inline-icon {
+  display: inline-block;
+  vertical-align: -0.16em;
+  margin-left: 8px;
+  color: var(--orange);
+  flex: 0 0 auto;
+}
+
+.status-dot {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+  color: currentColor;
 }

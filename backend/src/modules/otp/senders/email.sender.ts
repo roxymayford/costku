@@ -30,8 +30,8 @@ function readSmtpConfig() {
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
-    from: process.env.OTP_EMAIL_FROM || process.env.SMTP_USER || 'no-reply@fatrack.id',
-    fromName: process.env.OTP_EMAIL_FROM_NAME || 'FATrack',
+    from: process.env.OTP_EMAIL_FROM || process.env.SMTP_USER || 'no-reply@costku.id',
+    fromName: process.env.OTP_EMAIL_FROM_NAME || 'costKu',
   };
 }
 

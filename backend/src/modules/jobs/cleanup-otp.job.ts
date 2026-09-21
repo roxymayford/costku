@@ -11,6 +11,7 @@
 import { supabaseAdmin, isSupabaseConfigured } from '../../lib/supabase.js';
 import { otpConfig } from '../otp/otp.config.js';
 import { audit } from '../otp/otp.service.js';
+import { isSchemaMissingError, isOtpTableMissing } from '../otp/otp.repository.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -21,12 +22,32 @@ export interface CleanupResult {
   backend: 'supabase' | 'memory';
 }
 
+/**
+ * Warn about a missing migration only once per process. Without this the
+ * daily job would print the same schema warning on every run forever, which
+ * trains people to ignore the logs.
+ */
+const warned = new Set<string>();
+function warnOnce(key: string, message: string): void {
+  if (warned.has(key)) return;
+  warned.add(key);
+  console.warn(message);
+}
+
+/** Test seam — lets unit tests assert on the warning behaviour. */
+export function resetCleanupWarnings(): void {
+  warned.clear();
+}
+
 /** Purge OTP rows past expiry + 24h. */
 async function cleanupExpiredOtpCodes(): Promise<number> {
   if (!isSupabaseConfigured || !supabaseAdmin) {
     // Demo mode: there is no persistent table to sweep.
     return 0;
   }
+
+  // Already known to be unmigrated — skip the round trip entirely.
+  if (isOtpTableMissing()) return 0;
 
   const { data, error } = await supabaseAdmin.rpc('cleanup_expired_otp_codes');
   if (error) {
@@ -38,7 +59,15 @@ async function cleanupExpiredOtpCodes(): Promise<number> {
       .lt('expires_at', cutoff);
 
     if (deleteError) {
-      console.warn('[Cleanup] otp_codes sweep failed:', deleteError.message);
+      if (isSchemaMissingError(deleteError)) {
+        warnOnce(
+          'otp_codes',
+          '[Cleanup] otp_codes sweep skipped — run backend/supabase/otp_schema.sql ' +
+            'to enable expiry cleanup.'
+        );
+      } else {
+        console.warn('[Cleanup] otp_codes sweep failed:', deleteError.message);
+      }
       return 0;
     }
     return count ?? 0;
@@ -58,10 +87,15 @@ async function cleanupUnverifiedUsers(): Promise<number> {
   });
 
   if (error) {
-    console.warn(
-      `[Cleanup] unverified user sweep skipped (${error.message}). ` +
-        'Create the function from otp_schema.sql to enable it.'
-    );
+    if (isSchemaMissingError(error)) {
+      warnOnce(
+        'cleanup_unverified_users',
+        '[Cleanup] unverified user sweep skipped — create the function from ' +
+          'otp_schema.sql to enable it.'
+      );
+    } else {
+      console.warn('[Cleanup] unverified user sweep failed:', error.message);
+    }
     return 0;
   }
 

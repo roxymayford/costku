@@ -102,7 +102,7 @@ subscriptionRouter.post('/create', requireAuth, async (req: AuthenticatedRequest
   }
 
   const selectedPlan = SUBSCRIPTION_PLANS[planKey as PlanType];
-  const orderId = `FATRACK-${planKey === 'premium_yearly' ? 'Y' : 'M'}-${user.id.slice(0, 8)}-${Date.now()}`;
+  const orderId = `COSTKU-${planKey === 'premium_yearly' ? 'Y' : 'M'}-${user.id.slice(0, 8)}-${Date.now()}`;
 
   const transactionParameters = {
     transaction_details: {
@@ -111,7 +111,7 @@ subscriptionRouter.post('/create', requireAuth, async (req: AuthenticatedRequest
     },
     customer_details: {
       first_name: user.name || 'Pengguna',
-      email: user.email || 'user@fatrack.id',
+      email: user.email || 'user@costku.id',
     },
     item_details: [
       {

@@ -18,6 +18,7 @@ export const AuthPage: React.FC = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, loginDemo, loginWithGoogle, user } = useAuth();
@@ -29,9 +30,42 @@ export const AuthPage: React.FC = () => {
     }
   }, [user, navigate]);
 
+  // Clear a field's error as soon as the user starts fixing it.
+  const clearFieldError = (field: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const validate = () => {
+    const errors: Record<string, string> = {};
+    if (mode === 'register' && !name.trim()) {
+      errors.name = 'Nama tidak boleh kosong.';
+    }
+    if (!email.trim()) {
+      errors.email = 'Email wajib diisi.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.email = 'Format email belum benar.';
+    }
+    if (!password) {
+      errors.password = 'Kata sandi wajib diisi.';
+    } else if (password.length < 6) {
+      errors.password = 'Kata sandi minimal 6 karakter.';
+    }
+    if (phone && !/^\+?[0-9\s-]{8,}$/.test(phone.trim())) {
+      errors.phone = 'Nomor HP belum valid.';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    if (!validate()) return;
     setIsSubmitting(true);
 
     try {
@@ -43,7 +77,7 @@ export const AuthPage: React.FC = () => {
          * signed in yet, so we must not navigate to onboarding directly.
          */
         const res = await requestRegistration({
-          name: name || 'Pengguna FATrack',
+          name: name || 'Pengguna costKu',
           email,
           password,
           phone: phone || undefined,
@@ -98,88 +132,104 @@ export const AuthPage: React.FC = () => {
       <section className="auth-panel">
         <button className="auth-brand" type="button" onClick={() => navigate('/')}>
           <span className="avatar">FA</span>
-          <b>FATRACK</b>
+          <b>COSTKU</b>
           <i>/</i>
-          <span>PERSONAL FINANCE ADVISOR</span>
+          <span>PENDAMPING KEUANGAN PRIBADI</span>
         </button>
 
         <div className="auth-card">
           <small className="accent">
-            {mode === 'register' ? '01 / REGISTRASI AKUN' : '02 / IDENTIFIKASI PENGGUNA'}
+            {mode === 'register' ? 'Langkah 1 dari 2' : 'Selamat datang kembali'}
           </small>
-          <h1>{mode === 'register' ? 'BUAT AKUN FATRACK.' : 'MASUK KE FATRACK.'}</h1>
+          <h1>{mode === 'register' ? 'Buat akun gratis' : 'Masuk ke akunmu'}</h1>
           <p>
             {mode === 'register'
-              ? 'Daftar dengan email aktif. Kami kirim kode OTP 6 digit untuk memverifikasi akun Anda.'
-              : 'Akses dashboard finansial dan riwayat pengeluaran harian Anda.'}
+              ? 'Cukup email aktif. Kami kirim kode 6 digit untuk memastikan akunmu aman.'
+              : 'Lanjutkan memantau pengeluaran dan batas jajan harianmu.'}
           </p>
 
           {errorMsg && (
-            <div className="auth-error-box">
+            <div className="auth-error-box" role="alert">
               <Icon name="alert" size={16} /> {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             {mode === 'register' && (
               <label>
-                NAMA LENGKAP
+                Nama lengkap
                 <input
                   type="text"
                   placeholder="Misal: Andi Pratama"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    clearFieldError('name');
+                  }}
+                  aria-invalid={!!fieldErrors.name}
                 />
+                {fieldErrors.name && <span className="field-error">{fieldErrors.name}</span>}
               </label>
             )}
 
             <label>
-              ALAMAT EMAIL
+              Email
               <input
                 type="email"
                 placeholder="nama@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearFieldError('email');
+                }}
+                aria-invalid={!!fieldErrors.email}
               />
+              {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
             </label>
 
             {mode === 'register' && (
               <label>
-                NOMOR HP <span className="auth-optional">(OPSIONAL)</span>
+                Nomor HP <span className="auth-optional">(opsional)</span>
                 <input
                   type="tel"
                   placeholder="+6281234567890"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    clearFieldError('phone');
+                  }}
+                  aria-invalid={!!fieldErrors.phone}
                 />
+                {fieldErrors.phone && <span className="field-error">{fieldErrors.phone}</span>}
               </label>
             )}
 
             <label>
-              KATA SANDI
+              Kata sandi
               <input
                 type="password"
                 placeholder="Minimal 6 karakter"
-                minLength={6}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearFieldError('password');
+                }}
+                aria-invalid={!!fieldErrors.password}
               />
+              {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
             </label>
 
-            <button className="pill dark" type="submit" disabled={isSubmitting}>
+            <button className="pill dark auth-submit-btn" type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? 'MEMPROSES...'
+                ? 'Memproses…'
                 : mode === 'register'
-                ? <span className="inline-flex items-center gap-1.5">DAFTAR & KIRIM KODE OTP <Icon name="arrowRight" size={14} /></span>
-                : <span className="inline-flex items-center gap-1.5">MASUK KE DASHBOARD <Icon name="arrowRight" size={14} /></span>}
+                ? <span className="inline-flex items-center gap-1.5">Daftar &amp; Kirim Kode <Icon name="arrowRight" size={14} /></span>
+                : <span className="inline-flex items-center gap-1.5">Masuk <Icon name="arrowRight" size={14} /></span>}
             </button>
           </form>
 
           <div className="auth-or-divider">
-            <span>ATAU</span>
+            <span>atau</span>
           </div>
 
           <button
@@ -194,58 +244,56 @@ export const AuthPage: React.FC = () => {
               <path d="M6.5 13.8a6 6 0 0 1 0-3.6V7.5H3.1a10 10 0 0 0 0 9l3.4-2.7Z" fill="#FBBC05" />
               <path d="M12 6.2c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.8 9.8 0 0 0 12 2 10 10 0 0 0 3.1 7.5l3.4 2.7A5.9 5.9 0 0 1 12 6.2Z" fill="#EA4335" />
             </svg>
-            <span>{mode === 'register' ? 'DAFTAR DENGAN GOOGLE' : 'MASUK DENGAN GOOGLE'}</span>
+            <span>{mode === 'register' ? 'Daftar dengan Google' : 'Masuk dengan Google'}</span>
           </button>
 
           <div className="auth-demo-divider">
-            <button
-              type="button"
-              className="pill dark auth-demo-btn"
-              onClick={handleDemo}
-            >
-              <span className="inline-flex items-center gap-1.5">COBA INSTAN DENGAN DEMO MODE <Icon name="arrowRight" size={14} /></span>
+            <span>Belum siap daftar?</span>
+            <button type="button" className="auth-demo-btn" onClick={handleDemo}>
+              <span className="inline-flex items-center gap-1.5">Coba tanpa daftar <Icon name="arrowRight" size={13} /></span>
             </button>
           </div>
 
           <p className="auth-switch">
-            {mode === 'register' ? 'Sudah memiliki akun?' : 'Belum memiliki akun?'}{' '}
+            {mode === 'register' ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
             <button
               type="button"
               onClick={() => {
                 setMode(mode === 'register' ? 'login' : 'register');
                 setErrorMsg(null);
+                setFieldErrors({});
               }}
             >
-              {mode === 'register' ? 'MASUK' : 'DAFTAR SEKARANG'}
+              {mode === 'register' ? 'Masuk' : 'Daftar sekarang'}
             </button>
           </p>
         </div>
 
         <small className="auth-note">
-          DATA FINANSIAL TERLINDUNGI SUPABASE RLS / SISTEM ENKRIPSI PROTOKOL
+          Data keuanganmu dilindungi dan tidak dibagikan ke pihak ketiga.
         </small>
       </section>
 
       <aside className="auth-aside">
-        <small>SISTEM PENASIHAT KEUANGAN ANAK MUDA</small>
+        <small>Kenapa pakai costKu</small>
         <h2>
-          STRUKTUR NYATA
+          Uang rapi,
           <br />
-          UNTUK MASA DEPAN
+          hidup lebih
           <br />
-          YANG PASTI.
+          tenang.
         </h2>
         <div>
-          <b>01 / BATAS JAJAN HARIAN</b>
-          <p>Ketahui pasti nominal aman yang bisa Anda belanjakan setiap hari.</p>
+          <b>01 / Batas jajan harian</b>
+          <p>Tahu persis berapa yang aman kamu belanjakan hari ini.</p>
         </div>
         <div>
-          <b>02 / STANDAR SEWA KOST</b>
-          <p>Cegah overspend pada sewa tempat tinggal di atas batas 25% gaji.</p>
+          <b>02 / Batas sewa kost</b>
+          <p>Cegah biaya tempat tinggal menelan lebih dari 25% gajimu.</p>
         </div>
         <div>
-          <b>03 / PAKET MINIMARKET</b>
-          <p>Katalog estimasi belanja bahan pokok untuk menjaga pengeluaran makan.</p>
+          <b>03 / Rencana makan &amp; belanja</b>
+          <p>Perkiraan belanja minimarket supaya pengeluaran makan tetap terkendali.</p>
         </div>
       </aside>
     </main>

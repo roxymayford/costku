@@ -5,12 +5,110 @@
 /* --------------------------------------------------------------------------
    Desktop & Large Screens (max-width: 1080px)
    -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   Compact Desktop Topbar (max-width: 1400px)
+   The full topbar needs roughly 1220px of horizontal room (brand + 5 nav items
+   + account cluster). Below that the nav and account cluster collide, so hide
+   the greeting and tighten spacing before anything can overlap.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1400px) {
+  .fatrack-topbar {
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .topbar-right .user-greeting {
+    display: none;
+  }
+
+  .fatrack-nav {
+    gap: 4px;
+  }
+
+  .fatrack-nav .nav-item {
+    padding: 9px 11px;
+  }
+
+  .topbar-right {
+    gap: 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Medium Desktop Topbar (max-width: 1180px)
+   Drop the brand tagline and shrink nav labels so the nav never wraps or
+   pushes into the account cluster.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1180px) {
+  .fatrack-topbar .brand-divider,
+  .fatrack-topbar .brand-sub {
+    display: none;
+  }
+
+  .fatrack-nav {
+    gap: 2px;
+  }
+
+  .fatrack-nav .nav-item {
+    padding: 8px 9px;
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  .topbar-right {
+    gap: 10px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Desktop & Large Screens (max-width: 1080px)
+   -------------------------------------------------------------------------- */
 @media (max-width: 1080px) {
   .dashboard-columns-grid,
   .onboarding-grid,
   .transactions-content-layout,
   .allocation-content-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Between 900px and 1080px the desktop topbar would be tight, so reduce the
+     nav footprint instead of letting the nav and account cluster collide. */
+  .fatrack-topbar {
+    padding: 0 20px;
+    gap: 16px;
+  }
+
+  .fatrack-nav {
+    gap: 2px;
+  }
+
+  .fatrack-nav .nav-item {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .topbar-right {
+    gap: 10px;
+  }
+
+  .topbar-right .user-greeting {
+    display: none;
+  }
+
+  /* Under ~1000px the 5 desktop nav items no longer fit alongside the account
+     cluster, so hand navigation over to the hamburger drawer early instead of
+     letting the topbar overflow. The drawer + bottom nav are active below
+     768px; between 768-1080px the hamburger is the only way to navigate. */
+  .fatrack-topbar .fatrack-nav {
+    display: none !important;
+  }
+
+  .fatrack-topbar .menu-toggle-btn {
+    display: inline-flex !important;
+  }
+
+  .fatrack-topbar .logout-btn {
+    display: none !important;
   }
 
   .dashboard-kpi-grid,
@@ -48,8 +146,9 @@
    Medium Screens (max-width: 900px)
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
-  .topbar nav { display: none; }
   .topbar { padding: 0 16px; }
+  .landing-nav { display: none; }
+  .landing-menu-btn { display: inline-flex; }
   .hero { grid-template-columns: 1fr; }
   .hero-copy { padding: 24px; border-right: 0; min-width: 0; }
   .hero-copy h1 { overflow-wrap: anywhere; }
@@ -60,6 +159,22 @@
   .cta { margin: 20px; padding: 35px; }
   .cta form { flex-direction: column; align-items: stretch; min-width: 0; }
   .cta-actions { flex-direction: column; }
+
+  /* Pricing stacks on tablet */
+  .price-card-grid {
+    grid-template-columns: 1fr;
+    padding: 24px;
+    gap: 20px;
+  }
+  .price-card,
+  .price-card:last-child,
+  .price-card--featured {
+    border: 1px solid #111;
+  }
+  .price-card--featured {
+    border-width: 2px;
+  }
+  .pricing-head { padding: 30px 24px 0; }
 
   /* Swiss Sections Responsive */
   .swiss-lab-grid { grid-template-columns: 1fr; }
@@ -77,18 +192,39 @@
    Tablet / Small Desktop (max-width: 768px)
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
-  /* Visibility toggles for mobile vs desktop */
+  /* Visibility toggles for mobile vs desktop.
+     These only flip the desktop default; elements whose visibility is driven
+     by an .is-open state class must NOT be force-displayed here, or they show
+     up unprompted on first load and their close affordances stop working. */
   .desktop-only {
     display: none !important;
   }
 
-  .mobile-only {
+  .mobile-only:not(.landing-mobile-nav):not(.fatrack-drawer):not(.fatrack-drawer-overlay) {
     display: grid !important;
   }
 
   .fatrack-mobile-bottom-nav.mobile-only {
     display: grid !important;
   }
+
+  /* Hamburger appears only on mobile */
+  .menu-toggle-btn.mobile-only {
+    display: inline-flex !important;
+  }
+
+  .landing-menu-btn.mobile-only {
+    display: inline-flex !important;
+  }
+
+  /* Drawer visibility is driven by the .is-open class */
+  .fatrack-drawer.mobile-only,
+  .fatrack-drawer-overlay.mobile-only {
+    display: block !important;
+  }
+
+  /* Landing mobile dropdown is display:none by default (landing.css) and is
+     revealed only by .is-open, so it is deliberately not listed above. */
 
   /* Ensure content is never clipped behind the bottom navigation bar */
   .fatrack-main-content {
@@ -100,7 +236,7 @@
     padding: 8px 12px;
     min-height: 56px;
     height: auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
@@ -109,10 +245,27 @@
     z-index: 50;
   }
 
+  .fatrack-topbar .topbar-left {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
   .fatrack-topbar .brand {
     min-width: 0;
-    flex: 1 1 auto;
-    gap: 7px;
+    flex: 0 1 auto;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  /* The wordmark is the only brand element that should flex down. Trimming it
+     (rather than letting min-content win) is what keeps the hamburger on-screen
+     instead of being pushed past the right edge. */
+  .fatrack-topbar .brand b {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .fatrack-topbar .brand-sub,
@@ -128,34 +281,26 @@
   }
 
   .topbar-right {
-    width: 100%;
+    width: auto;
     min-width: 0;
-    justify-content: space-between;
+    flex: 0 0 auto;
+    justify-content: flex-end;
     gap: 8px;
     letter-spacing: 0.04em;
   }
 
-  .topbar-right > a,
-  .logout-btn {
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-  }
-
-  .user-greeting {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 10px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  /* On mobile the greeting and inline upgrade badge move into the drawer */
+  .topbar-right .user-greeting,
+  .topbar-right .badge-plan {
+    display: none !important;
   }
 
   .logout-btn {
-    padding: 6px 10px;
-    font-size: 9px;
+    display: none !important;
+  }
+
+  .menu-toggle-btn {
+    display: inline-flex !important;
   }
 
   /* Mobile bottom navigation */
@@ -170,46 +315,47 @@
     -webkit-backdrop-filter: blur(10px);
     border-top: 2px solid var(--line);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     z-index: 999;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
   }
 
   .bottom-nav-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 3px;
+    padding: 6px 1px;
     text-decoration: none;
     color: #555;
-    border-right: 1px solid #e5e0d8;
-    transition: all 0.15s ease;
-    padding: 6px 2px;
-  }
-
-  .bottom-nav-item:last-child {
-    border-right: 0;
+    transition: color 0.15s ease, background 0.15s ease;
   }
 
   .bottom-nav-icon {
-    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
-  }
-
-  .bottom-nav-num {
-    font-size: 8px;
-    font-weight: 800;
-    color: var(--orange);
-    letter-spacing: 0.05em;
   }
 
   .bottom-nav-label {
     font-size: 8px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .bottom-nav-dot {
+    position: absolute;
+    top: 7px;
+    right: calc(50% - 16px);
+    width: 5px;
+    height: 5px;
+    background: var(--orange);
   }
 
   .bottom-nav-item.active {
@@ -217,9 +363,21 @@
     color: #fff;
   }
 
-  .bottom-nav-item.active .bottom-nav-num,
   .bottom-nav-item.active .bottom-nav-label {
     color: #fff;
+  }
+
+  .bottom-nav-item.active .bottom-nav-dot {
+    background: #ffb4a1;
+  }
+
+  /* Mobile drawer sizing */
+  .fatrack-drawer {
+    width: min(300px, 88vw);
+  }
+
+  .fatrack-drawer-overlay.mobile-only {
+    display: block !important;
   }
 
   /* Spacing and layout grids */
@@ -312,15 +470,14 @@
     gap: 8px;
   }
 
-  .score-main-display {
-    grid-template-columns: 1fr;
+  .health-hero-top {
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
-  .health-breakdown-metrics {
-    border-left: 0;
-    border-top: 1px solid #ddd;
-    padding-left: 0;
-    padding-top: 14px;
+  .score-status-summary {
+    align-items: flex-start;
+    text-align: left;
   }
 
   .alert-banner-stack {
@@ -345,6 +502,10 @@
     gap: 10px;
   }
 
+  .search-input-wrap {
+    width: 100%;
+  }
+
   .search-input {
     width: 100%;
   }
@@ -359,19 +520,35 @@
   .filter-pill {
     padding: 7px 2px;
     text-align: center;
-    font-size: 9px;
+    font-size: 10px;
   }
 
+  /* Swap the table for a card list on small screens */
   .ledger-table-container {
     width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #eee;
+    border: 0;
     margin-top: 8px;
   }
 
   .swiss-ledger-table {
-    min-width: 480px;
+    display: none;
+  }
+
+  .ledger-mobile-list {
+    display: block;
+  }
+
+  .confirm-dialog {
+    padding: 22px;
+  }
+
+  .confirm-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm-dialog__actions .pill {
+    width: 100%;
+    text-align: center;
   }
 
   /* Lifestyle Recommendations mobile fixes */
@@ -576,13 +753,6 @@
   .setup-card {
     padding: 24px 18px;
   }
-
-  .swiss-scroll-tracker-badge {
-    bottom: 72px;
-    right: 12px;
-    font-size: 9px;
-    padding: 4px 8px;
-  }
 }
 
 /* --------------------------------------------------------------------------
@@ -612,12 +782,12 @@
    Small Mobile (max-width: 560px)
    -------------------------------------------------------------------------- */
 @media (max-width: 560px) {
-  .actions > a:first-child { display: none; }
-  .hero h1 { font-size: clamp(40px, 13vw, 52px); }
+  .hero h1 { font-size: clamp(36px, 12vw, 48px); }
   .hero .lead { font-size: 16px; }
   .hero-copy { padding: 24px 18px; }
-  .hero-bottom > div:first-child { display: grid; gap: 10px; }
-  .hero-bottom .outline { margin-left: 0; text-align: center; }
+  .hero-cta-group { flex-direction: column; align-items: stretch; }
+  .hero-cta-group .pill,
+  .hero-cta-group .outline { width: 100%; text-align: center; justify-content: center; }
   .micro, .metrics, .site-footer { grid-template-columns: 1fr; }
   .metric { border-right: 0; border-bottom: 1px solid #111; }
   .swiss-preset-chips { grid-template-columns: 1fr; }
@@ -642,6 +812,9 @@
   .cta { margin: 18px; padding: 25px; }
   .cta form { gap: 16px; }
   .site-footer > div { border-right: 0; border-bottom: 1px solid #111; }
+  .price-card-grid { padding: 18px; gap: 16px; }
+  .price-card { padding: 22px 18px; }
+  .pricing-head { padding: 25px 18px 0; }
 
   .plans-grid { grid-template-columns: 1fr; }
   .plan-card { border-right: 0; }
@@ -649,7 +822,13 @@
   .sub-gate__compare { grid-template-columns: 1fr; }
   .subscription-page { padding: 24px; }
   .subscription-header { flex-direction: column; align-items: flex-start; }
-  .free-tier-notice { flex-direction: column; align-items: flex-start; }
+  .free-tier-notice {
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 20px 16px 0;
+  }
+  .free-tier-notice__content { align-items: flex-start; }
+  .free-tier-notice .pill { width: 100%; justify-content: center; }
 }
 
 /* --------------------------------------------------------------------------

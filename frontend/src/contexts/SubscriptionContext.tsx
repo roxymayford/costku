@@ -190,7 +190,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return {
         token: mockToken,
         redirectUrl: '#',
-        orderId: `FATRACK-DEMO-${Date.now()}`,
+        orderId: `COSTKU-DEMO-${Date.now()}`,
         isMock: true,
       };
     }

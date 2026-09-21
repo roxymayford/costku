@@ -8,6 +8,15 @@
   grid-template-columns: 58% 42%;
   min-height: calc(100vh - 64px);
   border-bottom: 1px solid #111;
+  /* `.hero-preview-panel` is the last grid column, so its right edge sits exactly
+     on the hero's right edge. Its entrance tween translates it +40px, which would
+     otherwise grow the document's scrollWidth for the whole ~1.1s entrance and
+     flash a horizontal scrollbar (plus a reflow jitter when it disappears).
+     `clip` swallows the overhang so the panel reads as sliding in from behind the
+     edge. Deliberately NOT `hidden`: `overflow-x: hidden` would force
+     `overflow-y: auto` and turn `.hero` into a scroll container.
+     `clip` on one axis with `visible` on the other is a valid combination. */
+  overflow-x: clip;
 }
 
 .hero-copy {
@@ -72,6 +81,247 @@
   margin-top: 5px;
 }
 
+/* --------------------------------------------------------------------------
+   Landing topbar: desktop nav links + mobile menu button
+   -------------------------------------------------------------------------- */
+.landing-nav {
+  display: flex;
+  gap: 26px;
+  align-items: center;
+}
+
+.landing-nav a {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #333;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.landing-nav a:hover {
+  color: #111;
+  border-bottom-color: var(--orange);
+}
+
+.landing-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #111;
+  color: #111;
+  cursor: pointer;
+}
+
+/* Mobile nav dropdown.
+   Visibility is controlled exclusively by the .is-open class so the menu can
+   never be force-shown by a generic visibility utility. */
+.landing-mobile-nav {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--paper);
+  border-bottom: 1px solid #111;
+  padding: 8px 16px 16px;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.landing-mobile-nav.is-open {
+  display: flex !important;
+}
+
+/* The dropdown exists only below the landing breakpoint — never on desktop,
+   even if some ancestor rule tries to display it. */
+@media (min-width: 901px) {
+  .landing-mobile-nav,
+  .landing-mobile-nav.is-open {
+    display: none !important;
+  }
+}
+
+.landing-mobile-nav a {
+  padding: 14px 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  border-bottom: 1px solid #e5e0d8;
+}
+
+.landing-mobile-nav .pill {
+  margin-top: 14px;
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Hero CTA group + trust list
+   -------------------------------------------------------------------------- */
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-proof {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-proof li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4f4f4f;
+}
+
+.hero-proof li svg {
+  color: #008547;
+  flex: 0 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   Pricing section
+   -------------------------------------------------------------------------- */
+.pricing-section {
+  border-bottom: 1px solid #111;
+}
+
+.pricing-head {
+  padding: 40px 40px 0;
+}
+
+.pricing-head h2 {
+  font-size: clamp(28px, 3.4vw, 44px);
+  letter-spacing: -0.04em;
+  margin: 10px 0 0;
+  max-width: 720px;
+}
+
+.price-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 40px;
+  gap: 0;
+}
+
+.price-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #111;
+  border-right: 0;
+  padding: 28px;
+  background: var(--paper);
+}
+
+.price-card:last-child {
+  border-right: 1px solid #111;
+}
+
+.price-card--featured {
+  background: #fff;
+  border: 2px solid #111;
+  z-index: 1;
+}
+
+.price-card-ribbon {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 5px 9px;
+}
+
+.price-card header {
+  margin-bottom: 10px;
+}
+
+.price-card h3 {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+.price-tag {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+
+.price-tag span {
+  font-size: 13px;
+  font-weight: 500;
+  color: #5a5a5a;
+  letter-spacing: 0;
+}
+
+.price-card > p {
+  font-size: 13px;
+  margin: 0 0 18px;
+}
+
+.price-card ul {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #111;
+}
+
+.price-card li svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #008547;
+}
+
+.price-card li.price-card-off {
+  color: #8a8a8a;
+}
+
+.price-card li.price-card-off svg {
+  color: #b3b3b3;
+}
+
+.price-card-btn {
+  margin-top: auto;
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
 /* Terminal Mockup */
 .terminal {
   background: #fff;
@@ -103,6 +353,31 @@
 .terminal-head > span:last-child {
   color: #777;
   text-align: right;
+}
+
+/* Blinking glyph-free status dot (replaces the old "■" character). */
+.terminal-pulse {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+  animation: terminal-pulse-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes terminal-pulse-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(0.78); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-pulse,
+  .swiss-calc-status::before {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .terminal-body {
@@ -381,6 +656,9 @@
 }
 
 .swiss-calc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   letter-spacing: .1em;
   font-weight: 700;
@@ -388,6 +666,17 @@
   background: #f0fdf4;
   border: 1px solid #008547;
   padding: 4px 8px;
+}
+
+/* Live indicator dot — replaces the old "●" character. */
+.swiss-calc-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  animation: terminal-pulse-blink 1.4s ease-in-out infinite;
 }
 
 .swiss-preset-chips {
@@ -795,9 +1084,11 @@
 }
 
 .leak-arrow {
-  font-size: 16px;
-  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #999;
+  flex: 0 0 auto;
 }
 
 .swiss-leak-insight {

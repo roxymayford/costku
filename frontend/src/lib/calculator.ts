@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────────
-// FATrack — Financial Calculation Engine
+// costKu — Financial Calculation Engine
 // ──────────────────────────────────────────────────────────
 
 export type AllocationPercentages = {

@@ -142,11 +142,22 @@
 }
 
 .delete-item-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   background: transparent;
-  border: 0;
-  font-size: 18px;
-  color: #777;
+  border: 1px solid transparent;
+  color: #6b6b6b;
   cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.delete-item-btn:hover {
+  color: #c90000;
+  border-color: #c90000;
+  background: #ffebe6;
 }
 
 .add-expense-bar {

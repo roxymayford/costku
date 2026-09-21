@@ -5,6 +5,7 @@ import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { Layout } from './components/Layout';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { OtpVerifyPage } from './pages/OtpVerifyPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -25,6 +26,8 @@ export function App() {
 
             {/* Auth & Onboarding */}
             <Route path="/auth" element={<AuthPage />} />
+            {/* Landing point for the Google OAuth redirect from the backend. */}
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/verify-otp" element={<OtpVerifyPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
 

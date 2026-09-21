@@ -41,3 +41,10 @@ lerna-debug.log*
 
 # TypeScript cache
 *.tsbuildinfo
+
+# AI & Dev tools
+.workbuddy/
+.workbuddy-ai/
+.dev-logs/
+*.log
+

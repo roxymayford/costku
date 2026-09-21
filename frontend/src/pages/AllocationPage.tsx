@@ -105,23 +105,23 @@ export const AllocationPage: React.FC = () => {
   return (
     <div ref={rootRef} className="allocation-page-container">
       <SubscriptionGate
-        title="Kalkulator Alokasi Finansial 50/30/20 Adaptif"
-        description="Fitur ini adalah bagian dari modul Financial Advisor cerdas. Anda dapat menyesuaikan persentase kebutuhan, keinginan, dan tabungan serta menghitung Safe-to-Spend harian secara live setelah upgrade."
-        featureName="Financial Advisor"
+        title="Atur pembagian gajimu (50/30/20)"
+        description="Geser porsi kebutuhan, keinginan, dan tabungan sesuka kamu — batas jajan harian ikut terhitung otomatis."
+        featureName="costKu Pro"
       >
         <div className="page-head-strip">
           <div>
-            <small className="accent">MODUL 02 / ENGINE ALOKASI KEUANGAN</small>
-            <h2>CUSTOMIZABLE FINANCIAL ADVISOR</h2>
+            <small className="accent">Atur pembagian gaji</small>
+            <h2>Bagi gajimu jadi 3 pos</h2>
             <p>
-              Konfigurasikan batas rasio pengeluaran adaptif berbasis standar 50/30/20.
-              Sesuaikan proporsi kebutuhan pokok, gaya hidup, dan investasi sesuai tujuan keuangan Anda.
+              Tentukan berapa porsi untuk kebutuhan pokok, keinginan, dan tabungan.
+              costKu langsung menghitung nilai rupiah dan batas jajan harianmu.
             </p>
           </div>
           <div className="head-right-cta">
-            {isSaved && <span className="save-success-tag inline-flex items-center gap-1"><Icon name="check" size={13} /> PENGATURAN DISIMPAN</span>}
+            {isSaved && <span className="save-success-tag inline-flex items-center gap-1"><Icon name="check" size={13} /> Pengaturan disimpan</span>}
             <button type="button" className="pill dark" onClick={handleSave}>
-              SIMPAN PERUBAHAN
+              Simpan Perubahan
             </button>
           </div>
         </div>
@@ -138,45 +138,45 @@ export const AllocationPage: React.FC = () => {
 
           <aside className="allocation-summary-sidebar terminal">
             <div className="terminal-head">
-              <span className="terminal-pulse">■</span> HASIL KALKULASI ARUS KAS
-              <span>LIVE SYNC</span>
+              <span className="terminal-pulse" aria-hidden="true" /> HASIL PERHITUNGAN
+              <span>OTOMATIS</span>
             </div>
 
             <div className="terminal-body">
               <div className="worth terminal-card">
-                <small>SAFE-TO-SPEND HARIAN</small>
+                <small>BATAS JAJAN HARIAN</small>
                 <strong>{formatRupiah(allocationResult.dailyLimit)} <small>/ hari</small></strong>
-                <span>Batas aman belanja harian Anda</span>
+                <span>Angka aman belanja per hari</span>
               </div>
 
               <div className="twins terminal-card">
                 <div>
-                  <small>NEEDS (POKOK)</small>
+                  <small>KEBUTUHAN POKOK</small>
                   <b>{formatRupiah(allocationResult.needsAmount)}</b>
                   <span>{percentages.needs}% dari sisa bersih</span>
                 </div>
                 <div>
-                  <small>WANTS (LIFESTYLE)</small>
+                  <small>KEINGINAN &amp; GAYA HIDUP</small>
                   <b className="accent">{formatRupiah(allocationResult.wantsAmount)}</b>
                   <span>{percentages.wants}% dari sisa bersih</span>
                 </div>
               </div>
 
               <div className="allocation terminal-card">
-                <small>TARGET TABUNGAN & INVESTASI</small>
+                <small>TARGET TABUNGAN &amp; INVESTASI</small>
                 <div style={{ margin: '8px 0' }}>
                   <strong className="green-text" style={{ fontSize: '24px' }}>
                     {formatRupiah(allocationResult.savingsAmount)}
                   </strong>
                 </div>
                 <span>
-                  Porsi Tabungan: <b>{percentages.savings}%</b>
+                  Porsi tabungan: <b>{percentages.savings}%</b>
                   <i>
                     <em style={{ width: `${percentages.savings}%`, backgroundColor: '#008547' }} />
                   </i>
                 </span>
                 <span>
-                  Sisa Hari Siklus: <b>{allocationResult.daysInCycle} Hari</b>
+                  Sisa hari siklus: <b>{allocationResult.daysInCycle} hari</b>
                 </span>
               </div>
             </div>
@@ -188,7 +188,7 @@ export const AllocationPage: React.FC = () => {
                 onClick={() => navigate('/rekomendasi')}
                 style={{ width: '100%', textAlign: 'center' }}
               >
-                <span className="inline-flex items-center justify-center gap-1.5">LIHAT REKOMENDASI GAYA HIDUP <Icon name="arrowRight" size={14} /></span>
+                <span className="inline-flex items-center justify-center gap-1.5">Lihat Rekomendasi <Icon name="arrowRight" size={14} /></span>
               </button>
             </div>
           </aside>

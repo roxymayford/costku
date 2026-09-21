@@ -89,6 +89,19 @@ function isMissingTableError(err: { code?: string; message?: string } | null): b
   );
 }
 
+/**
+ * Public wrapper so other modules (e.g. the cleanup job) can recognise a
+ * missing-table/missing-function error without duplicating the rules.
+ */
+export function isSchemaMissingError(err: { code?: string; message?: string } | null): boolean {
+  return isMissingTableError(err);
+}
+
+/** True once we have learned that public.otp_codes does not exist. */
+export function isOtpTableMissing(): boolean {
+  return otpTableMissing;
+}
+
 /* ──────────────────────────────────────────────────────────
    Insert a new OTP row
    ────────────────────────────────────────────────────────── */

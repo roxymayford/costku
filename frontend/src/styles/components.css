@@ -321,3 +321,87 @@
   justify-content: center;
   gap: 16px;
 }
+
+.dashboard-loading-state small {
+  color: #5a5a5a;
+}
+
+/* Destructive pill button */
+.pill.danger {
+  background: #c90000;
+  color: #fff;
+}
+
+.pill.danger:hover:not(:disabled) {
+  background: #a80000;
+}
+
+.pill:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Confirmation Dialog (used for destructive actions)
+   -------------------------------------------------------------------------- */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 17, 17, 0.5);
+}
+
+.confirm-dialog {
+  width: min(100%, 400px);
+  padding: 28px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: 6px 6px 0 var(--orange);
+  text-align: left;
+}
+
+.confirm-dialog__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  background: #fff8e6;
+  color: #d9822b;
+}
+
+.confirm-dialog h4 {
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.confirm-dialog p {
+  font-size: 13px;
+  margin: 0 0 22px;
+}
+
+.confirm-dialog p b {
+  color: #111;
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.confirm-dialog__actions .pill {
+  padding: 11px 18px;
+}
+
+.confirm-dialog__actions .pill:not(.danger) {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: #111;
+}

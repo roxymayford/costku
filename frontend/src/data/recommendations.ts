@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────────
-// FATrack — Static Recommendation Data
+// costKu — Static Recommendation Data
 // ──────────────────────────────────────────────────────────
 
 export type KostTier = {

@@ -95,7 +95,7 @@ export function SubscriptionPage() {
           </span>
           <h1>Upgrade ke Financial Advisor</h1>
           <p className="subscription-header__desc">
-            Gunakan FATrack sebagai pencatat pengeluaran gratis, atau buka kekuatan penuh rekomendasi finansial 
+            Gunakan costKu sebagai pencatat pengeluaran gratis, atau buka kekuatan penuh rekomendasi finansial 
             berbasis algoritma Safe-to-Spend, formula 50/30/20, dan batas sewa kost proporsional dengan Midtrans Snap.
           </p>
         </div>
@@ -139,8 +139,8 @@ export function SubscriptionPage() {
             <div className="sub-active-banner__plan">
               Paket:{' '}
               {subscription.plan === 'premium_yearly'
-                ? 'FATrack Advisor Tahunan'
-                : 'FATrack Advisor Bulanan'}
+                ? 'costKu Advisor Tahunan'
+                : 'costKu Advisor Bulanan'}
             </div>
             {subscription.expiresAt && (
               <div className="sub-active-banner__expiry">
@@ -181,7 +181,7 @@ export function SubscriptionPage() {
         >
           <div>
             <div className="plan-card__head">
-              <span className="plan-card__tag">PAKET DASAR</span>
+              <span className="plan-card__tag">PAKET GRATIS</span>
               {!isPremium && (
                 <span className="plan-card__status">AKTIF</span>
               )}
@@ -192,7 +192,7 @@ export function SubscriptionPage() {
               <span className="plan-card__price-unit"> / selamanya</span>
             </div>
             <p className="plan-card__desc">
-              Pencatatan keuangan harian mandiri tanpa rekomendasi analitik mendalam.
+              Cukup untuk mulai disiplin mencatat setiap pengeluaran.
             </p>
 
             <ul className="plan-card__features">
@@ -206,13 +206,13 @@ export function SubscriptionPage() {
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Dashboard ringkasan arus kas
               </li>
               <li className="plan-card__feature plan-card__feature--locked">
-                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Kalkulator Safe-to-Spend harian
+                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Batas jajan harian
               </li>
               <li className="plan-card__feature plan-card__feature--locked">
-                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Alokasi 50/30/20 adaptif
+                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Alokasi 50/30/20
               </li>
               <li className="plan-card__feature plan-card__feature--locked">
-                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Rekomendasi sewa kost & belanja
+                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Rekomendasi kost &amp; belanja makan
               </li>
             </ul>
           </div>
@@ -252,7 +252,7 @@ export function SubscriptionPage() {
               <span className="plan-card__price-unit"> / 30 hari</span>
             </div>
             <p className="plan-card__desc">
-              Cocok untuk first-jobber yang ingin mengontrol jajan harian dan budgeting adaptif.
+              Semua fitur pendamping keuangan, aktif penuh.
             </p>
 
             <ul className="plan-card__features">
@@ -260,19 +260,19 @@ export function SubscriptionPage() {
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Semua fitur Money Tracker
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Formula Safe-to-Spend harian
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Batas jajan harian otomatis
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Alokasi 50/30/20 adaptif
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Alokasi 50/30/20 yang bisa diatur
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Plafon rekomendasi sewa kost 25%
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Rekomendasi tipe kost sesuai gaji
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Rekomendasi belanja minimarket riil
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Paket belanja minimarket &amp; rencana makan
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Financial Health Score (0â€“100)
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Skor kesehatan keuangan (0–100)
               </li>
             </ul>
           </div>
@@ -317,7 +317,7 @@ export function SubscriptionPage() {
               <span className="plan-card__price-unit"> / tahun</span>
             </div>
             <p className="plan-card__desc">
-              Investasi cerdas untuk stabilitas finansial 1 tahun penuh. Hemat Rp 109.800 dibandingkan bulanan.
+              Pilihan paling hemat — setara Rp 20.750 per bulan.
             </p>
 
             <ul className="plan-card__features">
@@ -325,16 +325,13 @@ export function SubscriptionPage() {
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Semua fitur Advisor Bulanan
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Hemat 30% dari biaya bulanan
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Hemat 30% dibanding bulanan
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Akses awal ke rekomendasi investasi
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Bayar sekali untuk 12 bulan
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Ekspor laporan keuangan tahunan
-              </li>
-              <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Prioritas dukungan pengguna
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Harga terkunci selama satu tahun
               </li>
             </ul>
           </div>
@@ -362,11 +359,12 @@ export function SubscriptionPage() {
       {/* Payment Gateway Information footer */}
       <div className="sub-payment-info">
         <div className="sub-payment-info__title">
-          INTEGRASI PEMBAYARAN RESMI MIDTRANS
+          PEMBAYARAN DIAMANKAN MIDTRANS
         </div>
         <p>
-          Transaksi diamankan melalui gateway Midtrans (PT Midtrans Indonesia) dengan enkripsi tingkat perbankan. 
-          Mendukung pembayaran via GoPay, QRIS, BCA Virtual Account, Mandiri Bill, BNI, BRI, serta kartu kredit dan debit berstandar PCI-DSS.
+          Transaksi diproses lewat Midtrans (PT Midtrans Indonesia) dengan enkripsi standar perbankan.
+          Pembayaran bisa lewat GoPay, QRIS, BCA Virtual Account, Mandiri Bill, BNI, BRI, serta kartu
+          kredit dan debit berstandar PCI-DSS.
         </p>
       </div>
     </div>

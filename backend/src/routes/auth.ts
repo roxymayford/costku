@@ -4,6 +4,7 @@ import {
   supabaseAdmin,
   isSupabaseConfigured,
   hasServiceRoleKey,
+  findAuthUserByEmail,
 } from '../lib/supabase.js';
 import {
   CODE_RE,
@@ -58,7 +59,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
 
   const cleanEmail = email.trim().toLowerCase();
   const cleanPhone = phone ? phone.trim() : null;
-  const cleanName = (name && String(name).trim()) || 'Pengguna FATrack';
+  const cleanName = (name && String(name).trim()) || 'Pengguna costKu';
   const requestIp = resolveClientIp(req);
 
   try {
@@ -354,28 +355,6 @@ function supabaseAdminUnavailable(): boolean {
   return Boolean(isSupabaseConfigured && supabaseAdmin && !hasServiceRoleKey);
 }
 
-/** Look up an auth user by email through the admin API. */
-async function findAuthUserByEmail(email: string): Promise<{ id: string } | null> {
-  if (!supabaseAdmin) return null;
-  try {
-    // listUsers is paginated; scan a few pages rather than assume page 1.
-    for (let page = 1; page <= 5; page += 1) {
-      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
-      if (error) {
-        console.warn('[Auth] listUsers failed:', error.message);
-        return null;
-      }
-      const match = data?.users?.find((u) => u.email?.toLowerCase() === email);
-      if (match) return { id: match.id };
-      if (!data?.users || data.users.length < 200) break;
-    }
-    return null;
-  } catch (err) {
-    console.warn('[Auth] findAuthUserByEmail error:', (err as Error).message);
-    return null;
-  }
-}
-
 /**
  * Local user resolution, used when Supabase cannot provision accounts.
  *
@@ -412,16 +391,28 @@ async function findLocalUserByEmail(email: string): Promise<string | null> {
   return null;
 }
 
+interface SessionTokens {
+  /**
+   * One-time token hash the client trades for a real Supabase session via
+   * `supabase.auth.verifyOtp({ type: 'magiclink', token_hash })`.
+   *
+   * It is deliberately NOT an access token: `hashed_token` is an opaque
+   * single-use value, so handing it to `setSession()` fails silently.
+   */
+  tokenHash?: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
 /**
  * Issue tokens after verification.
  *
- * With a service-role key we mint a real Supabase session. Otherwise we
- * return the demo token shape the rest of the app already understands, so
- * a partially-configured environment still yields a usable flow.
+ * With a service-role key we hand back a one-time token hash the client
+ * exchanges for a real Supabase session. Otherwise we return the demo token
+ * shape the rest of the app already understands, so a partially-configured
+ * environment still yields a usable flow.
  */
-async function issueSessionTokens(
-  userId: string
-): Promise<{ accessToken: string; refreshToken: string }> {
+async function issueSessionTokens(userId: string): Promise<SessionTokens> {
   if (canUseSupabaseAdmin()) {
     try {
       const profile = await getProfile(userId);
@@ -430,11 +421,9 @@ async function issueSessionTokens(
           type: 'magiclink',
           email: profile.email,
         });
-        if (!error && data?.properties?.hashed_token) {
-          return {
-            accessToken: data.properties.hashed_token,
-            refreshToken: '',
-          };
+        const tokenHash = data?.properties?.hashed_token;
+        if (!error && tokenHash) {
+          return { tokenHash, accessToken: '', refreshToken: '' };
         }
       }
     } catch (err) {

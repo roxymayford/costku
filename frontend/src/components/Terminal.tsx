@@ -8,7 +8,7 @@ export function Terminal() {
   return (
     <aside className="terminal">
       <div className="terminal-head">
-        <span className="terminal-pulse">■</span> CONSOLE / TELEMETRI MODAL
+        <span className="terminal-pulse" aria-hidden="true" /> CONSOLE / TELEMETRI MODAL
         <span>LIVE_SOCKET: 128.4 FPS</span>
       </div>
 

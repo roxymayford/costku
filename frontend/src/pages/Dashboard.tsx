@@ -61,9 +61,9 @@ export function Dashboard({ onLogout }: DashboardProps) {
       <header className="dashboard-header">
         <button className="auth-brand" type="button" onClick={onLogout}>
           <span className="avatar">K</span>
-          <b>KONTOR</b>
+          <b>costKu</b>
           <i>/</i>
-          <span>CAPITAL TRACKER</span>
+          <span>PERSONAL FINANCE</span>
         </button>
         <div>
           <small>LEDGER MANUAL / LOKAL</small>

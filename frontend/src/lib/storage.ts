@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────────
-// FATrack — Data Persistence Layer
+// costKu — Data Persistence Layer
 // Supports Supabase (primary) with localStorage fallback
 // ──────────────────────────────────────────────────────────
 

@@ -1,33 +1,73 @@
 version: '3.8'
 
+# ---------------------------------------------------------------------------
+# CATATAN PENTING (jangan dihapus)
+#
+# 1. Backend butuh kredensial. Semua rahasia (Supabase, Midtrans, OTP, Google)
+#    dibaca dari ./backend/.env lewat `env_file`. Tanpa file itu backend tetap
+#    jalan tapi semua fitur auth jatuh ke mode demo.
+#
+# 2. Frontend butuh VITE_* SAAT BUILD, bukan saat container jalan.
+#    Vite menyalin nilai `import.meta.env.VITE_*` ke dalam bundle pada waktu
+#    `npm run build`. Kalau nilainya kosong:
+#      - isSupabaseConfigured jadi false
+#      - URL /api/v1/auth/google di-tree-shake keluar dari bundle
+#      - tombol "Masuk dengan Google" diam-diam jatuh ke identitas demo
+#    Jadi nilai di bawah dioper sebagai `build.args` (Dockerfile sudah punya
+#    ARG/ENV yang sesuai). Ambil nilainya dari frontend/.env.
+#
+#    Cara pakai:
+#      # opsi A — ekspor di shell
+#      export VITE_SUPABASE_URL="https://xxxx.supabase.co"
+#      export VITE_SUPABASE_ANON_KEY="eyJhbGciOi..."
+#      docker compose up -d --build
+#
+#      # opsi B — taruh di file .env di root repo (sebelah docker-compose.yml)
+#      VITE_SUPABASE_URL=https://xxxx.supabase.co
+#      VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+#
+# 3. VITE_BACKEND_URL diisi http://localhost:5000 karena port backend
+#    dipublikasikan ke host. Alternatifnya lewati nginx proxy dengan nilai
+#    kosong/relatif, tapi kode frontend akan fallback ke localhost:5000
+#    kalau nilainya kosong — jadi eksplisit lebih aman.
+# ---------------------------------------------------------------------------
+
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kontor_backend
+    container_name: costku_backend
     restart: always
+    env_file:
+      - ./backend/.env
     environment:
       - PORT=5000
       - NODE_ENV=production
+      # Redirect Google balik ke frontend di port 80 (nginx), bukan 5173.
+      - FRONTEND_URL=http://localhost
     ports:
       - "5000:5000"
     networks:
-      - kontor_network
+      - costku_network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kontor_frontend
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?VITE_SUPABASE_URL belum di-set, ambil nilainya dari frontend/.env}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?VITE_SUPABASE_ANON_KEY belum di-set, ambil nilainya dari frontend/.env}
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:5000}
+    container_name: costku_frontend
     restart: always
     ports:
       - "80:80"
     depends_on:
       - backend
     networks:
-      - kontor_network
+      - costku_network
 
 networks:
-  kontor_network:
+  costku_network:
     driver: bridge

@@ -40,12 +40,12 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onAddTransacti
   return (
     <form className="transaction-quick-form" onSubmit={handleSubmit}>
       <div className="form-head">
-        <small className="accent">PENCATATAN ARUS KAS / NON-NLP</small>
-        <h4>INPUT TRANSAKSI</h4>
+        <small className="accent">CATAT PENGELUARAN</small>
+        <h4>TAMBAH TRANSAKSI</h4>
       </div>
 
       <label className="field-group">
-        <span className="field-label">NAMA TRANSAKSI / DESKRIPSI</span>
+        <span className="field-label">UNTUK APA?</span>
         <input
           type="text"
           value={title}
@@ -57,7 +57,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onAddTransacti
       </label>
 
       <label className="field-group">
-        <span className="field-label">NOMINAL TRANSAKSI</span>
+        <span className="field-label">BERAPA?</span>
         <CurrencyInput
           value={amount}
           onChange={setAmount}
@@ -68,20 +68,20 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onAddTransacti
 
       <div className="form-two-cols">
         <label className="field-group">
-          <span className="field-label">KATEGORI ALOKASI</span>
+          <span className="field-label">MASUK KATEGORI MANA?</span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as 'Needs' | 'Wants' | 'Savings')}
             className="category-select"
           >
-            <option value="Needs">Needs (Kebutuhan Pokok)</option>
-            <option value="Wants">Wants (Gaya Hidup & Keinginan)</option>
-            <option value="Savings">Savings (Tabungan & Investasi)</option>
+            <option value="Needs">Kebutuhan pokok</option>
+            <option value="Wants">Keinginan &amp; gaya hidup</option>
+            <option value="Savings">Tabungan &amp; investasi</option>
           </select>
         </label>
 
         <label className="field-group">
-          <span className="field-label">TANGGAL TRANSAKSI</span>
+          <span className="field-label">TANGGAL</span>
           <input
             type="date"
             value={date}
@@ -97,7 +97,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ onAddTransacti
         className="pill dark submit-btn"
         disabled={isSubmitting || !title.trim() || amount <= 0}
       >
-        {isSubmitting ? 'MENYIMPAN...' : '+ CATAT KE LEDGER'}
+        {isSubmitting ? 'Menyimpan…' : '+ Catat Transaksi'}
       </button>
     </form>
   );

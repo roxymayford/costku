@@ -61,7 +61,7 @@ export const DashboardPage: React.FC = () => {
         // Fallback default demo profile
         setProfile({
           id: user.id,
-          name: user.name || 'Pengguna FATrack',
+          name: user.name || 'Pengguna costKu',
           monthly_salary: 5500000,
           payday_date: 25,
           fixed_expenses: 1200000,
@@ -225,76 +225,40 @@ export const DashboardPage: React.FC = () => {
     return (
       <div className="dashboard-loading-state">
         <div className="status-modal__spinner" />
-        <small>MEMUAT TELEMETRI KEUANGAN...</small>
+        <small>Memuat data keuangan…</small>
       </div>
     );
   }
 
   return (
     <div ref={rootRef} className="dashboard-page-container">
-      {/* FREE TIER NOTICE BANNER */}
-      {!isPremium && (
-        <div className="free-tier-notice">
-          <div className="free-tier-notice__content">
-            <span className="free-tier-notice__dot"></span>
-            <div>
-              <span className="free-tier-notice__label">
-                MODE MONEY TRACKER AKTIF
-              </span>
-              <span className="free-tier-notice__desc">
-                Aplikasi berjalan dalam mode pencatat pengeluaran. Buka kalkulator Safe-to-Spend adaptif, analisis 50/30/20, dan rekomendasi sewa kost dengan upgrade.
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/subscription')}
-            className="pill dark"
-          >
-            <span className="inline-flex items-center gap-1.5">Upgrade ke Advisor (Rp 29.900) <Icon name="arrowRight" size={13} /></span>
-          </button>
-        </div>
-      )}
-
       {/* DASHBOARD HERO HEADER */}
       <section className="dashboard-hero-strip">
         <div className="strip-title-box">
-          <small className="accent">TELEMETRI KEUANGAN & ANGGARAN</small>
-          <h2>IKHTISAR KEUANGAN SIKLUS</h2>
+          <small className="accent">RINGKASAN BULAN INI</small>
+          <h2>
+            Hai{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
+            <Icon name="hand" size={20} className="heading-inline-icon" />
+          </h2>
           <p>
-            Gaji Bersih: <b>{formatRupiah(salary)}</b> · Biaya Tetap: <b>{formatRupiah(fixedExpenses)}</b> · Siklus: <b>Tgl {paydayDate}</b>
+            Gaji bersih <b>{formatRupiah(salary)}</b> · Biaya tetap <b>{formatRupiah(fixedExpenses)}</b> · Gajian tiap tanggal <b>{paydayDate}</b>
           </p>
         </div>
 
         <div className="strip-actions">
-          <button
-            type="button"
-            className="tag-btn"
-            onClick={() => navigate('/onboarding')}
-          >
-            <Icon name="settings" size={14} /> EDIT PROFIL & GAJI
+          <button type="button" className="tag-btn" onClick={() => navigate('/transaksi')}>
+            <Icon name="plus" size={14} /> CATAT TRANSAKSI
           </button>
-          <button
-            type="button"
-            className="tag-btn active"
-            onClick={() => navigate('/alokasi')}
-          >
-            <Icon name="swap" size={14} /> ALOKASI 50/30/20 {!isPremium && <small className="nav-lock-tag"><Icon name="lock" size={11} /> PRO</small>}
+          <button type="button" className="tag-btn" onClick={() => navigate('/onboarding')}>
+            <Icon name="settings" size={14} /> ATUR GAJI &amp; BIAYA
           </button>
-          <button
-            type="button"
-            className="tag-btn"
-            onClick={() => navigate('/rekomendasi')}
-          >
-            <Icon name="star" size={14} /> REKOMENDASI GAYA HIDUP {!isPremium && <small className="nav-lock-tag"><Icon name="lock" size={11} /> PRO</small>} <Icon name="arrowRight" size={14} />
-          </button>
-          {!isPremium && (
-            <button
-              type="button"
-              className="tag-btn tag-btn--upgrade"
-              onClick={() => navigate('/subscription')}
-            >
-              <Icon name="star" size={14} /> UPGRADE ADVISOR
+          {isPremium ? (
+            <button type="button" className="tag-btn" onClick={() => navigate('/alokasi')}>
+              <Icon name="swap" size={14} /> ATUR ALOKASI 50/30/20
+            </button>
+          ) : (
+            <button type="button" className="tag-btn tag-btn--upgrade" onClick={() => navigate('/subscription')}>
+              <Icon name="star" size={14} /> BUKA SEMUA FITUR PRO
             </button>
           )}
         </div>
@@ -313,30 +277,62 @@ export const DashboardPage: React.FC = () => {
       {/* TOP KPI METRICS STRIP */}
       <section className="dashboard-kpi-grid">
         <div className="kpi-cell">
-          <small>BATAS JAJAN HARIAN {!isPremium && <span style={{ color: '#d97706' }}>[ADVISOR]</span>}</small>
-          <strong>{formatRupiah(allocation.dailyLimit)}</strong>
-          <span>Safe-to-Spend / hari</span>
+          <small>
+            BATAS JAJAN HARI INI
+            {!isPremium && <span className="kpi-pro-hint"><Icon name="lock" size={10} /> PRO</span>}
+          </small>
+          <strong>{isPremium ? formatRupiah(allocation.dailyLimit) : '—'}</strong>
+          <span>{isPremium ? 'Angka aman buat jajan hari ini' : 'Tersedia di paket Pro'}</span>
         </div>
         <div className="kpi-cell">
-          <small>PENGELUARAN HARI INI</small>
+          <small>SUDAH KELUAR HARI INI</small>
           <strong className={isOverDaily ? 'red-text' : 'green-text'}>
             {formatRupiah(spentToday)}
           </strong>
-          <span>Sisa Hari Ini: {formatRupiah(Math.max(0, allocation.dailyLimit - spentToday))}</span>
+          <span>Sisa {formatRupiah(Math.max(0, allocation.dailyLimit - spentToday))} untuk hari ini</span>
         </div>
         <div className="kpi-cell">
-          <small>TOTAL DISPOSABLE BULANAN</small>
+          <small>UANG BEBAS BULAN INI</small>
           <strong>{formatRupiah(allocation.disposableIncome)}</strong>
-          <span>Setelah Biaya Tetap & Tabungan</span>
+          <span>Setelah biaya tetap &amp; tabungan</span>
         </div>
         <div className="kpi-cell">
-          <small>SKOR KESEHATAN KEUANGAN {!isPremium && <span style={{ color: '#d97706' }}>[ADVISOR]</span>}</small>
+          <small>
+            SKOR KESEHATAN KEUANGAN
+            {!isPremium && <span className="kpi-pro-hint"><Icon name="lock" size={10} /> PRO</span>}
+          </small>
           <strong className={healthScore >= 70 ? 'green-text' : healthScore >= 50 ? 'accent' : 'red-text'}>
-            {healthScore} / 100
+            {isPremium ? `${healthScore} / 100` : '—'}
           </strong>
-          <span>{healthScore >= 70 ? 'STATUS PRIMA' : 'PERLU PERHATIAN'}</span>
+          <span>
+            {!isPremium
+              ? 'Tersedia di paket Pro'
+              : healthScore >= 70
+                ? 'Kondisi sehat, pertahankan'
+                : 'Ada yang perlu diperbaiki'}
+          </span>
         </div>
       </section>
+
+      {/* UPGRADE NOTICE — sits below the KPI strip so the headline numbers are
+          the first thing visible on load. */}
+      {!isPremium && (
+        <div className="free-tier-notice">
+          <div className="free-tier-notice__content">
+            <span className="free-tier-notice__dot"></span>
+            <div>
+              <span className="free-tier-notice__label">KAMU SEDANG DI PAKET GRATIS</span>
+              <span className="free-tier-notice__desc">
+                Saat ini kamu bisa mencatat transaksi dan melihat ringkasan. Buka batas jajan harian,
+                alokasi 50/30/20, dan rekomendasi kost dengan paket Pro.
+              </span>
+            </div>
+          </div>
+          <button type="button" onClick={() => navigate('/subscription')} className="pill dark">
+            <span className="inline-flex items-center gap-1.5">Coba Pro — Rp 29.900 <Icon name="arrowRight" size={13} /></span>
+          </button>
+        </div>
+      )}
 
       {/* MAIN TWO-COLUMN DASHBOARD GRID */}
       <section className="dashboard-columns-grid">

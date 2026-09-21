@@ -119,6 +119,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  gap: 20px;
   border-bottom: 1px solid var(--line);
   padding-bottom: 20px;
   margin-bottom: 28px;
@@ -129,9 +130,17 @@
   margin: 4px 0 0;
 }
 
+.engine-hint {
+  font-size: 13px;
+  margin: 8px 0 0;
+  max-width: 420px;
+}
+
 .preset-buttons {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .allocation-sliders-grid {

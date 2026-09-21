@@ -1,4 +1,4 @@
-# Cara Menjalankan OTP — FATrack / Kontor
+# Cara Menjalankan OTP — costKu
 
 Panduan langkah demi langkah untuk mencoba alur registrasi + verifikasi OTP,
 dari kondisi paling sederhana (tanpa setup apa pun) sampai siap produksi.
@@ -107,8 +107,8 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=emailanda@gmail.com
 SMTP_PASS=app-password-16-digit
-OTP_EMAIL_FROM=no-reply@fatrack.id
-OTP_EMAIL_FROM_NAME=FATrack
+OTP_EMAIL_FROM=no-reply@costku.id
+OTP_EMAIL_FROM_NAME=costKu
 ```
 
 `isSmtpConfigured()` butuh **ketiganya**: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`.

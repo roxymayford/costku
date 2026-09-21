@@ -67,8 +67,11 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
     <div className="allocation-engine-box">
       <div className="engine-header">
         <div>
-          <small className="accent">ADAPTIVE ALLOCATION ENGINE / 50-30-20</small>
-          <h3>DISTRIBUSI ANGGARAN BULANAN</h3>
+          <small className="accent">PEMBAGIAN GAJI</small>
+          <h3>ATUR PEMBAGIAN GAJI BULANANMU</h3>
+          <p className="engine-hint">
+            Total harus 100%. Saat kamu menggeser satu bagian, bagian lain menyesuaikan otomatis.
+          </p>
         </div>
         <div className="preset-buttons">
           <button
@@ -76,21 +79,21 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
             className={`tag-btn ${percentages.needs === 50 && percentages.wants === 30 ? 'active' : ''}`}
             onClick={() => applyPreset(50, 30, 20)}
           >
-            50/30/20 DEFAULT
+            50/30/20 Seimbang
           </button>
           <button
             type="button"
             className={`tag-btn ${percentages.needs === 60 && percentages.wants === 20 ? 'active' : ''}`}
             onClick={() => applyPreset(60, 20, 20)}
           >
-            60/20/20 HEMAT
+            60/20/20 Hemat
           </button>
           <button
             type="button"
             className={`tag-btn ${percentages.needs === 45 && percentages.savings === 30 ? 'active' : ''}`}
             onClick={() => applyPreset(45, 25, 30)}
           >
-            45/25/30 INVESTASI
+            45/25/30 Fokus Tabungan
           </button>
         </div>
       </div>
@@ -101,11 +104,11 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
           <div className="slider-card-top">
             <div>
               <span className="bullet bullet-needs" />
-              <b>NEEDS (KEBUTUHAN POKOK)</b>
+              <b>KEBUTUHAN POKOK</b>
             </div>
             <span className="percentage-badge">{percentages.needs}%</span>
           </div>
-          <p className="slider-desc">Makan dasar, kost, transportasi, utilitas operasional harian.</p>
+          <p className="slider-desc">Makan, kost, transport, dan tagihan wajib tiap bulan.</p>
           <input
             type="range"
             min="40"
@@ -114,9 +117,11 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
             value={percentages.needs}
             onChange={(e) => handleNeedsChange(Number(e.target.value))}
             className="swiss-slider slider-needs"
+            aria-label="Porsi kebutuhan pokok"
+            aria-valuetext={`${percentages.needs} persen`}
           />
           <div className="slider-footer">
-            <small>RENTANG: 40% – 70%</small>
+            <small>Rentang 40%–70%</small>
             <strong className="nominal-val">{formatRupiah(needsNominal)}</strong>
           </div>
         </div>
@@ -126,11 +131,11 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
           <div className="slider-card-top">
             <div>
               <span className="bullet bullet-wants" />
-              <b>WANTS (KEINGINAN & LIFESTYLE)</b>
+              <b>KEINGINAN &amp; GAYA HIDUP</b>
             </div>
             <span className="percentage-badge">{percentages.wants}%</span>
           </div>
-          <p className="slider-desc">Kopi, hangout, bioskop, langganan digital & hiburan.</p>
+          <p className="slider-desc">Ngopi, hangout, langganan digital, dan hiburan.</p>
           <input
             type="range"
             min="10"
@@ -139,9 +144,11 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
             value={percentages.wants}
             onChange={(e) => handleWantsChange(Number(e.target.value))}
             className="swiss-slider slider-wants"
+            aria-label="Porsi keinginan dan gaya hidup"
+            aria-valuetext={`${percentages.wants} persen`}
           />
           <div className="slider-footer">
-            <small>RENTANG: 10% – 40%</small>
+            <small>Rentang 10%–40%</small>
             <strong className="nominal-val">{formatRupiah(wantsNominal)}</strong>
           </div>
         </div>
@@ -151,11 +158,11 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
           <div className="slider-card-top">
             <div>
               <span className="bullet bullet-savings" />
-              <b>SAVINGS (TABUNGAN & INVESTASI)</b>
+              <b>TABUNGAN &amp; INVESTASI</b>
             </div>
             <span className="percentage-badge">{percentages.savings}%</span>
           </div>
-          <p className="slider-desc">Dana darurat, tabungan masa depan, reksadana & SBN.</p>
+          <p className="slider-desc">Dana darurat, tabungan masa depan, reksadana, dan SBN.</p>
           <input
             type="range"
             min="10"
@@ -164,17 +171,19 @@ export const AllocationSlider: React.FC<AllocationSliderProps> = ({
             value={percentages.savings}
             onChange={(e) => handleSavingsChange(Number(e.target.value))}
             className="swiss-slider slider-savings"
+            aria-label="Porsi tabungan dan investasi"
+            aria-valuetext={`${percentages.savings} persen`}
           />
           <div className="slider-footer">
-            <small>RENTANG: 10% – 40%</small>
+            <small>Rentang 10%–40%</small>
             <strong className="nominal-val green-text">{formatRupiah(savingsNominal)}</strong>
           </div>
         </div>
       </div>
 
       {total !== 100 && (
-        <div className="allocation-warning">
-          Total alokasi saat ini: {total}%. Sesuaikan slider agar total tepat 100%.
+        <div className="allocation-warning" role="alert">
+          Total alokasi saat ini {total}%. Sesuaikan slider supaya totalnya tepat 100%.
         </div>
       )}
     </div>

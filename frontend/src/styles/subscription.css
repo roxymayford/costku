@@ -33,18 +33,12 @@
   border-color: #008547;
 }
 
-/* Nav lock label */
-.nav-lock-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--orange);
-  margin-left: 4px;
-}
+/* Nav lock label (chip styling lives in layout.css) */
 
-/* Free-tier notice banner on dashboard */
+/* Free-tier notice banner on dashboard.
+   Sits between the KPI strip and the two-column grid, so it needs spacing on
+   the top (to clear the KPI strip) and none on the bottom — the grid supplies
+   its own padding. Horizontal margin matches the grid/hero gutters. */
 .free-tier-notice {
   display: flex;
   flex-wrap: wrap;
@@ -54,7 +48,7 @@
   padding: 16px 24px;
   background: #fff8e6;
   border: 1px solid var(--line);
-  margin-bottom: 24px;
+  margin: 24px 40px 0;
 }
 
 .free-tier-notice__content {

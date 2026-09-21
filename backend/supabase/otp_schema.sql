@@ -1,5 +1,5 @@
 -- ──────────────────────────────────────────────────────────
--- FATrack OTP Verification Schema
+-- costKu OTP Verification Schema
 -- Implements the plan in otpplan.md §4.3
 -- Run this in the Supabase SQL Editor (after schema.sql)
 -- ──────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ BEGIN
   VALUES (
     new.id,
     new.email,
-    COALESCE(new.raw_user_meta_data->>'name', 'Pengguna FATrack'),
+    COALESCE(new.raw_user_meta_data->>'name', 'Pengguna costKu'),
     'PENDING_VERIFICATION'
   )
   ON CONFLICT (id) DO NOTHING;

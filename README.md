@@ -1,4 +1,4 @@
-# FATrack / Personal Finance Advisor
+# costKu / Personal Finance Advisor
 
 Aplikasi penasihat keuangan personal untuk first-jobber & pekerja muda Indonesia berbasis filosofi Swiss Design. Dilengkapi kalkulator Safe-to-Spend, alokasi 50/30/20 adaptif, plafon sewa kost maksimal 25%, dan rekomendasi belanja kebutuhan riil.
 
@@ -17,6 +17,38 @@ Pastikan perangkat Anda sudah terpasang:
 
 Docker Compose memudahkan deployment frontend dan backend dalam container terisolasi secara otomatis.
 
+### 0. Siapkan Environment Variable (WAJIB, jangan dilewati)
+
+Ada dua hal yang berbeda dan sering tertukar:
+
+| Variabel | Kapan dibaca | Cara mengisi |
+|---|---|---|
+| `SUPABASE_*`, `GOOGLE_*`, `MIDTRANS_*`, `OTP_*` | **saat container jalan** | otomatis dari `backend/.env` (compose sudah pakai `env_file`) |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_BACKEND_URL` | **saat image di-build** | harus di-export ke shell atau ditaruh di `.env` root |
+
+`VITE_*` di-inline oleh Vite ke dalam bundle pada waktu `npm run build`. Kalau nilainya kosong saat build:
+
+- `isSupabaseConfigured` menjadi `false`
+- URL `/api/v1/auth/google` ikut ter-*tree-shake* keluar dari bundle
+- tombol **Masuk dengan Google** diam-diam jatuh ke identitas demo (tanpa error)
+
+Jadi sebelum build, lakukan salah satu:
+
+```bash
+# Opsi A — export di shell (nilai diambil dari frontend/.env)
+export VITE_SUPABASE_URL="https://xxxxxxxx.supabase.co"
+export VITE_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIs..."
+```
+
+```bash
+# Opsi B — buat file .env di root repo (sebelah docker-compose.yml)
+VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
+VITE_BACKEND_URL=http://localhost:5000
+```
+
+Kalau `VITE_SUPABASE_URL` belum di-set, `docker compose` akan langsung berhenti dengan pesan error yang jelas — lebih baik gagal di awal daripada jalan dengan auth yang diam-diam mati.
+
 ### 1. Jalankan Seluruh Container (Frontend & Backend)
 Dari folder root proyek:
 ```bash
@@ -24,13 +56,15 @@ docker-compose up -d --build
 ```
 > Flag `-d` menjalankan container di background (detached mode), sedangkan `--build` memastikan image dibangun ulang dengan source code terbaru.
 
+> **Penting:** `--build` (atau `docker compose build`) harus dijalankan ulang setiap kali nilai `VITE_*` berubah, karena nilainya sudah "dibekukan" di dalam bundle. Mengubah `.env` lalu hanya restart container **tidak** akan mengubah apa pun.
+
 ### 2. Memeriksa Status Container
 ```bash
 docker-compose ps
 ```
 Pastikan kedua container berstatus `Up`:
-- `kontor_backend` (Port `5000`)
-- `kontor_frontend` (Port `80`)
+- `costku_backend` (Port `5000`)
+- `costku_frontend` (Port `80`)
 
 ### 3. Mengakses Aplikasi
 - **Frontend App**: Buka browser di [http://localhost](http://localhost) (Port 80)
@@ -64,16 +98,21 @@ Jika hanya ingin build atau run salah satu service:
 **Backend:**
 ```bash
 cd backend
-docker build -t fatrack-backend .
-docker run -d -p 5000:5000 --name fatrack_backend fatrack-backend
+docker build -t costku-backend .
+docker run -d -p 5000:5000 --env-file .env --name costku_backend costku-backend
 ```
 
 **Frontend:**
 ```bash
 cd frontend
-docker build -t fatrack-frontend .
-docker run -d -p 80:80 --name fatrack_frontend fatrack-frontend
+docker build \
+  --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
+  --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
+  --build-arg VITE_BACKEND_URL="http://localhost:5000" \
+  -t costku-frontend .
+docker run -d -p 80:80 --name costku_frontend costku-frontend
 ```
+> Build arg di atas tidak boleh dihapus — tanpa itu bundle frontend tidak punya konfigurasi Supabase dan login Google mati (lihat langkah 0).
 
 ---
 
@@ -199,7 +238,20 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=your_smtp_user
 SMTP_PASS=your_smtp_password
-SMTP_FROM="FATrack <no-reply@example.com>"
+SMTP_FROM="costKu <no-reply@example.com>"
+
+# Google OAuth (login dengan Google) — server-side Authorization Code flow.
+# Nilai redirect URI HARUS sama persis dengan yang didaftarkan di Google
+# Cloud Console, kalau tidak Google menjawab redirect_uri_mismatch.
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+# Jangan pernah beri prefix VITE_ pada secret ini — Vite menanamkan semua
+# variabel VITE_* ke bundle browser sehingga bisa dibaca siapa pun.
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:5000/api/v1/auth/google/callback
+# Halaman tujuan setelah callback selesai.
+FRONTEND_URL=http://localhost:5173
+# Opsional — kunci HMAC untuk parameter `state`. Fallback ke OTP_PEPPER.
+OAUTH_STATE_SECRET=
 
 # Opsional — pembatas laju berbasis Redis. Bila kosong, dipakai
 # sliding-window in-memory (cukup untuk satu instance).
@@ -207,6 +259,53 @@ SMTP_FROM="FATrack <no-reply@example.com>"
 ```
 
 > *Catatan: Jika Supabase/Midtrans belum dikonfigurasi, sistem otomatis menggunakan Demo Mode / LocalStorage failover sehingga aplikasi tetap dapat dicoba secara penuh.*
+
+---
+
+## 🔑 Setup Login Google (OAuth)
+
+Login Google memakai alur **Authorization Code** yang dipegang backend: browser diarahkan
+ke Google, Google mengembalikan kode ke backend, backend menukarnya dengan token lalu
+mengembalikan sesi ke aplikasi.
+
+### 1. Daftarkan OAuth client di Google Cloud Console
+
+**APIs & Services → Credentials → Create Credentials → OAuth client ID → Web application**
+
+**Authorized JavaScript origins:**
+```
+http://localhost:5173
+http://localhost
+```
+
+**Authorized redirect URIs** (harus sama persis dengan `GOOGLE_REDIRECT_URI`):
+```
+http://localhost:5000/api/v1/auth/google/callback
+```
+
+> Redirect URI menunjuk ke **backend** (port 5000), dan backend selalu di port 5000 baik
+> saat dev maupun Docker — jadi cukup satu baris saja. Yang berbeda hanya origin frontend:
+> `5173` saat `npm run dev`, `http://localhost` saat lewat Docker (nginx port 80).
+> Daftarkan keduanya sekaligus supaya tidak perlu bolak-balik ke Console.
+
+### 2. Isi `.env`
+
+Salin `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET` dari Google Console ke `backend/.env`.
+Secret **hanya** boleh ada di backend — jangan pernah memberi prefix `VITE_`.
+
+### 3. Endpoint
+
+| Method | Path | Keterangan |
+|--------|------|------------|
+| `GET` | `/api/v1/auth/google` | Redirect ke halaman consent Google |
+| `GET` | `/api/v1/auth/google/callback` | Tukar `code`, provisioning user, lanjutkan ke frontend |
+
+Setelah callback selesai, browser mendarat di `http://localhost:5173/auth/callback`,
+menukar token sekali pakai menjadi sesi Supabase, lalu masuk ke `/dashboard`.
+
+> *Catatan: `SUPABASE_SERVICE_ROLE_KEY` wajib diisi agar login Google menghasilkan sesi
+> Supabase asli. Tanpa itu backend jatuh ke identitas lokal (mode demo) dan pengguna tetap
+> bisa masuk, tetapi sesi tidak terhubung ke `auth.users`.*
 
 ---
 

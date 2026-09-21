@@ -43,10 +43,10 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
     <div className="allocation-chart-widget">
       <div className="chart-header">
         <div>
-          <small className="accent">REALISASI VS TARGET</small>
-          <h4>KOMPOSISI PENGELUARAN</h4>
+          <small className="accent">PENGELUARAN VS ANGGARAN</small>
+          <h4>KEMANA UANGMU PERGI</h4>
         </div>
-        <small>TOTAL REALISASI: {formatRupiah(totalActual)}</small>
+        <small>Total keluar: {formatRupiah(totalActual)}</small>
       </div>
 
       <div className="chart-and-legend-grid">
@@ -83,7 +83,7 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
             </PieChart>
           </ResponsiveContainer>
           <div className="donut-center-label">
-            <small>KAS KELUAR</small>
+            <small>KELUAR</small>
             <b>{totalActual > 0 ? formatRupiah(totalActual) : 'Rp 0'}</b>
           </div>
         </div>
@@ -93,7 +93,7 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
             <div className="row-left">
               <span className="dot" style={{ backgroundColor: COLORS.needs }} />
               <div>
-                <b>NEEDS</b>
+                <b>KEBUTUHAN</b>
                 <small>Target: {formatRupiah(targetNeeds)}</small>
               </div>
             </div>
@@ -109,14 +109,14 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
             <div className="row-left">
               <span className="dot" style={{ backgroundColor: COLORS.wants }} />
               <div>
-                <b>WANTS</b>
+                <b>KEINGINAN</b>
                 <small>Target: {formatRupiah(targetWants)}</small>
               </div>
             </div>
             <div className="row-right">
               <strong className="accent">{formatRupiah(actualWants)}</strong>
               <small className={wantsDev > 0 ? 'red-text' : 'green-text'}>
-                {wantsDev > 0 ? `+${wantsDev.toFixed(1)}% OVER` : `${wantsDev.toFixed(1)}%`}
+                {wantsDev > 0 ? `+${wantsDev.toFixed(1)}% LEBIH` : `${wantsDev.toFixed(1)}%`}
               </small>
             </div>
           </div>
@@ -125,7 +125,7 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
             <div className="row-left">
               <span className="dot" style={{ backgroundColor: COLORS.savings }} />
               <div>
-                <b>SAVINGS</b>
+                <b>TABUNGAN</b>
                 <small>Target: {formatRupiah(targetSavings)}</small>
               </div>
             </div>

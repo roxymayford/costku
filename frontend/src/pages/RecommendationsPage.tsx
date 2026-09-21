@@ -68,27 +68,27 @@ export const RecommendationsPage: React.FC = () => {
   return (
     <div ref={rootRef} className="recommendations-page-container">
       <SubscriptionGate
-        title="Rekomendasi Gaya Hidup & Plafon Kost Cerdas"
-        description="Akses matriks rekomendasi tipe hunian kost maksimal 25% gaji, paket belanja minimarket riil, dan kalkulator gizi harian yang disesuaikan khusus dengan profil kas Anda."
-        featureName="Financial Advisor"
+        title="Rekomendasi Kost &amp; Belanja Makan"
+        description="Lihat tipe kost yang masuk anggaran gajimu (maksimal 25%), plus perkiraan belanja minimarket untuk kebutuhan makan harian."
+        featureName="costKu Pro"
       >
         <div className="page-head-strip">
           <div>
-            <small className="accent">MODUL 03 / LIFESTYLE RECOMMENDATION ENGINE</small>
-            <h2>REKOMENDASI GAYA HIDUP KONKRET</h2>
+            <small className="accent">Gaya hidup sesuai gaji</small>
+            <h2>Rekomendasi yang masuk anggaranmu</h2>
             <p>
-              Konversi angka persentase finansial Anda ke dalam pilihan nyata: tipe hunian kost yang aman
-              dan opsi belanja makanan retail minimarket di kota besar.
+              Ubah persentase anggaran jadi pilihan nyata: tipe kost yang aman untuk gajimu,
+              dan pilihan belanja makan dari minimarket terdekat.
             </p>
           </div>
 
           <div className="lifestyle-user-summary">
             <div>
-              <small>GAJI BERSIH TERDETEKSI</small>
+              <small>GAJI BERSIHMU</small>
               <b>{formatRupiah(salary)}/bln</b>
             </div>
             <div>
-              <small>BATAS SEWA KOST MAKS (25%)</small>
+              <small>BATAS SEWA KOST (25%)</small>
               <b className="accent">{formatRupiah(maxRentBudget)}/bln</b>
             </div>
           </div>
@@ -101,14 +101,14 @@ export const RecommendationsPage: React.FC = () => {
             className={`rec-tab-btn ${activeTab === 'kost' ? 'active' : ''}`}
             onClick={() => setActiveTab('kost')}
           >
-            01 / REKOMENDASI KOST & TEMPAT TINGGAL
+            Kost &amp; Tempat Tinggal
           </button>
           <button
             type="button"
             className={`rec-tab-btn ${activeTab === 'meals' ? 'active' : ''}`}
             onClick={() => setActiveTab('meals')}
           >
-            02 / REKOMENDASI MAKAN & PAKET MINIMARKET
+            Makan &amp; Belanja Minimarket
           </button>
         </div>
 
@@ -117,12 +117,12 @@ export const RecommendationsPage: React.FC = () => {
           <section className="kost-recommendations-section">
             <div className="recommendation-criteria-banner">
               <div>
-                <small className="accent">MATRIKS FORMULA HUNIAN</small>
-                <h4>PLAFON SEWA: MAKSIMAL 20% – 25% GAJI</h4>
+                <small className="accent">PATOKAN SEWA</small>
+                <h4>MAKSIMAL 20%–25% DARI GAJI</h4>
               </div>
               <p>
-                Menyewa tempat tinggal di atas 25% gaji bulanan berisiko tinggi memicu defisit kas dan
-                mengorbankan jatah tabungan darurat Anda.
+                Sewa kost di atas 25% gaji berisiko bikin uangmu habis sebelum akhir bulan
+                dan mengorbankan tabungan darurat.
               </p>
             </div>
 

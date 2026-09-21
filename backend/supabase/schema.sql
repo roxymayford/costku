@@ -1,5 +1,5 @@
 -- ──────────────────────────────────────────────────────────
--- FATrack Subscriptions & Financial Advisor Premium Schema
+-- costKu Subscriptions & Financial Advisor Premium Schema
 -- Run this in Supabase SQL Editor
 -- ──────────────────────────────────────────────────────────
 

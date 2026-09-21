@@ -27,7 +27,7 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
       <div className="gauge-item">
         <div className="gauge-item-header">
           <div>
-            <small className="accent">GAUGE HARIAN</small>
+            <small className="accent">HARI INI</small>
             <b>PENGELUARAN HARI INI</b>
           </div>
           <strong>{dailyPercent.toFixed(0)}%</strong>
@@ -47,8 +47,8 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
       <div className="gauge-item">
         <div className="gauge-item-header">
           <div>
-            <small className="accent">GAUGE BULANAN</small>
-            <b>TOTAL REALISASI SIKLUS</b>
+            <small className="accent">BULAN INI</small>
+            <b>TOTAL PENGELUARAN</b>
           </div>
           <strong>{monthlyPercent.toFixed(0)}%</strong>
         </div>
@@ -60,7 +60,7 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
         </div>
         <div className="gauge-meta">
           <span>Terpakai: {formatRupiah(monthlySpent)}</span>
-          <span>Sisa Budget: <b className={isMonthlyExceeded ? 'red-text' : 'green-text'}>{formatRupiah(monthlyRemaining)}</b></span>
+          <span>Sisa anggaran: <b className={isMonthlyExceeded ? 'red-text' : 'green-text'}>{formatRupiah(monthlyRemaining)}</b></span>
         </div>
       </div>
     </div>

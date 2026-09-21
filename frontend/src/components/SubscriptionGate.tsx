@@ -14,9 +14,9 @@ interface SubscriptionGateProps {
 export function SubscriptionGate({
   children,
   fallback,
-  title = 'Fitur Eksklusif Financial Advisor',
-  description = 'Tingkatkan akun Anda untuk membuka kalkulator alokasi adaptif, Safe-to-Spend harian, dan rekomendasi riil.',
-  featureName = 'Financial Advisor',
+  title = 'Fitur ini tersedia di paket Pro',
+  description = 'Buka batas jajan harian, pembagian gaji 50/30/20, dan rekomendasi kost serta belanja makan.',
+  featureName = 'costKu Pro',
 }: SubscriptionGateProps) {
   const { isPremium, loading } = useSubscription();
 
@@ -24,7 +24,7 @@ export function SubscriptionGate({
     return (
       <div className="sub-gate-loading">
         <div className="status-modal__spinner" />
-        <small>MEMUAT STATUS LANGGANAN...</small>
+        <small>Memuat status langganan…</small>
       </div>
     );
   }
@@ -39,7 +39,7 @@ export function SubscriptionGate({
     return <>{fallback}</>;
   }
 
-  // Default Swiss-Editorial style Paywall / Upgrade prompt
+  // Default paywall / upgrade prompt
   return (
     <div className="sub-gate">
       {/* Top Banner Tag */}
@@ -47,10 +47,10 @@ export function SubscriptionGate({
         <div className="sub-gate__top-label">
           <span className="sub-gate__top-dot"></span>
           <span className="sub-gate__top-text">
-            PREMIUM ADVISOR GATEWAY
+            FITUR PRO
           </span>
         </div>
-        <span className="sub-gate__status">STATUS: FREE TRACKER</span>
+        <span className="sub-gate__status">Paketmu saat ini: Gratis</span>
       </div>
 
       <div className="sub-gate__grid">
@@ -65,15 +65,15 @@ export function SubscriptionGate({
           {/* Feature highlights comparison */}
           <div className="sub-gate__compare">
             <div className="sub-gate__compare-cell sub-gate__compare-cell--free">
-              <span className="sub-gate__compare-label">MODE ANDA SEKARANG</span>
+              <span className="sub-gate__compare-label">YANG KAMU PUNYA SEKARANG</span>
               <div className="sub-gate__compare-val">
-                <span className="sub-gate__compare-icon--check"><Icon name="check" size={14} /></span> Money Tracker (Pencatatan Dasar)
+                <span className="sub-gate__compare-icon--check"><Icon name="check" size={14} /></span> Catat transaksi &amp; lihat ringkasan
               </div>
             </div>
             <div className="sub-gate__compare-cell sub-gate__compare-cell--premium">
-              <span className="sub-gate__compare-label">DENGAN {featureName.toUpperCase()}</span>
+              <span className="sub-gate__compare-label">KALAU PAKAI {featureName.toUpperCase()}</span>
               <div className="sub-gate__compare-val">
-                <span className="sub-gate__compare-icon--star"><Icon name="star" size={14} /></span> Safe-to-Spend & Analisis Cerdas
+                <span className="sub-gate__compare-icon--star"><Icon name="star" size={14} /></span> Batas jajan harian &amp; rekomendasi gaya hidup
               </div>
             </div>
           </div>
@@ -82,11 +82,11 @@ export function SubscriptionGate({
         <div className="sub-gate__cta-col">
           <Link to="/subscription" className="sub-gate__cta-primary">
             <span className="inline-flex items-center justify-center gap-2">
-              Aktifkan Advisor (Mulai Rp 29.900) <Icon name="arrowRight" size={15} />
+              Coba Pro — mulai Rp 29.900 <Icon name="arrowRight" size={15} />
             </span>
           </Link>
           <Link to="/transaksi" className="sub-gate__cta-secondary">
-            Kembali ke Money Tracker
+            Kembali ke pencatatan transaksi
           </Link>
         </div>
       </div>

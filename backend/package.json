@@ -1,7 +1,7 @@
 {
-  "name": "kontor-backend",
+  "name": "costku-backend",
   "version": "1.0.0",
-  "description": "Backend API service for Kontor Capital Tracker",
+  "description": "Backend API service for costKu",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
   "keywords": [
     "finance",
     "ledger",
-    "kontor",
+    "costku",
     "api"
   ],
   "author": "",

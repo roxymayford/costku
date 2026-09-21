@@ -18,14 +18,14 @@ export const isMidtransConfigured = Boolean(
 export const SUBSCRIPTION_PLANS = {
   premium_monthly: {
     id: 'premium_monthly',
-    name: 'FATrack Advisor - Bulanan',
+    name: 'costKu Advisor - Bulanan',
     price: 29900,
     durationDays: 30,
     description: 'Akses penuh fitur Financial Advisor cerdas selama 30 hari',
   },
   premium_yearly: {
     id: 'premium_yearly',
-    name: 'FATrack Advisor - Tahunan (Hemat 30%)',
+    name: 'costKu Advisor - Tahunan (Hemat 30%)',
     price: 249000,
     durationDays: 365,
     description: 'Akses penuh fitur Financial Advisor cerdas selama 1 tahun',

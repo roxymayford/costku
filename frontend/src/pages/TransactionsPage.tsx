@@ -97,7 +97,7 @@ export const TransactionsPage: React.FC = () => {
     return (
       <div className="dashboard-loading-state">
         <div className="status-modal__spinner" />
-        <small>MEMUAT BUKU KAS TRANSAKSI...</small>
+        <small>Memuat transaksi…</small>
       </div>
     );
   }
@@ -106,21 +106,21 @@ export const TransactionsPage: React.FC = () => {
     <div ref={rootRef} className="transactions-page-container">
       <div className="page-head-strip">
         <div>
-          <small className="accent">MODUL 04 / PENCATATAN KAS HARIAN</small>
-          <h2>BUKU BESAR TRANSAKSI (LEDGER)</h2>
+          <small className="accent">Catat pengeluaran</small>
+          <h2>Transaksi Kamu</h2>
           <p>
-            Catat setiap pengeluaran secara manual dengan kategorisasi statis (Needs, Wants, Savings).
-            Data tersimpan aman di database Supabase terisolasi per akun pengguna.
+            Catat setiap pengeluaran dan pilih kategorinya: kebutuhan, keinginan, atau tabungan.
+            Data tersimpan aman dan hanya bisa diakses oleh akunmu.
           </p>
         </div>
 
         <div className="transactions-kpi-strip">
           <div>
             <small>TOTAL TRANSAKSI</small>
-            <b>{transactions.length} Entri</b>
+            <b>{transactions.length} entri</b>
           </div>
           <div>
-            <small>TOTAL KAS KELUAR</small>
+            <small>TOTAL KELUAR</small>
             <strong className="accent">{formatRupiah(totalSpent)}</strong>
           </div>
         </div>
@@ -128,15 +128,15 @@ export const TransactionsPage: React.FC = () => {
 
       <div className="category-tally-bar">
         <div className="tally-item">
-          <span>NEEDS (POKOK):</span>
+          <span>Kebutuhan Pokok:</span>
           <b>{formatRupiah(catAgg['Needs'] || 0)}</b>
         </div>
         <div className="tally-item">
-          <span>WANTS (LIFESTYLE):</span>
+          <span>Keinginan:</span>
           <b className="accent">{formatRupiah(catAgg['Wants'] || 0)}</b>
         </div>
         <div className="tally-item">
-          <span>SAVINGS (TABUNGAN):</span>
+          <span>Tabungan:</span>
           <b className="green-text">{formatRupiah(catAgg['Savings'] || 0)}</b>
         </div>
       </div>

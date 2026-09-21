@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { Icon } from './Icon';
@@ -8,186 +8,215 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface NavEntry {
+  to: string;
+  label: string;
+  icon: 'home' | 'wallet' | 'sparkle' | 'list' | 'star';
+  premiumOnly?: boolean;
+}
+
+const NAV_ENTRIES: NavEntry[] = [
+  { to: '/dashboard', label: 'Dashboard', icon: 'home' },
+  { to: '/transaksi', label: 'Transaksi', icon: 'list' },
+  { to: '/alokasi', label: 'Alokasi', icon: 'wallet', premiumOnly: true },
+  { to: '/rekomendasi', label: 'Gaya Hidup', icon: 'sparkle', premiumOnly: true },
+  { to: '/subscription', label: 'Langganan', icon: 'star' },
+];
+
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const { isPremium } = useSubscription();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Close the mobile drawer on navigation and lock body scroll while open.
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const handleLogout = async () => {
+    setIsMenuOpen(false);
     await logout();
     navigate('/');
   };
 
+  const displayName = user?.name || user?.email?.split('@')[0] || 'Tamu';
+  const initials = displayName.slice(0, 2).toUpperCase();
+
   return (
     <div className="fatrack-app-shell">
-      {/* DESKTOP & MOBILE TOPBAR */}
+      {/* TOPBAR */}
       <header className="fatrack-topbar">
         <div className="topbar-left">
-          <NavLink to="/dashboard" className="brand">
+          <NavLink to="/dashboard" className="brand" aria-label="costKu, ke dashboard">
             <span className="avatar">FA</span>
-            <b>FATRACK</b>
+            <b>COSTKU</b>
             <i className="brand-divider">/</i>
-            <span className="brand-sub">PERSONAL FINANCE ADVISOR</span>
+            <span className="brand-sub">PENDAMPING KEUANGAN PRIBADI</span>
           </NavLink>
         </div>
 
         {/* DESKTOP NAVIGATION */}
-        <nav className="fatrack-nav desktop-only">
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            01 / DASHBOARD
-          </NavLink>
-          <NavLink
-            to="/alokasi"
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            02 / ALOKASI {!isPremium && <span className="nav-lock-tag"><Icon name="lock" size={11} /> PRO</span>}
-          </NavLink>
-          <NavLink
-            to="/rekomendasi"
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            03 / REKOMENDASI {!isPremium && <span className="nav-lock-tag"><Icon name="lock" size={11} /> PRO</span>}
-          </NavLink>
-          <NavLink
-            to="/transaksi"
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            04 / TRANSAKSI
-          </NavLink>
-          <NavLink
-            to="/subscription"
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            05 / LANGGANAN
-          </NavLink>
+        <nav className="fatrack-nav desktop-only" aria-label="Navigasi utama">
+          {NAV_ENTRIES.map((entry) => (
+            <NavLink
+              key={entry.to}
+              to={entry.to}
+              className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+            >
+              <span className="nav-item-label">{entry.label}</span>
+              {entry.premiumOnly && !isPremium && (
+                <span className="nav-lock-tag" title="Tersedia di paket Pro">
+                  <Icon name="lock" size={11} /> PRO
+                </span>
+              )}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="topbar-right">
-          <NavLink
-            to="/subscription"
-            className={`badge-plan ${isPremium ? 'badge-plan--pro' : 'badge-plan--free'}`}
-          >
-            {isPremium ? (
-              <span className="inline-flex items-center gap-1"><Icon name="star" size={12} /> PRO ADVISOR</span>
-            ) : (
-              <span className="inline-flex items-center gap-1"><span className="upgrade-label">UPGRADE ADVISOR</span><Icon name="external" size={12} /></span>
-            )}
-          </NavLink>
+          {!isPremium && (
+            <NavLink to="/subscription" className="badge-plan badge-plan--free">
+              <span className="inline-flex items-center gap-1">
+                <Icon name="star" size={12} /> Buka Fitur Pro
+              </span>
+            </NavLink>
+          )}
           <span className="user-greeting">
-            USER: <b>{user?.name || user?.email?.split('@')[0] || 'GUEST'}</b>
+            Halo, <b>{displayName}</b>
           </span>
           <button type="button" className="logout-btn" onClick={handleLogout} title="Keluar dari akun">
             <span className="inline-flex items-center gap-1">KELUAR <Icon name="arrowRight" size={12} /></span>
+          </button>
+          <button
+            type="button"
+            className="menu-toggle-btn mobile-only"
+            onClick={() => setIsMenuOpen(true)}
+            aria-label="Buka menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="fatrack-mobile-drawer"
+          >
+            <Icon name="menu" size={20} />
           </button>
         </div>
       </header>
 
       {/* MAIN VIEW */}
-      <main className="fatrack-main-content">
-        {children}
-      </main>
+      <main className="fatrack-main-content">{children}</main>
+
+      {/* MOBILE DRAWER */}
+      <div
+        className={`fatrack-drawer-overlay mobile-only ${isMenuOpen ? 'is-open' : ''}`}
+        onClick={() => setIsMenuOpen(false)}
+        aria-hidden="true"
+      />
+      <aside
+        id="fatrack-mobile-drawer"
+        className={`fatrack-drawer mobile-only ${isMenuOpen ? 'is-open' : ''}`}
+        aria-label="Menu navigasi"
+        aria-hidden={!isMenuOpen}
+      >
+        <div className="drawer-head">
+          <span className="avatar">{initials}</span>
+          <div className="drawer-user">
+            <b>{displayName}</b>
+            <small>{isPremium ? 'Pro Advisor aktif' : 'Paket Money Tracker (gratis)'}</small>
+          </div>
+          <button
+            type="button"
+            className="drawer-close-btn"
+            onClick={() => setIsMenuOpen(false)}
+            aria-label="Tutup menu"
+          >
+            <Icon name="close" size={20} />
+          </button>
+        </div>
+
+        <nav className="drawer-nav">
+          {NAV_ENTRIES.map((entry) => (
+            <NavLink
+              key={entry.to}
+              to={entry.to}
+              className={({ isActive }) => (isActive ? 'drawer-link active' : 'drawer-link')}
+            >
+              <span className="drawer-link-icon">
+                <Icon name={entry.icon} size={18} />
+              </span>
+              <span className="drawer-link-label">{entry.label}</span>
+              {entry.premiumOnly && !isPremium && (
+                <span className="nav-lock-tag">
+                  <Icon name="lock" size={11} /> PRO
+                </span>
+              )}
+              <Icon name="arrowRight" size={14} className="drawer-link-chevron" />
+            </NavLink>
+          ))}
+        </nav>
+
+        {!isPremium && (
+          <NavLink to="/subscription" className="drawer-upsell">
+            <Icon name="star" size={16} className="drawer-upsell-icon" />
+            <div>
+              <b>Buka semua fitur Pro</b>
+              <small>Batas jajan harian, alokasi 50/30/20, rekomendasi kost &amp; makan.</small>
+            </div>
+          </NavLink>
+        )}
+
+        <button type="button" className="drawer-logout" onClick={handleLogout}>
+          <Icon name="arrowRight" size={14} /> Keluar dari akun
+        </button>
+      </aside>
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <nav className="fatrack-mobile-bottom-nav mobile-only">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => (isActive ? 'bottom-nav-item active' : 'bottom-nav-item')}
-        >
-          <span className="bottom-nav-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-            </svg>
-          </span>
-          <span className="bottom-nav-num">01</span>
-          <span className="bottom-nav-label">DASHBOARD</span>
-        </NavLink>
-        <NavLink
-          to="/alokasi"
-          className={({ isActive }) => (isActive ? 'bottom-nav-item active' : 'bottom-nav-item')}
-        >
-          <span className="bottom-nav-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
-              <line x1="4" y1="21" x2="4" y2="14" />
-              <line x1="4" y1="10" x2="4" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12" y2="3" />
-              <line x1="20" y1="21" x2="20" y2="16" />
-              <line x1="20" y1="12" x2="20" y2="3" />
-              <line x1="1" y1="14" x2="7" y2="14" />
-              <line x1="9" y1="8" x2="15" y2="8" />
-              <line x1="17" y1="16" x2="23" y2="16" />
-            </svg>
-          </span>
-          <span className="bottom-nav-num">02</span>
-          <span className="bottom-nav-label">ALOKASI</span>
-        </NavLink>
-        <NavLink
-          to="/rekomendasi"
-          className={({ isActive }) => (isActive ? 'bottom-nav-item active' : 'bottom-nav-item')}
-        >
-          <span className="bottom-nav-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </span>
-          <span className="bottom-nav-num">03</span>
-          <span className="bottom-nav-label">LIFESTYLE</span>
-        </NavLink>
-        <NavLink
-          to="/transaksi"
-          className={({ isActive }) => (isActive ? 'bottom-nav-item active' : 'bottom-nav-item')}
-        >
-          <span className="bottom-nav-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
-              <line x1="8" y1="6" x2="21" y2="6" />
-              <line x1="8" y1="12" x2="21" y2="12" />
-              <line x1="8" y1="18" x2="21" y2="18" />
-              <line x1="3" y1="6" x2="3.01" y2="6" />
-              <line x1="3" y1="12" x2="3.01" y2="12" />
-              <line x1="3" y1="18" x2="3.01" y2="18" />
-            </svg>
-          </span>
-          <span className="bottom-nav-num">04</span>
-          <span className="bottom-nav-label">TRANSAKSI</span>
-        </NavLink>
-        <NavLink
-          to="/subscription"
-          className={({ isActive }) => (isActive ? 'bottom-nav-item active' : 'bottom-nav-item')}
-        >
-          <span className="bottom-nav-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-          </span>
-          <span className="bottom-nav-num">05</span>
-          <span className="bottom-nav-label">ADVISOR</span>
-        </NavLink>
+      <nav className="fatrack-mobile-bottom-nav mobile-only" aria-label="Navigasi cepat">
+        {NAV_ENTRIES.map((entry) => (
+          <NavLink
+            key={entry.to}
+            to={entry.to}
+            className={({ isActive }) => (isActive ? 'bottom-nav-item active' : 'bottom-nav-item')}
+          >
+            <span className="bottom-nav-icon">
+              <Icon name={entry.icon} size={19} />
+            </span>
+            <span className="bottom-nav-label">{entry.label}</span>
+            {entry.premiumOnly && !isPremium && <span className="bottom-nav-dot" aria-hidden="true" />}
+          </NavLink>
+        ))}
       </nav>
 
-      {/* SWISS FOOTER */}
+      {/* FOOTER */}
       <footer className="fatrack-footer">
         <div className="footer-col">
-          <small>01 / PROTOKOL FATRACK</small>
-          <p>Sistem rekomendasi gaya hidup dan pengawasan arus kas harian berbasis presisi matematika.</p>
+          <small>COSTKU</small>
+          <p>Pendamping keuangan pribadi untuk pekerja muda Indonesia: atur gaji, pantau jajan harian, rencanakan gaya hidup.</p>
         </div>
         <div className="footer-col">
-          <small>02 / STATUS ENKRIPSI</small>
-          <p>DATA LEVEL: SUPABASE RLS & LOCAL SECURE STORAGE</p>
+          <small>KEAMANAN DATA</small>
+          <p>Data disimpan dengan enkripsi Supabase Row Level Security. Kode OTP tidak pernah disimpan dalam bentuk teks asli.</p>
         </div>
         <div className="footer-col">
-          <small>03 / FORMULA STANDAR</small>
-          <p>SAFE-TO-SPEND DAILY ALGORITHM & 50/30/20 ADAPTIVE RATIO</p>
+          <small>CARA KERJA</small>
+          <p>Menghitung batas aman harian dan pembagian 50/30/20 yang menyesuaikan tanggal gajian kamu.</p>
         </div>
         <div className="footer-col">
-          <small>04 / VERSI SISTEM</small>
-          <p>FATRACK V1.0 (MVP RELEASE)</p>
+          <small>VERSI</small>
+          <p>costKu v1.0 — Rilis awal</p>
         </div>
       </footer>
     </div>

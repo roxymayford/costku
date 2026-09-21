@@ -56,6 +56,12 @@ export interface RegisterSuccess {
 export interface VerifySuccess {
   ok: true;
   status: string;
+  /**
+   * Present when the backend could mint a real Supabase session. The client
+   * must exchange it via `supabase.auth.verifyOtp({ type: 'magiclink',
+   * token_hash })` — it is NOT an access token.
+   */
+  tokenHash?: string;
   accessToken: string;
   refreshToken: string;
 }

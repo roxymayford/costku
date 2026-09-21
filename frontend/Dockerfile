@@ -7,6 +7,18 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+# Vite inlines every VITE_* value into the bundle at BUILD time, so these have
+# to be present while `npm run build` runs — injecting them at container start
+# is too late. Without them `isSupabaseConfigured` folds to false, the backend
+# OAuth URL gets tree-shaken out, and "Sign in with Google" silently falls back
+# to the demo identity. See the note in docker-compose.yml.
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_BACKEND_URL=http://localhost:5000
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
+    VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY \
+    VITE_BACKEND_URL=$VITE_BACKEND_URL
+
 COPY . .
 RUN npm run build
 

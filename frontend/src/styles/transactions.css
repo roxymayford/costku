@@ -170,27 +170,43 @@
   flex-wrap: wrap;
 }
 
-.search-input {
+.search-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid var(--line);
-  padding: 8px 12px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+.search-input-icon {
+  color: #5a5a5a;
+  flex: 0 0 auto;
+}
+
+.search-input {
+  border: 0;
+  outline: none;
+  padding: 8px 0;
   font: inherit;
-  font-size: 11px;
-  width: 160px;
+  font-size: 12px;
+  width: 170px;
+  background: transparent;
 }
 
 .category-filter-pills {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .filter-pill {
   background: transparent;
   border: 1px solid var(--line);
-  padding: 6px 12px;
+  padding: 7px 12px;
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
   cursor: pointer;
 }
 
@@ -203,9 +219,9 @@
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  font-size: 11px;
+  font-size: 12px;
   border-bottom: 1px solid #eee;
-  color: #777;
+  color: #5a5a5a;
 }
 
 .ledger-summary-strip b {
@@ -213,9 +229,9 @@
 }
 
 .empty-ledger-box {
-  padding: 40px;
+  padding: 40px 20px;
   text-align: center;
-  color: #777;
+  color: #5a5a5a;
 }
 
 .swiss-ledger-table {
@@ -227,8 +243,8 @@
 .swiss-ledger-table th {
   text-align: left;
   font-size: 10px;
-  letter-spacing: 0.08em;
-  color: #777;
+  letter-spacing: 0.06em;
+  color: #5a5a5a;
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   background: var(--paper);
@@ -242,11 +258,12 @@
 
 .cat-tag {
   display: inline-block;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 3px 6px;
+  letter-spacing: 0.02em;
+  padding: 3px 7px;
   border: 1px solid var(--line);
+  white-space: nowrap;
 }
 
 .cat-needs {
@@ -255,25 +272,73 @@
 
 .cat-wants {
   background: #ffebe6;
-  color: var(--orange);
+  color: #c42f0d;
   border-color: var(--orange);
 }
 
 .cat-savings {
   background: #e6f5ec;
-  color: #008547;
+  color: #00693a;
   border-color: #008547;
 }
 
 .tx-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   background: transparent;
-  border: 0;
-  font-size: 18px;
+  border: 1px solid transparent;
+  color: #6b6b6b;
   cursor: pointer;
-  color: #777;
-  line-height: 1;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
 .tx-delete-btn:hover {
-  color: var(--orange);
+  color: #c90000;
+  border-color: #c90000;
+  background: #ffebe6;
+}
+
+/* Mobile card list (hidden on desktop) */
+.ledger-mobile-list {
+  display: none;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.ledger-mobile-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #e5e0d8;
+}
+
+.ledger-mobile-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ledger-mobile-title {
+  font-size: 13px;
+  color: #111;
+  overflow-wrap: anywhere;
+}
+
+.ledger-mobile-meta {
+  font-size: 11px;
+  color: #6b6b6b;
+}
+
+.ledger-mobile-amount {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: #111;
+  white-space: nowrap;
 }

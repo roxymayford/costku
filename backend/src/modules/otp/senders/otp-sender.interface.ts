@@ -41,7 +41,7 @@ export function buildOtpMessage(code: string, ttlMinutes: number): string {
 }
 
 export function buildOtpEmailSubject(): string {
-  return 'Kode Verifikasi Akun FATrack';
+  return 'Kode Verifikasi Akun costKu';
 }
 
 /** Minimal HTML body for the email channel — Swiss-style, no remote assets. */
@@ -60,7 +60,7 @@ export function buildOtpEmailHtml(
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:520px;background:#ffffff;border:1px solid #111111;">
         <tr><td style="padding:20px 24px;border-bottom:1px solid #111111;">
-          <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#e8420b;">FATrack</span>
+          <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#e8420b;">costKu</span>
           <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6e6e6e;">&nbsp;/&nbsp;Verifikasi Akun</span>
         </td></tr>
         <tr><td style="padding:28px 24px 8px;">
@@ -78,7 +78,7 @@ export function buildOtpEmailHtml(
         </td></tr>
         <tr><td style="padding:16px 24px;border-top:1px solid #d3d2ce;background:#f4f3f1;">
           <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:1.5;color:#6e6e6e;">
-            Jika Anda tidak merasa membuat akun FATrack, abaikan email ini.
+            Jika Anda tidak merasa membuat akun costKu, abaikan email ini.
           </p>
         </td></tr>
       </table>

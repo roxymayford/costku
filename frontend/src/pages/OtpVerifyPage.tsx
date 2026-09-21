@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon } from '../components/Icon';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import {
   clearPendingVerification,
   describeFailure,
@@ -169,13 +170,38 @@ export const OtpVerifyPage: React.FC = () => {
     const result = await requestVerifyOtp(pending.userId, code);
 
     if (isSuccess(result)) {
-      // The account is active — hand the session to AuthContext and continue.
-      adoptSession(
-        { id: pending.userId, email: pending.email, name: undefined },
-        result.accessToken,
-        result.refreshToken
-      );
       clearPendingVerification();
+
+      /*
+       * With a service-role key the backend returns a one-time token_hash.
+       * Trade it for a real Supabase session — a token_hash is not a JWT, so
+       * passing it to setSession() would fail silently and leave the user
+       * "signed in" from localStorage with no real session behind it.
+       */
+      if (result.tokenHash && isSupabaseConfigured) {
+        const { error } = await supabase.auth.verifyOtp({
+          type: 'magiclink',
+          token_hash: result.tokenHash,
+        });
+
+        if (error) {
+          setNotice({
+            tone: 'error',
+            text: `Akunmu sudah aktif, tapi gagal membuat sesi: ${error.message}. Silakan masuk lagi.`,
+          });
+          setIsVerifying(false);
+          window.setTimeout(() => navigate('/auth', { replace: true }), 1800);
+          return;
+        }
+      } else {
+        // Degraded mode — the backend could not mint a Supabase session.
+        adoptSession(
+          { id: pending.userId, email: pending.email, name: undefined },
+          result.accessToken,
+          result.refreshToken
+        );
+      }
+
       setNotice({ tone: 'success', text: 'Verifikasi berhasil. Mengalihkan…' });
       window.setTimeout(() => navigate('/onboarding', { replace: true }), 700);
       return;
@@ -243,7 +269,7 @@ export const OtpVerifyPage: React.FC = () => {
       <section className="auth-panel">
         <button className="auth-brand" type="button" onClick={() => navigate('/')}>
           <span className="avatar">FA</span>
-          <b>FATRACK</b>
+          <b>COSTKU</b>
           <i>/</i>
           <span>PERSONAL FINANCE ADVISOR</span>
         </button>

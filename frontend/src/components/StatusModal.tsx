@@ -21,7 +21,7 @@ export function StatusModal({ kind, onClose }: StatusModalProps) {
             <span className="status-modal__spinner" aria-hidden="true" />
             <small>MEMUAT PROTOKOL</small>
             <h2 id="status-title">MENYIAPKAN AKSES.</h2>
-            <p>Menghubungkan kredensial Anda dengan layanan Kontor.</p>
+            <p>Menghubungkan kredensial Anda dengan layanan costKu.</p>
           </>
         ) : (
           <>

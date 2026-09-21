@@ -1,5 +1,5 @@
 {
-  "name": "kontor-capital-tracker-workspace",
+  "name": "costku-workspace",
   "private": true,
   "version": "1.0.0",
   "scripts": {
@@ -8,5 +8,39 @@
     "build:frontend": "npm run build --prefix frontend",
     "build:backend": "npm run build --prefix backend",
     "install:all": "npm install --prefix frontend && npm install --prefix backend"
-  }
+  },
+  "description": "Aplikasi penasihat keuangan personal untuk first-jobber & pekerja muda Indonesia berbasis filosofi Swiss Design. Dilengkapi kalkulator Safe-to-Spend, alokasi 50/30/20 adaptif, plafon sewa kost maksimal 25%, dan rekomendasi belanja kebutuhan riil.",
+  "main": "index.js",
+  "dependencies": {
+    "csstype": "^3.2.3",
+    "detect-libc": "^2.1.2",
+    "fdir": "^6.5.0",
+    "gsap": "^3.15.0",
+    "lightningcss": "^1.33.0",
+    "lightningcss-win32-x64-msvc": "^1.33.0",
+    "nanoid": "^3.3.19",
+    "picocolors": "^1.1.1",
+    "picomatch": "^4.0.7",
+    "playwright": "^1.63.0",
+    "postcss": "^8.5.28",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "rolldown": "^1.2.8",
+    "scheduler": "^0.28.0",
+    "source-map-js": "^1.2.1",
+    "tinyglobby": "^0.2.17",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roxymayford/costku.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/roxymayford/costku/issues"
+  },
+  "homepage": "https://github.com/roxymayford/costku#readme"
 }

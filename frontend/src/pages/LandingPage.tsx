@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,36 +9,36 @@ gsap.registerPlugin(ScrollTrigger);
 
 const metrics = [
   {
-    code: '01 / DISIPLIN HARIAN',
+    code: '01 / JAJAN HARIAN',
     targetValue: 87500,
     prefix: 'Rp ',
     suffix: ' / hari',
-    label: 'Safe-to-Spend Riil',
-    desc: 'Batas jajan harian otomatis dihitung dari gaji bersih setelah memotong sewa kost, cicilan tetap, & target tabungan.',
+    label: 'Batas Jajan Harian',
+    desc: 'Angka aman jajan hari ini, otomatis dihitung dari gaji bersih setelah dipotong biaya tetap dan tabungan.',
   },
   {
-    code: '02 / HUNIAN AMAN',
+    code: '02 / SEWA KOST',
     targetValue: 25,
     prefix: '',
-    suffix: '% Maksimal',
-    label: 'Plafon Sewa Kost',
-    desc: 'Formula pencegah overbudget hunian: membatasi pengeluaran kost maksimal 25% dari take-home pay bulanan.',
+    suffix: '% maksimal',
+    label: 'Batas Sewa Kost',
+    desc: 'Agar biaya kost tidak menghabiskan gaji: maksimal seperempat dari uang yang kamu bawa pulang tiap bulan.',
   },
   {
-    code: '03 / RASIO FLEKSIBEL',
+    code: '03 / PEMBAGIAN GAJI',
     targetValue: 100,
     prefix: '',
-    suffix: '% Terdistribusi',
-    label: 'Alokasi 50/30/20 Adaptif',
-    desc: 'Slider adaptif Needs, Wants, & Savings yang dapat disesuaikan dengan profil riil mahasiswa, first-jobber, atau eksekutif.',
+    suffix: '% terbagi',
+    label: 'Alokasi 50/30/20',
+    desc: 'Gaji dibagi jadi kebutuhan, keinginan, dan tabungan. Bisa kamu geser sesuai kondisi aslimu.',
   },
   {
-    code: '04 / DIAGNOSIS KEUANGAN',
+    code: '04 / SKOR KEUANGAN',
     targetValue: 88,
     prefix: '',
     suffix: ' / 100',
     label: 'Skor Kesehatan Finansial',
-    desc: 'Indikator audit instan berbasis rasio tabungan darurat, debt ratio, dan kedisiplinan pengeluaran harian.',
+    desc: 'Nilai 0–100 dari tabungan, kedisiplinan, dan pengeluaranmu — plus saran apa yang harus diperbaiki.',
   },
 ];
 
@@ -63,7 +63,7 @@ interface IncomePreset {
 const incomePresets: IncomePreset[] = [
   {
     id: 'preset-1',
-    badge: 'PRESET 01 // ENTRY LEVEL',
+    badge: 'GAJI UMR',
     title: 'UMR Metropolitan',
     salary: 5200000,
     salaryFormatted: 'Rp 5.200.000',
@@ -73,14 +73,14 @@ const incomePresets: IncomePreset[] = [
     needs: 'Rp 2.600.000 (50%)',
     wants: 'Rp 1.560.000 (30%)',
     savings: 'Rp 1.040.000 (20%)',
-    kostProfile: 'Kamar Non-AC / Kamar Mandi Luar (Dekat Jalur KRL/Mikrotrans)',
-    mealProfile: 'Warteg Standard + Masak Nasi & Lauk Sederhana Mandiri',
-    strategy: 'Kunci disiplin batas jajan harian Rp 52rb dan amankan dana darurat Rp 2 juta pertama.',
-    status: 'SURVIVAL DISIPLIN & DANA DARURAT',
+    kostProfile: 'Kamar non-AC, kamar mandi luar, dekat jalur KRL atau angkot.',
+    mealProfile: 'Warteg untuk makan siang, masak nasi dan lauk sendiri di kos.',
+    strategy: 'Fokus pegang batas jajan harian Rp 52 ribu dan kumpulkan dana darurat Rp 2 juta pertama.',
+    status: 'Sedang membangun dana darurat',
   },
   {
     id: 'preset-2',
-    badge: 'PRESET 02 // FIRST JOBBER',
+    badge: 'PEKERJA MUDA',
     title: 'Junior Specialist',
     salary: 8500000,
     salaryFormatted: 'Rp 8.500.000',
@@ -90,14 +90,14 @@ const incomePresets: IncomePreset[] = [
     needs: 'Rp 4.250.000 (50%)',
     wants: 'Rp 2.550.000 (30%)',
     savings: 'Rp 1.700.000 (20%)',
-    kostProfile: 'Kost AC Standard Kamar Mandi Dalam (Dekat MRT / Koridor Utama)',
-    mealProfile: 'Kantin Karyawan Siang + Meal Prep Belanja Retail Mingguan',
-    strategy: 'Otomasi auto-debit tabungan 20% pada tanggal gajian & kendalikan impuls checkout marketplace.',
-    status: 'CASHFLOW STABIL & AKSELERASI ASET',
+    kostProfile: 'Kost AC kamar mandi dalam, dekat MRT atau koridor utama.',
+    mealProfile: 'Kantin kantor untuk makan siang, belanja mingguan untuk meal prep.',
+    strategy: 'Pasang auto-debit tabungan 20% tepat di tanggal gajian, dan tahan belanja marketplace.',
+    status: 'Arus kas stabil, mulai menabung',
   },
   {
     id: 'preset-3',
-    badge: 'PRESET 03 // PROFESSIONAL',
+    badge: 'KARIER MENENGAH',
     title: 'Mid-Career Talent',
     salary: 14000000,
     salaryFormatted: 'Rp 14.000.000',
@@ -107,11 +107,18 @@ const incomePresets: IncomePreset[] = [
     needs: 'Rp 7.000.000 (50%)',
     wants: 'Rp 4.200.000 (30%)',
     savings: 'Rp 2.800.000 (20%)',
-    kostProfile: 'Co-Living Eksklusif / Apartemen Studio (Akses Walkable ke Hub Bisnis)',
-    mealProfile: 'Kombinasi Bahan Segar Supermarket + Budget Kafe Produktif Terukur',
-    strategy: 'Proteksi gaya hidup dari lifestyle inflation; alokasikan surplus wants ke portofolio investasi.',
-    status: 'EKSPANSI ASET & KONTROL INFLASI GAYA HIDUP',
+    kostProfile: 'Co-living eksklusif atau apartemen studio di area bisnis.',
+    mealProfile: 'Bahan segar dari supermarket dipadu kafe produktif sesuai anggaran.',
+    strategy: 'Jaga gaya hidup agar tidak ikut naik terus, dan arahkan sisa ke investasi.',
+    status: 'Siap menambah portofolio investasi',
   },
+];
+
+const NAV_LINKS = [
+  { href: '#metrik', label: 'Cara Kerja' },
+  { href: '#arsitektur', label: 'Simulasi' },
+  { href: '#matriks', label: 'Prinsip' },
+  { href: '#harga', label: 'Harga' },
 ];
 
 export const LandingPage: React.FC = () => {
@@ -119,15 +126,14 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, loginDemo } = useAuth();
 
-  const [scrollPercent, setScrollPercent] = useState<number>(0);
-  const [activeSection, setActiveSection] = useState<string>('01 // HERO');
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const [activePresetId, setActivePresetId] = useState<string>('preset-2');
 
   const activePreset = incomePresets.find((p) => p.id === activePresetId) || incomePresets[1];
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. Swiss Scroll Progress Ruler along top screen
+      // Top scroll progress bar
       gsap.to('.swiss-scroll-ruler-fill', {
         width: '100%',
         ease: 'none',
@@ -136,20 +142,10 @@ export const LandingPage: React.FC = () => {
           start: 'top top',
           end: 'bottom bottom',
           scrub: 0.1,
-          onUpdate: (self) => {
-            const pct = Math.round(self.progress * 100);
-            setScrollPercent(pct);
-            if (pct < 18) setActiveSection('01 // OVERVIEW');
-            else if (pct < 38) setActiveSection('02 // SPESIFIKASI');
-            else if (pct < 58) setActiveSection('03 // LAB ARSITEKTUR');
-            else if (pct < 78) setActiveSection('04 // MATRIKS PROTOKOL');
-            else if (pct < 92) setActiveSection('05 // TELEMETRI');
-            else setActiveSection('06 // ONBOARDING');
-          },
         },
       });
 
-      // 2. Hero Headline & Badges Entrance
+      // Hero headline & badge entrance
       gsap.from('.hero-copy > *', {
         y: 28,
         opacity: 0,
@@ -158,9 +154,14 @@ export const LandingPage: React.FC = () => {
         ease: 'power3.out',
       });
 
-      // 3. Hero Preview Panel Entrance (Static in place, no scroll parallax)
+      // Hero preview panel entrance.
+      // Below 901px the hero collapses to one column and the panel goes
+      // full-bleed, so a horizontal slide would drag its right edge up to 40px
+      // past the viewport and flash a horizontal scrollbar for the whole
+      // ~1.1s entrance. Slide it vertically there instead.
+      const isWideHero = window.matchMedia('(min-width: 901px)').matches;
       gsap.from('.hero-preview-panel', {
-        x: 40,
+        ...(isWideHero ? { x: 40 } : { y: 28 }),
         opacity: 0,
         duration: 0.9,
         delay: 0.2,
@@ -168,42 +169,7 @@ export const LandingPage: React.FC = () => {
         clearProps: 'transform',
       });
 
-      // 4. Radar scanner bar animation inside terminal
-      gsap.to('.terminal-scan', {
-        y: 190,
-        duration: 2.4,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // 5. Kinetic Marquee Scroll-Velocity Coupling
-      const marqueeTrack = document.querySelector('.swiss-marquee-track');
-      if (marqueeTrack) {
-        let currentX = 0;
-        const baseSpeed = -1.2;
-
-        const updateMarquee = () => {
-          currentX += baseSpeed;
-          if (currentX <= -600) currentX = 0;
-          gsap.set(marqueeTrack, { x: currentX });
-        };
-
-        gsap.ticker.add(updateMarquee);
-
-        ScrollTrigger.create({
-          trigger: root.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          onUpdate: (self) => {
-            const velocity = self.getVelocity();
-            const boost = Math.min(Math.max(velocity / 120, -10), 10);
-            currentX -= boost;
-          },
-        });
-      }
-
-      // 6. Metrics Section - Staggered entrance & Animated Number Counters
+      // Metrics entrance
       gsap.from('.metric', {
         scrollTrigger: {
           trigger: '.metrics',
@@ -217,7 +183,7 @@ export const LandingPage: React.FC = () => {
         ease: 'power2.out',
       });
 
-      // Animate numerical counters when metrics scroll into view
+      // Animated number counters when metrics scroll into view
       metrics.forEach((m, idx) => {
         const counterEl = document.getElementById(`metric-counter-${idx}`);
         if (counterEl) {
@@ -242,12 +208,9 @@ export const LandingPage: React.FC = () => {
         }
       });
 
-      // 7. Swiss Lab Interactive Section Reveal
+      // Simulator section reveal
       gsap.from('.swiss-lab-grid > *', {
-        scrollTrigger: {
-          trigger: '.swiss-lab-section',
-          start: 'top 80%',
-        },
+        scrollTrigger: { trigger: '.swiss-lab-section', start: 'top 80%' },
         y: 32,
         opacity: 0,
         stagger: 0.12,
@@ -255,12 +218,9 @@ export const LandingPage: React.FC = () => {
         ease: 'power3.out',
       });
 
-      // 8. Swiss Protocol Editorial Items Reveal
+      // Principle items reveal
       gsap.from('.swiss-protocol-item', {
-        scrollTrigger: {
-          trigger: '.swiss-matrix-section',
-          start: 'top 80%',
-        },
+        scrollTrigger: { trigger: '.swiss-matrix-section', start: 'top 80%' },
         y: 25,
         opacity: 0,
         stagger: 0.1,
@@ -268,12 +228,9 @@ export const LandingPage: React.FC = () => {
         ease: 'power2.out',
       });
 
-      // 9. Swiss Telemetry Bento Cards Reveal
+      // Telemetry cards reveal
       gsap.from('.swiss-telemetry-card', {
-        scrollTrigger: {
-          trigger: '.swiss-telemetry-section',
-          start: 'top 82%',
-        },
+        scrollTrigger: { trigger: '.swiss-telemetry-section', start: 'top 82%' },
         y: 28,
         opacity: 0,
         stagger: 0.12,
@@ -281,12 +238,9 @@ export const LandingPage: React.FC = () => {
         ease: 'power2.out',
       });
 
-      // 9. CTA Section Reveal
-      gsap.from('.cta > *', {
-        scrollTrigger: {
-          trigger: '.cta',
-          start: 'top 88%',
-        },
+      // Pricing cards + CTA reveal
+      gsap.from('.price-card, .cta > *', {
+        scrollTrigger: { trigger: '.pricing-section', start: 'top 82%' },
         y: 25,
         opacity: 0,
         stagger: 0.08,
@@ -294,7 +248,6 @@ export const LandingPage: React.FC = () => {
         ease: 'power2.out',
       });
 
-      // Refresh ScrollTrigger calculations after all styles mount
       ScrollTrigger.refresh();
     }, root);
 
@@ -302,6 +255,7 @@ export const LandingPage: React.FC = () => {
   }, []);
 
   const handleStart = () => {
+    setIsNavOpen(false);
     if (user) {
       navigate('/dashboard');
     } else {
@@ -310,153 +264,183 @@ export const LandingPage: React.FC = () => {
   };
 
   const handleDemo = () => {
+    setIsNavOpen(false);
     loginDemo();
     navigate('/dashboard');
   };
 
+  const closeNav = () => setIsNavOpen(false);
+
+  // The landing mobile dropdown must always be dismissable: close it on Escape,
+  // on a tap outside the header, and whenever the viewport leaves the mobile
+  // breakpoint so it can never get stranded in an open state.
+  useEffect(() => {
+    if (!isNavOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsNavOpen(false);
+    };
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && target.closest('.landing-mobile-nav, .landing-menu-btn')) return;
+      setIsNavOpen(false);
+    };
+    const onResize = () => {
+      if (window.innerWidth > 900) setIsNavOpen(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [isNavOpen]);
+
   return (
     <div ref={root} className="fatrack-landing">
-      {/* SWISS SCROLL PROGRESS RULER */}
+      {/* READING PROGRESS BAR */}
       <div className="swiss-scroll-ruler">
         <div className="swiss-scroll-ruler-fill" />
-      </div>
-
-      {/* SWISS HUD SCROLL TRACKER BADGE */}
-      <div className="swiss-scroll-tracker-badge">
-        <span className="pulse-dot" />
-        <span>{activeSection}</span>
-        <b style={{ color: 'var(--orange)' }}>{scrollPercent}%</b>
       </div>
 
       {/* TOPBAR */}
       <header className="topbar">
         <div className="brand">
           <span className="avatar">FA</span>
-          <b>FATRACK</b>
+          <b>COSTKU</b>
           <i>/</i>
-          <span>PERSONAL FINANCE ADVISOR</span>
+          <span className="landing-brand-sub">PENDAMPING KEUANGAN PRIBADI</span>
         </div>
-        <nav>
-          <a href="#metrik">SPESIFIKASI</a>
-          <a href="#arsitektur">ARSITEKTUR</a>
-          <a href="#matriks">MATRIKS PROTOKOL</a>
-          <a href="#telemetri">TELEMETRI</a>
+
+        <nav className="landing-nav desktop-only">
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href}>{link.label}</a>
+          ))}
         </nav>
+
         <div className="actions">
           <button className="nav-link" type="button" onClick={() => navigate('/auth?mode=login')}>
-            MASUK
+            Masuk
           </button>
           <button className="pill dark" type="button" onClick={handleStart}>
-            MULAI SEKARANG
+            Coba Gratis
+          </button>
+          <button
+            className="landing-menu-btn mobile-only"
+            type="button"
+            onClick={() => setIsNavOpen((open) => !open)}
+            aria-label={isNavOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-expanded={isNavOpen}
+          >
+            <Icon name={isNavOpen ? 'close' : 'menu'} size={20} />
           </button>
         </div>
       </header>
+
+      {/* MOBILE NAV DROPDOWN */}
+      <div className={`landing-mobile-nav ${isNavOpen ? 'is-open' : ''}`}>
+        {NAV_LINKS.map((link) => (
+          <a key={link.href} href={link.href} onClick={closeNav}>{link.label}</a>
+        ))}
+        <button type="button" className="pill dark" onClick={handleStart}>
+          Mulai Sekarang — Gratis
+        </button>
+      </div>
 
       <main>
         {/* HERO */}
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span /> EDISI 2026 / PERSONAL FINANCE INDONESIA
+              <span /> Dibuat untuk pekerja muda Indonesia
             </div>
             <h1>
-              NAVIGASI GAJI
+              Gaji masuk.
               <br />
-              DAN GAYA HIDUP
+              Tahu persis
               <br />
-              DENGAN PRESISI.
+              batas jajanmu.
             </h1>
             <p className="lead">
-              Platform penasihat keuangan personal untuk first-jobber & pekerja muda Indonesia.
-              Konversi angka gaji bulanan menjadi batas jajan harian dan rekomendasi gaya hidup nyata (tipe kost & paket belanja retail).
+              costKu mengubah gaji bulananmu jadi satu angka sederhana: <b>boleh jajan berapa hari ini</b>.
+              Lengkap dengan batas sewa kost, pembagian gaji 50/30/20, dan skor kesehatan keuangan.
             </p>
             <div className="hero-bottom">
-              <div>
+              <div className="hero-cta-group">
                 <button className="pill dark" type="button" onClick={handleStart}>
-                  BUKA AKUN GRATIS
+                  Buat Akun Gratis
                 </button>
                 <button className="outline" type="button" onClick={handleDemo}>
-                  <span className="inline-flex items-center gap-1.5">COBA DEMO LANGSUNG <Icon name="arrowRight" size={14} /></span>
+                  <span className="inline-flex items-center gap-1.5">Lihat Demo <Icon name="arrowRight" size={14} /></span>
                 </button>
               </div>
-              <div className="micro">
-                <span>TARGET AUDIENCE<strong>FIRST-JOBBER & PEKERJA</strong></span>
-                <span>METODOLOGI<strong>SAFE-TO-SPEND + 50/30/20</strong></span>
-                <span>INTEGRASI RETAIL<strong>ALFAMART / INDOMARET</strong></span>
-              </div>
+              <ul className="hero-proof">
+                <li><Icon name="check" size={14} /> Gratis selamanya untuk pencatatan transaksi</li>
+                <li><Icon name="check" size={14} /> Tanpa kartu kredit, tanpa iklan</li>
+                <li><Icon name="check" size={14} /> Datamu tidak dijual ke pihak ketiga</li>
+              </ul>
             </div>
           </div>
 
-          {/* RIGHT TERMINAL PREVIEW */}
+          {/* RIGHT: DASHBOARD PREVIEW */}
           <aside className="hero-preview-panel terminal">
             <div className="terminal-head">
-              <span className="terminal-pulse">■</span> TELEMETRI KEUANGAN PERSONAL
-              <span>ALGORITMA LIVE</span>
+              <span className="terminal-pulse" aria-hidden="true" /> PREVIEW DASHBOARD
+              <span>CONTOH DATA</span>
             </div>
 
             <div className="terminal-body">
               <div className="worth terminal-card">
                 <span className="terminal-scan" />
                 <small>
-                  01 / SIMULASI SAFE-TO-SPEND <b className="green">LIMIT AKTIF</b>
+                  BATAS JAJAN HARI INI
                 </small>
                 <strong>Rp 87.500 <small style={{ fontSize: '14px', fontWeight: 500 }}>/ hari</small></strong>
-                <span>FORMULA: (GAJI NETTO − BIAYA TETAP − TABUNGAN) ÷ HARI</span>
+                <span>Dihitung dari gaji bersih, biaya tetap, dan target tabunganmu</span>
               </div>
 
               <div className="twins terminal-card">
                 <div>
-                  <small>SIMULASI GAJI BULANAN</small>
+                  <small>GAJI BULANAN</small>
                   <b>Rp 5.500.000</b>
-                  <span>Siklus: Tgl 25</span>
+                  <span>Gajian tiap tanggal 25</span>
                 </div>
                 <div>
-                  <small>PLAFON KOST MAKSIMAL</small>
+                  <small>BATAS SEWA KOST</small>
                   <b className="accent">Rp 1.375.000</b>
-                  <span>Maks 25% Gaji</span>
+                  <span>Maksimal 25% gaji</span>
                 </div>
               </div>
 
               <div className="allocation terminal-card">
-                <small>REKOMENDASI ALOKASI 50/30/20</small>
+                <small>PEMBAGIAN GAJI 50/30/20</small>
                 <span>
-                  Needs (Kost + Makan + Transport) <b>50% · Rp 2.750.000</b>
+                  Kebutuhan (kost, makan, transport) <b>50% · Rp 2.750.000</b>
                   <i><em style={{ width: '50%' }} /></i>
                 </span>
                 <span>
-                  Wants (Jajan Kopi & Lifestyle) <b>30% · Rp 1.650.000</b>
+                  Keinginan (ngopi, hobi, jalan) <b>30% · Rp 1.650.000</b>
                   <i><em style={{ width: '30%', backgroundColor: 'var(--orange)' }} /></i>
                 </span>
                 <span>
-                  Savings (Dana Darurat & Investasi) <b>20% · Rp 1.100.000</b>
+                  Tabungan &amp; investasi <b>20% · Rp 1.100.000</b>
                   <i><em style={{ width: '20%', backgroundColor: '#008547' }} /></i>
                 </span>
               </div>
             </div>
 
             <div className="terminal-foot">
-              DISIPLIN FINANSIAL <b>STATUS: ZERO ARITHMETIC DRIFT</b>
+              STATUS HARI INI <b className="green">MASIH DALAM BATAS</b>
             </div>
           </aside>
         </section>
 
-        {/* KINETIC MARQUEE STRIP */}
-        <section className="swiss-marquee-section">
-          <div className="swiss-marquee-track">
-            <span>FATRACK <b className="sep">/</b> PERSONAL FINANCE ADVISOR</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> SAFE-TO-SPEND FORMULA</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> ZERO ARITHMETIC DRIFT</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> 50/30/20 ADAPTIVE RATIO</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> KOST & MINIMARKET RECOMMENDATION</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> EDISI INDONESIA 2026</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> SUPABASE ENCRYPTED</span>
-            <span>FATRACK <b className="sep">/</b> PERSONAL FINANCE ADVISOR</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> SAFE-TO-SPEND FORMULA</span>
-            <span><b className="sep"><Icon name="sparkle" size={12} /></b> ZERO ARITHMETIC DRIFT</span>
-          </div>
-        </section>
-
-        {/* METRICS SECTION WITH ANIMATED SCROLL COUNTERS */}
+        {/* METRICS — WHAT YOU GET */}
         <section id="metrik" className="metrics">
           {metrics.map((m, idx) => (
             <article className="metric" key={m.code}>
@@ -472,42 +456,42 @@ export const LandingPage: React.FC = () => {
           ))}
         </section>
 
-        {/* SWISS LAB SECTION: INTERACTIVE SAFE-TO-SPEND SANDBOX */}
+        {/* SIMULATOR */}
         <section id="arsitektur" className="swiss-lab-section reveal">
           <div className="swiss-section-meta">
-            <span>SISTEM 01 // ARSITEKTUR KOMPUTASI DETERMINISTIK</span>
-            <span>PRESISI MATEMATIS · ZERO ARITHMETIC DRIFT</span>
+            <span>COBA LANGSUNG</span>
+            <span>PILIH GAJIMU, LIHAT HASILNYA</span>
           </div>
 
           <div className="swiss-lab-grid">
             <div className="swiss-lab-manifesto">
-              <span className="swiss-index-badge">01.0 // MANIFESTO</span>
+              <span className="swiss-index-badge">KENAPA COSTKU</span>
               <h2>
-                UANG ADALAH ALAT KEBEBASAN,
+                Uang bukan sumber cemas.
                 <br />
-                BUKAN SUMBER KECEMASAN.
+                Uang adalah alat.
               </h2>
               <p className="lead">
-                Kecemasan finansial muncul saat Anda menebak-nebak saldo di rekening. 
-                FATrack mengubah ketidakpastian menjadi batas numerik absolut: 
-                setiap rupiah memiliki tujuan terdefinisi sebelum hari berganti.
+                Cemas soal uang biasanya muncul karena kita menebak-nebak isi rekening.
+                costKu menggantinya dengan satu angka jelas: batas aman jajan hari ini.
+                Setiap rupiah punya tujuan sebelum hari berganti.
               </p>
 
               <div className="swiss-manifesto-pillars">
                 <div className="swiss-pillar">
-                  <small className="accent">HUKUM #1 // BATAS HUNIAN</small>
-                  <h4>PLAFON SEWA MAKS 25%</h4>
-                  <p>Menjaga rasio sewa hunian tidak melumpuhkan kapasitas akumulasi modal jangka panjang.</p>
+                  <small className="accent">PRINSIP 1</small>
+                  <h4>SEWA KOST MAKS 25%</h4>
+                  <p>Agar biaya tempat tinggal tidak menelan seluruh gaji dan menyisakan nol untuk menabung.</p>
                 </div>
                 <div className="swiss-pillar">
-                  <small className="accent">HUKUM #2 // LIKUIDITAS</small>
-                  <h4>SAFE-TO-SPEND HARIAN</h4>
-                  <p>Batas jajan non-esensial dinamis agar Anda bebas ngopi tanpa rasa bersalah.</p>
+                  <small className="accent">PRINSIP 2</small>
+                  <h4>BATAS JAJAN HARIAN</h4>
+                  <p>Satu angka untuk hari ini. Kamu tetap bebas ngopi tanpa rasa bersalah selama di dalam batas.</p>
                 </div>
                 <div className="swiss-pillar">
-                  <small className="accent">HUKUM #3 // INTEGRITAS</small>
-                  <h4>PAY YOURSELF FIRST 20%</h4>
-                  <p>Alokasi tabungan dikunci saat tanggal gajian sebelum dana operasional didistribusikan.</p>
+                  <small className="accent">PRINSIP 3</small>
+                  <h4>TABUNG DULU, BARU BELANJA</h4>
+                  <p>Tabungan 20% dikunci di tanggal gajian, sebelum uang operasional dipakai.</p>
                 </div>
               </div>
             </div>
@@ -515,10 +499,10 @@ export const LandingPage: React.FC = () => {
             <div className="swiss-lab-calculator">
               <div className="swiss-calc-header">
                 <div>
-                  <small className="accent">SIMULATOR KOMPUTASI REAL-TIME</small>
-                  <h3>LABORATORIUM ARUS KAS URBAN</h3>
+                  <small className="accent">SIMULATOR GRATIS</small>
+                  <h3>LIHAT HASILNYA UNTUK GAJIMU</h3>
                 </div>
-                <span className="swiss-calc-status">● LIVE SANDBOX</span>
+                <span className="swiss-calc-status">LIVE</span>
               </div>
 
               {/* PRESET CHIPS */}
@@ -529,65 +513,66 @@ export const LandingPage: React.FC = () => {
                     type="button"
                     className={`swiss-chip ${activePresetId === preset.id ? 'active' : ''}`}
                     onClick={() => setActivePresetId(preset.id)}
+                    aria-pressed={activePresetId === preset.id}
                   >
-                    <span>{preset.badge.split(' // ')[1]}</span>
+                    <span>{preset.badge}</span>
                     <strong>{preset.salaryFormatted}</strong>
                   </button>
                 ))}
               </div>
 
-              {/* CALCULATION TELEMETRY DISPLAY */}
+              {/* CALCULATION DISPLAY */}
               <div className="swiss-calc-display">
                 <div className="swiss-calc-card primary-output">
-                  <small>BATAS PENGELUARAN AMAN HARIAN (SAFE-TO-SPEND)</small>
+                  <small>BOLEH JAJAN BERAPA HARI INI?</small>
                   <div className="swiss-calc-value">
                     <strong>{activePreset.safeToSpend}</strong>
-                    <span className="status-tag">STATUS: KUOTA AKTIF</span>
+                    <span className="status-tag">SIAP DIPAKAI</span>
                   </div>
                   <p className="swiss-calc-desc">{activePreset.strategy}</p>
                 </div>
 
                 <div className="swiss-calc-twins">
                   <div className="swiss-calc-card">
-                    <small>PLAFON SEWA KOST BULANAN</small>
+                    <small>BATAS SEWA KOST PER BULAN</small>
                     <strong>{activePreset.kostLimit}</strong>
-                    <span>Maksimal 25.0% dari gaji bersih</span>
+                    <span>Maksimal 25% dari gaji bersih</span>
                     <div className="swiss-subtext">{activePreset.kostProfile}</div>
                   </div>
 
                   <div className="swiss-calc-card">
-                    <small>STRATEGI LOGISTIK KONSUMSI</small>
-                    <strong style={{ fontSize: '16px', lineHeight: 1.3 }}>WARTEG + RETAIL PREP</strong>
-                    <span>Estimasi kebutuhan nutrisi harian</span>
+                    <small>GAYA MAKAN YANG MASUK ANGGARAN</small>
+                    <strong style={{ fontSize: '16px', lineHeight: 1.3 }}>WARTEG + MASAK SENDIRI</strong>
+                    <span>Perkiraan kebutuhan makan harian</span>
                     <div className="swiss-subtext">{activePreset.mealProfile}</div>
                   </div>
                 </div>
 
                 {/* ALLOCATION RATIO BAR */}
                 <div className="swiss-calc-card allocation-strip">
-                  <small>DISTRIBUSI ALOKASI SISTEMIK</small>
+                  <small>PEMBAGIAN GAJI</small>
                   <div className="swiss-ratio-bars">
                     <div className="ratio-segment needs" style={{ width: '50%' }}>
-                      <span>Needs 50%</span>
+                      <span>Kebutuhan 50%</span>
                     </div>
                     <div className="ratio-segment wants" style={{ width: '30%' }}>
-                      <span>Wants 30%</span>
+                      <span>Keinginan 30%</span>
                     </div>
                     <div className="ratio-segment savings" style={{ width: '20%' }}>
-                      <span>Save 20%</span>
+                      <span>Tabungan 20%</span>
                     </div>
                   </div>
                   <div className="swiss-ratio-legend">
-                    <span><b>50% Kebutuhan:</b> {activePreset.needs}</span>
-                    <span><b>30% Gaya Hidup:</b> {activePreset.wants}</span>
-                    <span><b>20% Investasi:</b> {activePreset.savings}</span>
+                    <span><b>Kebutuhan:</b> {activePreset.needs}</span>
+                    <span><b>Keinginan:</b> {activePreset.wants}</span>
+                    <span><b>Tabungan:</b> {activePreset.savings}</span>
                   </div>
                 </div>
 
                 <div className="swiss-calc-footer">
-                  <span>VERIFIKASI: <b>{activePreset.status}</b></span>
+                  <span>Status: <b>{activePreset.status}</b></span>
                   <button className="pill dark mini-btn" type="button" onClick={handleStart}>
-                    TERAPKAN PROFIL INI <Icon name="arrowRight" size={12} />
+                    PAKAI PROFIL INI <Icon name="arrowRight" size={12} />
                   </button>
                 </div>
               </div>
@@ -595,20 +580,21 @@ export const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* SWISS NARRATIVE PROTOCOL SECTION */}
+        {/* PRINCIPLES */}
         <section id="matriks" className="swiss-matrix-section reveal">
           <div className="swiss-section-meta">
-            <span>SISTEM 02 // PROTOKOL & DOKTRIN PENGELUARAN URBAN</span>
-            <span>4 HUKUM DISIPLIN ARUS KAS METROPOLITAN 2026</span>
+            <span>4 PRINSIP</span>
+            <span>YANG BIKIN GAJI TIDAK NAMPANG LEWAT</span>
           </div>
 
           <div className="swiss-matrix-header">
             <div>
-              <small className="accent">DOKTRIN ARUS KAS REALISTIS</small>
-              <h2>4 PRINSIP MUTLAK ARUS KAS URBAN</h2>
+              <small className="accent">CARA PIKIRNYA</small>
+              <h2>4 ATURAN SEDERHANA YANG BERTAHAN LAMA</h2>
             </div>
             <p>
-              Bukan sekadar kalkulasi angka. Ini adalah 4 kaidah baku yang membedakan pekerja yang berhasil membangun aset dengan mereka yang terjebak dalam siklus gaji numpang lewat.
+              Bukan rumus rumit. Ini empat kebiasaan dasar yang membedakan orang yang uangnya berkembang
+              dengan yang gajinya selalu habis di tanggal 20.
             </p>
           </div>
 
@@ -616,17 +602,19 @@ export const LandingPage: React.FC = () => {
             <article className="swiss-protocol-item">
               <div className="protocol-index">01</div>
               <div className="protocol-content">
-                <small className="accent">DOKTRIN #1 // BATAS ATAP HUNIAN</small>
-                <h3>PLAFON SEWA KOST TIDAK BOLEH LEBIH DARI 25% GAJI</h3>
+                <small className="accent">ATURAN 1</small>
+                <h3>BIAYA KOST JANGAN LEBIH DARI 25% GAJI</h3>
                 <p className="protocol-quote">
-                  "Jangan biarkan gengsi kost mewah melumpuhkan kapasitas akumulasi aset masa depan Anda."
+                  "Gengsi kost mewah hari ini bisa menghabiskan tabungan masa depanmu."
                 </p>
                 <p className="protocol-body">
-                  Banyak pekerja muda di kota besar menghabiskan 40% hingga 50% gaji hanya untuk sewa kost eksklusif demi prestise sesaat. Akibatnya, kapasitas untuk menabung dan berinvestasi menjadi nol. FATrack membatasi batas sewa maksimal pada 25% take-home pay dan membantu Anda menghitung komparasi rasional antara jarak komuter KRL/TransJakarta dan efisiensi biaya sewa.
+                  Banyak pekerja muda di kota besar menghabiskan 40–50% gaji hanya untuk kost demi gengsi.
+                  Akibatnya tidak ada sisa untuk menabung. costKu membatasi sewa maksimal 25% gaji dan
+                  membantumu membandingkan biaya kost vs ongkos transport dari tempat yang lebih jauh.
                 </p>
                 <div className="protocol-foot">
-                  <span>ATURAN BAKU: <b>MAKSIMAL 25% TAKE-HOME PAY</b></span>
-                  <span className="swiss-tag green">RULE #1 MUTLAK</span>
+                  <span>BATAS: <b>MAKSIMAL 25% GAJI BERSIH</b></span>
+                  <span className="swiss-tag green">ATURAN UTAMA</span>
                 </div>
               </div>
             </article>
@@ -634,17 +622,19 @@ export const LandingPage: React.FC = () => {
             <article className="swiss-protocol-item">
               <div className="protocol-index">02</div>
               <div className="protocol-content">
-                <small className="accent">DOKTRIN #2 // LOGISTIK KONSUMSI</small>
-                <h3>REKAYASA PANTRY MINIMARKET & WARTEG BERGIZI</h3>
+                <small className="accent">ATURAN 2</small>
+                <h3>KURANGI OJEK ONLINE BERTURUT-TURUT</h3>
                 <p className="protocol-quote">
-                  "Food delivery tiga kali sehari dengan ongkir dan service fee ganda adalah kebocoran kas paling senyap."
+                  "Pesan makanan tiga kali sehari dengan ongkir dan biaya layanan adalah kebocoran paling sunyi."
                 </p>
                 <p className="protocol-body">
-                  Ketergantungan memesan makanan online tanpa disadari menyedot Rp 1,8 juta hingga Rp 2,5 juta ekstra per bulan hanya dari biaya pengiriman dan markup aplikasi. Standar hidup sehat di perkotaan dibangun dari perpaduan realistis: makan siang warteg berprotein lengkap dan meal prep bahan pokok (beras, telur, sayur) yang dibeli dengan indeks harga promo retail terukur.
+                  Ketergantungan pesan makanan online diam-diam menyedot Rp 1,8–2,5 juta per bulan hanya dari
+                  ongkir dan markup aplikasi. Hidup sehat di kota tetap bisa realistis: makan siang warteg
+                  bergizi, sisanya masak sendiri dengan bahan yang dibeli saat promo di minimarket.
                 </p>
                 <div className="protocol-foot">
-                  <span>STANDAR BIAYA: <b>RP 35.000 – RP 65.000 / HARI</b></span>
-                  <span className="swiss-tag orange">OPTIMASI HARIAN</span>
+                  <span>PATOKAN: <b>Rp 35.000 – Rp 65.000 / HARI</b></span>
+                  <span className="swiss-tag orange">HEMAT HARIAN</span>
                 </div>
               </div>
             </article>
@@ -652,17 +642,19 @@ export const LandingPage: React.FC = () => {
             <article className="swiss-protocol-item">
               <div className="protocol-index">03</div>
               <div className="protocol-content">
-                <small className="accent">DOKTRIN #3 // KENDALI LIKUIDITAS</small>
-                <h3>DISIPLIN HARIAN DENGAN KUOTA SAFE-TO-SPEND</h3>
+                <small className="accent">ATURAN 3</small>
+                <h3>JANGAN TERTIPU SALDO BESAR DI AWAL BULAN</h3>
                 <p className="protocol-quote">
-                  "Saldo tebal di awal bulan adalah ilusi visual paling berbahaya bagi rekening Anda."
+                  "Saldo tebal di tanggal gajian itu ilusi yang paling berbahaya."
                 </p>
                 <p className="protocol-body">
-                  Melihat saldo rekening yang utuh di tanggal gajian memicu bias psikologis bahwa Anda kaya, sehingga pengeluaran impulsif melonjak di sepuluh hari pertama. FATrack memecah sisa likuiditas Anda menjadi angka harian riil (Safe-to-Spend). Anda bebas ngopi atau jajan santai tanpa rasa bersalah selama nominalnya berada di dalam batas aman hari ini.
+                  Lihat saldo utuh di tanggal gajian dan otak langsung bilang "aku masih kaya", lalu belanja
+                  melonjak di sepuluh hari pertama. costKu memecah sisa uangmu jadi angka harian. Selama
+                  masih di dalam batas hari ini, kamu bebas jajan santai.
                 </p>
                 <div className="protocol-foot">
-                  <span>METODOLOGI: <b>SISA LIKUIDITAS ÷ SISA HARI KERJA</b></span>
-                  <span className="swiss-tag green">LIVE ENFORCEMENT</span>
+                  <span>CARANYA: <b>SISA UANG ÷ SISA HARI</b></span>
+                  <span className="swiss-tag green">DIPANTAU HARIAN</span>
                 </div>
               </div>
             </article>
@@ -670,95 +662,99 @@ export const LandingPage: React.FC = () => {
             <article className="swiss-protocol-item">
               <div className="protocol-index">04</div>
               <div className="protocol-content">
-                <small className="accent">DOKTRIN #4 // AKUMULASI MODAL</small>
-                <h3>OTOMASI DISIPLIN PAY YOURSELF FIRST 20%</h3>
+                <small className="accent">ATURAN 4</small>
+                <h3>BAYAR DIRI SENDIRI DULUAN, MINIMAL 20%</h3>
                 <p className="protocol-quote">
-                  "Menabung dari sisa uang di akhir bulan secara empiris selalu berujung pada angka nol."
+                  "Menabung dari sisa uang akhir bulan hasilnya hampir selalu nol."
                 </p>
                 <p className="protocol-body">
-                  Uang yang tidak memiliki pos terencana pasti akan habis terpakai untuk hal-hal sepele. Prinsip dasar kemandirian finansial adalah membayar masa depan Anda sendiri terlebih dahulu. Begitu gaji masuk, minimal 20% langsung dikunci untuk akumulasi dana darurat 3 hingga 6 bulan pengeluaran sebelum sepeser pun uang operasional mulai dibelanjakan.
+                  Uang tanpa pos yang jelas pasti habis untuk hal sepele. Prinsipnya simpel: begitu gaji
+                  masuk, sisihkan minimal 20% untuk dana darurat sebelum mulai dibelanjakan. Target dana
+                  darurat adalah 3–6 bulan biaya hidup.
                 </p>
                 <div className="protocol-foot">
-                  <span>TARGET ALOKASI: <b>MINIMAL 20% TABUNGAN AWAL BULAN</b></span>
-                  <span className="swiss-tag dark">OTOMASI DISIPLIN</span>
+                  <span>TARGET: <b>MINIMAL 20% DI AWAL BULAN</b></span>
+                  <span className="swiss-tag dark">OTOMATIS</span>
                 </div>
               </div>
             </article>
           </div>
         </section>
 
-        {/* SWISS TELEMETRY BENTO SECTION */}
+        {/* TELEMETRY */}
         <section id="telemetri" className="swiss-telemetry-section reveal">
           <div className="swiss-section-meta">
-            <span>SISTEM 03 // TELEMETRI KEBOCORAN & KEAMANAN SISTEM</span>
-            <span>INTEGRITAS ARITMATIKA & KEDAULATAN DATA</span>
+            <span>KENYATAAN &amp; KEAMANAN</span>
+            <span>TRANSPARAN SOAL DATA DAN ANGKANYA</span>
           </div>
 
           <div className="swiss-telemetry-grid">
             <article className="swiss-telemetry-card leak-audit">
-              <span className="swiss-index-badge">03.A // AUDIT DEVIASI MIKRO</span>
-              <h3>DAMPAK KOPI SUSU & JAJAN MIKRO HARIAN</h3>
+              <span className="swiss-index-badge">HITUNG-HITUNGAN</span>
+              <h3>SEBEGITU BESARKAH DAMPAK KOPI HARIAN?</h3>
               <p>
-                Pengeluaran kecil yang tidak dicatat seringkali merupakan penyebab utama kegagalan menabung.
+                Pengeluaran kecil yang tidak dicatat sering jadi penyebab utama gagal menabung.
               </p>
 
               <div className="swiss-leak-meter">
                 <div className="leak-stat">
-                  <small>PENGELUARAN HARIAN</small>
+                  <small>SEHARI</small>
                   <strong>Rp 28.000</strong>
-                  <span>1 Gelas Kopi Kekinian</span>
+                  <span>1 gelas kopi susu</span>
                 </div>
-                <div className="leak-arrow">→</div>
+                <div className="leak-arrow" aria-hidden="true"><Icon name="arrowRight" size={18} /></div>
                 <div className="leak-stat">
-                  <small>TOTAL 1 BULAN (30 HARI)</small>
+                  <small>SEBULAN (30 HARI)</small>
                   <strong>Rp 840.000</strong>
-                  <span>16.1% dari Gaji UMR</span>
+                  <span>16,1% dari gaji UMR</span>
                 </div>
-                <div className="leak-arrow">→</div>
+                <div className="leak-arrow" aria-hidden="true"><Icon name="arrowRight" size={18} /></div>
                 <div className="leak-stat highlight">
-                  <small>TOTAL 1 TAHUN</small>
+                  <small>SETAHUN</small>
                   <strong className="accent">Rp 10.080.000</strong>
-                  <span>Modal Investasi Terbuang</span>
+                  <span>Modal investasi yang hilang</span>
                 </div>
               </div>
 
               <div className="swiss-leak-insight">
-                <span className="swiss-pill-marker">REKOMENDASI FATRACK</span>
+                <span className="swiss-pill-marker">CATATAN</span>
                 <p>
-                  Bukan berarti Anda dilarang ngopi. Dengan Safe-to-Spend, jajan kopi masuk ke kuota 30% Wants terukur, bukan memotong dana kost atau tabungan darurat.
+                  Bukan berarti kamu dilarang ngopi. Dengan batas harian, jajan kopi masuk ke porsi 30%
+                  keinginan yang sudah dianggarkan — bukan mengambil dari uang kost atau tabungan.
                 </p>
               </div>
             </article>
 
             <article className="swiss-telemetry-card security-manifesto">
-              <span className="swiss-index-badge">03.B // KEDAULATAN DATA</span>
-              <h3>ARSITEKTUR KEAMANAN SUPABASE ENCRYPTED</h3>
+              <span className="swiss-index-badge">KEAMANAN</span>
+              <h3>DATAMU TETAP MILIKMU</h3>
               <p>
-                Informasi finansial Anda adalah hak pribadi mutlak. Kami tidak menjual data ke pihak ketiga atau agensi periklanan.
+                Informasi keuanganmu adalah hak pribadi. Kami tidak menjual data ke pihak ketiga atau
+                agensi periklanan.
               </p>
 
               <div className="swiss-security-grid">
                 <div className="swiss-sec-item">
                   <div className="sec-icon"><Icon name="lock" size={16} /></div>
                   <div>
-                    <strong>POSTGRES ROW LEVEL SECURITY (RLS)</strong>
-                    <p>Hanya token autentikasi akun Anda yang memiliki izin membaca dan menulis data tabel.</p>
+                    <strong>AKSES TERKUNCI PER AKUN</strong>
+                    <p>Hanya akunmu yang bisa membaca dan mengubah data keuanganmu.</p>
                   </div>
                 </div>
 
                 <div className="swiss-sec-item">
                   <div className="sec-icon"><Icon name="sparkle" size={16} /></div>
                   <div>
-                    <strong>ZERO TELEMETRY AD TRACKERS</strong>
-                    <p>Bebas dari Google Analytics pihak ketiga, pixel marketing agresif, atau broker data pinjol.</p>
+                    <strong>TANPA IKLAN &amp; PELACAK</strong>
+                    <p>Tidak ada analitik pihak ketiga, pixel iklan, atau jual data ke pinjol.</p>
                   </div>
                 </div>
 
                 <div className="swiss-sec-item">
                   <div className="sec-icon"><Icon name="check" size={16} /></div>
                   <div>
-                    <strong>LOCAL STORAGE FAILOVER READY</strong>
-                    <p>Pencatatan harian tetap bekerja lancar dan sinkron otomatis saat koneksi internet pulih.</p>
+                    <strong>TETAP JALAN TANPA INTERNET</strong>
+                    <p>Pencatatan harian tetap tersimpan dan tersinkron saat koneksi kembali.</p>
                   </div>
                 </div>
               </div>
@@ -766,19 +762,91 @@ export const LandingPage: React.FC = () => {
           </div>
         </section>
 
+        {/* PRICING */}
+        <section id="harga" className="pricing-section reveal">
+          <div className="swiss-section-meta">
+            <span>HARGA</span>
+            <span>MULAI GRATIS, NAIK KELAS KAPAN SAJA</span>
+          </div>
+
+          <div className="pricing-head">
+            <small className="accent">PILIH SESUAI KEBUTUHANMU</small>
+            <h2>GRATIS UNTUK MULAI. BAYAR KALAU SUDAH TERBANTU.</h2>
+          </div>
+
+          <div className="price-card-grid">
+            <article className="price-card">
+              <header>
+                <h3>Money Tracker</h3>
+                <span className="price-tag">Rp 0<span>/ selamanya</span></span>
+              </header>
+              <p>Cukup untuk mulai disiplin mencatat setiap pengeluaran.</p>
+              <ul>
+                <li><Icon name="check" size={14} /> Catat pemasukan &amp; pengeluaran</li>
+                <li><Icon name="check" size={14} /> Buku besar transaksi + filter kategori</li>
+                <li><Icon name="check" size={14} /> Ringkasan dashboard dasar</li>
+                <li className="price-card-off"><Icon name="x" size={14} /> Batas jajan harian</li>
+                <li className="price-card-off"><Icon name="x" size={14} /> Alokasi 50/30/20</li>
+                <li className="price-card-off"><Icon name="x" size={14} /> Rekomendasi kost &amp; makan</li>
+              </ul>
+              <button className="outline price-card-btn" type="button" onClick={handleStart}>
+                Mulai Gratis
+              </button>
+            </article>
+
+            <article className="price-card price-card--featured">
+              <span className="price-card-ribbon">PALING BANYAK DIPILIH</span>
+              <header>
+                <h3>Advisor Bulanan</h3>
+                <span className="price-tag">Rp 29.900<span>/ bulan</span></span>
+              </header>
+              <p>Semua fitur pendamping keuangan, aktif penuh.</p>
+              <ul>
+                <li><Icon name="star" size={14} /> Batas jajan harian otomatis</li>
+                <li><Icon name="star" size={14} /> Alokasi 50/30/20 yang bisa diatur</li>
+                <li><Icon name="star" size={14} /> Rekomendasi tipe kost sesuai gaji</li>
+                <li><Icon name="star" size={14} /> Paket belanja minimarket &amp; meal plan</li>
+                <li><Icon name="star" size={14} /> Skor kesehatan keuangan (0–100)</li>
+                <li><Icon name="star" size={14} /> Semua fitur Money Tracker</li>
+              </ul>
+              <button className="pill dark price-card-btn" type="button" onClick={handleStart}>
+                Coba Advisor
+              </button>
+            </article>
+
+            <article className="price-card">
+              <header>
+                <h3>Advisor Tahunan</h3>
+                <span className="price-tag">Rp 249.000<span>/ tahun</span></span>
+              </header>
+              <p>Pilihan paling hemat — setara Rp 20.750 per bulan.</p>
+              <ul>
+                <li><Icon name="check" size={14} /> Semua fitur Advisor Bulanan</li>
+                <li><Icon name="check" size={14} /> Hemat 30% dibanding bulanan</li>
+                <li><Icon name="check" size={14} /> Bayar sekali untuk 12 bulan</li>
+                <li><Icon name="check" size={14} /> Harga terkunci selama satu tahun</li>
+              </ul>
+              <button className="outline price-card-btn" type="button" onClick={handleStart}>
+                Pilih Tahunan
+              </button>
+            </article>
+          </div>
+        </section>
+
         {/* CTA */}
         <section id="formula" className="cta reveal">
-          <small className="accent">MULAI LANGKAH DISIPLIN KEUANGAN</small>
-          <h2>ATUR GAJI ANDA DENGAN STRUKTUR JELAS.</h2>
+          <small className="accent">SIAP MULAI?</small>
+          <h2>Tahu batas jajanmu dalam 2 menit.</h2>
           <p className="lead">
-            Bergabunglah dengan anak muda Indonesia yang mengontrol arus kas dan gaya hidup dengan kalkulasi riil.
+            Masukkan gaji dan biaya tetapmu, lalu lihat angka harian yang bisa kamu pakai hari ini.
+            Gratis, tanpa kartu kredit.
           </p>
           <div className="cta-actions">
             <button className="pill dark" type="button" onClick={handleStart}>
-              BUAT AKUN SEKARANG
+              Buat Akun Gratis
             </button>
             <button className="outline" type="button" onClick={handleDemo}>
-              MASUK KE DEMO MODE
+              Lihat Demo Dulu
             </button>
           </div>
         </section>
@@ -787,20 +855,20 @@ export const LandingPage: React.FC = () => {
       {/* FOOTER */}
       <footer id="tentang" className="site-footer">
         <div>
-          <small>01 / IDENTITAS</small>
-          <p>FATrack adalah sistem personal finance advisor untuk ekosistem kerja Indonesia.</p>
+          <small>TENTANG</small>
+          <p>costKu adalah pendamping keuangan pribadi untuk pekerja muda Indonesia.</p>
         </div>
         <div>
-          <small>02 / FORMULA DASAR</small>
-          <p>Safe-to-Spend Daily Formula<br />50/30/20 Adaptive Allocation<br />25% Max Rent Ratio</p>
+          <small>CARA MENGHITUNG</small>
+          <p>Batas jajan harian<br />Pembagian gaji 50/30/20<br />Batas sewa kost maksimal 25%</p>
         </div>
         <div>
-          <small>03 / DATABASE & KEAMANAN</small>
-          <p>Supabase Postgres Engine<br />Row Level Security (RLS)<br />Local Storage Failover</p>
+          <small>DATA &amp; KEAMANAN</small>
+          <p>Enkripsi Supabase<br />Akses terkunci per akun<br />Tetap jalan tanpa internet</p>
         </div>
         <div>
-          <small>04 / STATUS SISTEM</small>
-          <p className="green">● OPERASIONAL NORMAL</p>
+          <small>STATUS LAYANAN</small>
+          <p className="green"><Icon name="dot" size={9} className="status-dot" /> Berjalan normal</p>
         </div>
       </footer>
     </div>
