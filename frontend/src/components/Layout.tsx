@@ -11,14 +11,16 @@ interface LayoutProps {
 interface NavEntry {
   to: string;
   label: string;
-  icon: 'home' | 'wallet' | 'sparkle' | 'list' | 'star';
+  icon: 'home' | 'wallet' | 'sparkle' | 'list' | 'star' | 'chart' | 'clock';
   premiumOnly?: boolean;
 }
 
 const NAV_ENTRIES: NavEntry[] = [
   { to: '/dashboard', label: 'Dashboard', icon: 'home' },
+  { to: '/pemasukan', label: 'Pemasukan', icon: 'wallet' },
+  { to: '/cicilan', label: 'Cicilan', icon: 'clock' },
   { to: '/transaksi', label: 'Transaksi', icon: 'list' },
-  { to: '/alokasi', label: 'Alokasi', icon: 'wallet', premiumOnly: true },
+  { to: '/alokasi', label: 'Alokasi', icon: 'chart', premiumOnly: true },
   { to: '/rekomendasi', label: 'Gaya Hidup', icon: 'sparkle', premiumOnly: true },
   { to: '/subscription', label: 'Langganan', icon: 'star' },
 ];

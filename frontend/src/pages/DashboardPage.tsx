@@ -17,10 +17,11 @@ import {
 import {
   calculateAllocationWithPayday,
   calculateFinancialHealthScore,
-  getDaysInCurrentCycle,
-  getDayInCycle,
   formatRupiah,
 } from '../lib/calculator';
+import { getTotalIncome } from '../lib/incomeApi';
+import { getTotalMonthlyLiabilities } from '../lib/liabilityApi';
+import { calculateBudgetStatus } from '../lib/budgetEngine';
 import { DailyLimitCard } from '../components/DailyLimitCard';
 import { AllocationChart } from '../components/AllocationChart';
 import { BudgetGauge } from '../components/BudgetGauge';
@@ -40,8 +41,21 @@ export const DashboardPage: React.FC = () => {
     needs_percentage: 50,
     wants_percentage: 30,
     savings_percentage: 20,
+    carry_over_daily: true,
+    month_end_mode: 'carry_over',
   });
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [incomeSummary, setIncomeSummary] = useState<{ total: number; count: number }>({
+    total: 0,
+    count: 0,
+  });
+  const [liabilitySummary, setLiabilitySummary] = useState<{
+    totalMonthly: number;
+    activeCount: number;
+  }>({
+    totalMonthly: 0,
+    activeCount: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   // Load data
@@ -49,10 +63,13 @@ export const DashboardPage: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
-      const [p, b, txs] = await Promise.all([
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const [p, b, txs, inc, liab] = await Promise.all([
         getProfile(user.id),
         getBudgetSettings(user.id),
         getTransactions(user.id),
+        getTotalIncome(user.id, currentMonth),
+        getTotalMonthlyLiabilities(user.id),
       ]);
 
       if (p) {
@@ -70,6 +87,8 @@ export const DashboardPage: React.FC = () => {
 
       setBudget(b);
       setTransactions(txs);
+      setIncomeSummary({ total: inc.total, count: inc.count });
+      setLiabilitySummary({ totalMonthly: liab.totalMonthly, activeCount: liab.activeCount });
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
@@ -145,13 +164,31 @@ export const DashboardPage: React.FC = () => {
 
   // Derived financial metrics
   const salary = profile?.monthly_salary || 0;
+  const effectiveIncome = incomeSummary.total > 0 ? incomeSummary.total : salary;
   const fixedExpenses = profile?.fixed_expenses || 0;
+  const totalLiabilities = liabilitySummary.totalMonthly || 0;
+  const totalFixed = fixedExpenses + totalLiabilities;
   const paydayDate = profile?.payday_date || 25;
 
+  // Run core budget calculation with carry-over, split budget, and liability deductions
+  const budgetStatus = useMemo(() => {
+    return calculateBudgetStatus({
+      totalIncome: effectiveIncome,
+      totalLiabilities,
+      fixedExpenses,
+      savingsPercentage: budget.savings_percentage,
+      paydayDate,
+      transactions,
+      carryOverDaily: budget.carry_over_daily ?? true,
+      monthEndMode: budget.month_end_mode ?? 'carry_over',
+    });
+  }, [effectiveIncome, totalLiabilities, fixedExpenses, budget, paydayDate, transactions]);
+
+  // Allocation 50/30/20 with payday
   const allocation = useMemo(() => {
     return calculateAllocationWithPayday(
-      salary,
-      fixedExpenses,
+      effectiveIncome,
+      totalFixed,
       {
         needs: budget.needs_percentage,
         wants: budget.wants_percentage,
@@ -159,21 +196,14 @@ export const DashboardPage: React.FC = () => {
       },
       paydayDate
     );
-  }, [salary, fixedExpenses, budget, paydayDate]);
+  }, [effectiveIncome, totalFixed, budget, paydayDate]);
 
-  const daysInCycle = allocation.daysInCycle;
-  const currentDayIndex = getDayInCycle(paydayDate);
-  const daysRemaining = Math.max(1, daysInCycle - currentDayIndex + 1);
+  const daysRemaining = budgetStatus.daysRemaining;
+  const spentTodayEffective = budgetStatus.spentTodayEffective;
+  const spentTodayReal = budgetStatus.spentTodayReal;
+  const availableDailyLimit = budgetStatus.availableTodayInitial;
 
-  // Spending aggregations
-  const todayStr = new Date().toISOString().slice(0, 10);
-
-  const spentToday = useMemo(() => {
-    return transactions
-      .filter((t) => t.transaction_date === todayStr)
-      .reduce((sum, t) => sum + t.amount, 0);
-  }, [transactions, todayStr]);
-
+  // Category spending aggregations
   const categorySpending = useMemo(() => {
     return aggregateByCategory(transactions);
   }, [transactions]);
@@ -185,7 +215,7 @@ export const DashboardPage: React.FC = () => {
 
   // Alerts & Checks
   const isOverWants = allocation.wantsAmount > 0 && actualWants > allocation.wantsAmount;
-  const isOverDaily = allocation.dailyLimit > 0 && spentToday > allocation.dailyLimit;
+  const isOverDaily = budgetStatus.isOverToday;
 
   // Financial Health Score
   const healthScore = useMemo(() => {
@@ -209,6 +239,12 @@ export const DashboardPage: React.FC = () => {
     amount: number;
     category: 'Needs' | 'Wants' | 'Savings';
     transaction_date: string;
+    spread_days?: number | null;
+    spread_start?: string | null;
+    is_outlier?: boolean;
+    outlier_level?: 'hard' | 'soft' | null;
+    outlier_reason?: string | null;
+    confirmed_by_user?: boolean;
   }) => {
     if (!user) return;
     const newTx = await addTransaction(user.id, txData);
@@ -241,24 +277,39 @@ export const DashboardPage: React.FC = () => {
             <Icon name="hand" size={20} className="heading-inline-icon" />
           </h2>
           <p>
-            Gaji bersih <b>{formatRupiah(salary)}</b> · Biaya tetap <b>{formatRupiah(fixedExpenses)}</b> · Gajian tiap tanggal <b>{paydayDate}</b>
+            Total pemasukan <b>{formatRupiah(effectiveIncome)}</b>
+            {incomeSummary.count > 0 && ` (${incomeSummary.count} sumber)`} · Biaya tetap{' '}
+            <b>{formatRupiah(fixedExpenses)}</b>
+            {totalLiabilities > 0 && (
+              <span>
+                {' '}
+                · Cicilan/PayLater <b className="red-text">{formatRupiah(totalLiabilities)}</b>
+              </span>
+            )}{' '}
+            · Gajian tiap tanggal <b>{paydayDate}</b>
           </p>
         </div>
 
         <div className="strip-actions">
+          <button type="button" className="tag-btn" onClick={() => navigate('/pemasukan')}>
+            <Icon name="wallet" size={14} /> + PEMASUKAN
+          </button>
+          <button type="button" className="tag-btn" onClick={() => navigate('/cicilan')}>
+            <Icon name="clock" size={14} /> CICILAN ({liabilitySummary.activeCount})
+          </button>
           <button type="button" className="tag-btn" onClick={() => navigate('/transaksi')}>
             <Icon name="plus" size={14} /> CATAT TRANSAKSI
           </button>
           <button type="button" className="tag-btn" onClick={() => navigate('/onboarding')}>
-            <Icon name="settings" size={14} /> ATUR GAJI &amp; BIAYA
+            <Icon name="settings" size={14} /> PROFIL &amp; BIAYA
           </button>
           {isPremium ? (
             <button type="button" className="tag-btn" onClick={() => navigate('/alokasi')}>
-              <Icon name="swap" size={14} /> ATUR ALOKASI 50/30/20
+              <Icon name="swap" size={14} /> ALOKASI 50/30/20
             </button>
           ) : (
             <button type="button" className="tag-btn tag-btn--upgrade" onClick={() => navigate('/subscription')}>
-              <Icon name="star" size={14} /> BUKA SEMUA FITUR PRO
+              <Icon name="star" size={14} /> BUKA FITUR PRO
             </button>
           )}
         </div>
@@ -270,8 +321,8 @@ export const DashboardPage: React.FC = () => {
         wantsSpent={actualWants}
         targetWants={allocation.wantsAmount}
         isOverDaily={isOverDaily}
-        dailySpent={spentToday}
-        dailyLimit={allocation.dailyLimit}
+        dailySpent={spentTodayEffective}
+        dailyLimit={availableDailyLimit}
       />
 
       {/* TOP KPI METRICS STRIP */}
@@ -281,20 +332,29 @@ export const DashboardPage: React.FC = () => {
             BATAS JAJAN HARI INI
             {!isPremium && <span className="kpi-pro-hint"><Icon name="lock" size={10} /> PRO</span>}
           </small>
-          <strong>{isPremium ? formatRupiah(allocation.dailyLimit) : '—'}</strong>
-          <span>{isPremium ? 'Angka aman buat jajan hari ini' : 'Tersedia di paket Pro'}</span>
+          <strong>{isPremium ? formatRupiah(availableDailyLimit) : '—'}</strong>
+          <span>
+            {isPremium
+              ? budgetStatus.yesterdaySurplus !== 0
+                ? `Termasuk carry-over ${budgetStatus.yesterdaySurplus > 0 ? '+' : ''}${formatRupiah(budgetStatus.yesterdaySurplus)}`
+                : 'Batas aman pengeluaran hari ini'
+              : 'Tersedia di paket Pro'}
+          </span>
         </div>
         <div className="kpi-cell">
-          <small>SUDAH KELUAR HARI INI</small>
+          <small>BEBAN PENGELUARAN HARI INI</small>
           <strong className={isOverDaily ? 'red-text' : 'green-text'}>
-            {formatRupiah(spentToday)}
+            {formatRupiah(spentTodayEffective)}
           </strong>
-          <span>Sisa {formatRupiah(Math.max(0, allocation.dailyLimit - spentToday))} untuk hari ini</span>
+          <span>
+            Sisa {formatRupiah(Math.max(0, availableDailyLimit - spentTodayEffective))}
+            {spentTodayReal !== spentTodayEffective && ` (Kas riil: ${formatRupiah(spentTodayReal)})`}
+          </span>
         </div>
         <div className="kpi-cell">
           <small>UANG BEBAS BULAN INI</small>
-          <strong>{formatRupiah(allocation.disposableIncome)}</strong>
-          <span>Setelah biaya tetap &amp; tabungan</span>
+          <strong>{formatRupiah(budgetStatus.disposableMonthly)}</strong>
+          <span>Setelah cicilan, biaya tetap &amp; tabungan</span>
         </div>
         <div className="kpi-cell">
           <small>
@@ -309,13 +369,12 @@ export const DashboardPage: React.FC = () => {
               ? 'Tersedia di paket Pro'
               : healthScore >= 70
                 ? 'Kondisi sehat, pertahankan'
-                : 'Ada yang perlu diperbaiki'}
+                : 'Ada pos yang perlu diperbaiki'}
           </span>
         </div>
       </section>
 
-      {/* UPGRADE NOTICE — sits below the KPI strip so the headline numbers are
-          the first thing visible on load. */}
+      {/* UPGRADE NOTICE */}
       {!isPremium && (
         <div className="free-tier-notice">
           <div className="free-tier-notice__content">
@@ -323,8 +382,8 @@ export const DashboardPage: React.FC = () => {
             <div>
               <span className="free-tier-notice__label">KAMU SEDANG DI PAKET GRATIS</span>
               <span className="free-tier-notice__desc">
-                Saat ini kamu bisa mencatat transaksi dan melihat ringkasan. Buka batas jajan harian,
-                alokasi 50/30/20, dan rekomendasi kost dengan paket Pro.
+                Kamu dapat mencatat transaksi, cicilan, dan aneka pemasukan. Buka batas jajan harian adaptif,
+                carry-over otomatis, dan alokasi 50/30/20 dengan paket Pro.
               </span>
             </div>
           </div>
@@ -339,18 +398,22 @@ export const DashboardPage: React.FC = () => {
         {/* LEFT COLUMN: DAILY LIMIT + GAUGES + HEALTH SCORE */}
         <div className="dashboard-left-col">
           <DailyLimitCard
-            dailyLimit={allocation.dailyLimit}
-            spentToday={spentToday}
+            dailyLimit={availableDailyLimit}
+            spentToday={spentTodayEffective}
+            spentTodayReal={spentTodayReal}
             daysRemaining={daysRemaining}
             paydayDate={paydayDate}
-            disposableMonthly={allocation.disposableIncome}
+            disposableMonthly={budgetStatus.disposableMonthly}
+            baseDailyLimit={budgetStatus.baseDailyLimit}
+            yesterdaySurplus={budgetStatus.yesterdaySurplus}
+            carryOverEnabled={budget.carry_over_daily ?? true}
           />
 
           <BudgetGauge
-            monthlyBudget={allocation.disposableIncome}
-            monthlySpent={totalSpent}
-            dailyLimit={allocation.dailyLimit}
-            dailySpent={spentToday}
+            monthlyBudget={budgetStatus.disposableMonthly}
+            monthlySpent={budgetStatus.cumulativeSpent}
+            dailyLimit={availableDailyLimit}
+            dailySpent={spentTodayEffective}
           />
 
           <HealthScoreCard
@@ -373,7 +436,12 @@ export const DashboardPage: React.FC = () => {
           />
 
           <div className="quick-add-transaction-box">
-            <TransactionForm onAddTransaction={handleAddTransaction} />
+            <TransactionForm
+              onAddTransaction={handleAddTransaction}
+              monthlyIncome={effectiveIncome}
+              dailyLimit={budgetStatus.baseDailyLimit}
+              recentAmounts={transactions.map((t) => t.amount)}
+            />
           </div>
 
           <div className="recent-transactions-box">

@@ -121,7 +121,46 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                 <tr key={tx.id} className="ledger-table-row">
                   <td className="tx-date-cell">{formatDisplayDate(tx.transaction_date)}</td>
                   <td className="tx-title-cell">
-                    <b>{tx.title}</b>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <b>{tx.title}</b>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        {tx.spread_days && tx.spread_days > 1 && (
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              padding: '0.15rem 0.45rem',
+                              borderRadius: '4px',
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              color: '#60a5fa',
+                              border: '1px solid rgba(59, 130, 246, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                            }}
+                          >
+                            📅 Dibagi {tx.spread_days} hari ({formatRupiah(Math.round(tx.amount / tx.spread_days))}/hari)
+                          </span>
+                        )}
+                        {tx.is_outlier && (
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              padding: '0.15rem 0.45rem',
+                              borderRadius: '4px',
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              color: '#f87171',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                            }}
+                            title={tx.outlier_reason || 'Pengeluaran signifikan'}
+                          >
+                            ⚠️ Pengeluaran Besar
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="tx-cat-cell">
                     <span className={`cat-tag cat-${tx.category.toLowerCase()}`}>
@@ -153,6 +192,34 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               <li key={tx.id} className="ledger-mobile-item">
                 <div className="ledger-mobile-main">
                   <b className="ledger-mobile-title">{tx.title}</b>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', margin: '0.15rem 0' }}>
+                    {tx.spread_days && tx.spread_days > 1 && (
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '4px',
+                          background: 'rgba(59, 130, 246, 0.15)',
+                          color: '#60a5fa',
+                        }}
+                      >
+                        📅 {tx.spread_days} hari ({formatRupiah(Math.round(tx.amount / tx.spread_days))}/hr)
+                      </span>
+                    )}
+                    {tx.is_outlier && (
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '4px',
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          color: '#f87171',
+                        }}
+                      >
+                        ⚠️ Outlier
+                      </span>
+                    )}
+                  </div>
                   <span className="ledger-mobile-meta">
                     {formatDisplayDate(tx.transaction_date)} · {CATEGORY_LABEL[tx.category] || tx.category}
                   </span>

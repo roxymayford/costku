@@ -12,6 +12,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AllocationPage } from './pages/AllocationPage';
 import { RecommendationsPage } from './pages/RecommendationsPage';
 import { TransactionsPage } from './pages/TransactionsPage';
+import { IncomesPage } from './pages/IncomesPage';
+import { LiabilitiesPage } from './pages/LiabilitiesPage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 import './styles/index.css';
 
@@ -61,6 +63,22 @@ export function App() {
               element={
                 <Layout>
                   <TransactionsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/pemasukan"
+              element={
+                <Layout>
+                  <IncomesPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/cicilan"
+              element={
+                <Layout>
+                  <LiabilitiesPage />
                 </Layout>
               }
             />

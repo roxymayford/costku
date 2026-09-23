@@ -6,6 +6,8 @@ import { googleAuthRouter } from './routes/googleAuth.js';
 import { subscriptionRouter } from './routes/subscription.js';
 import { midtransRouter } from './routes/midtrans.js';
 import { nlpRouter } from './routes/nlp.js';
+import { incomesRouter } from './routes/incomes.js';
+import { liabilitiesRouter } from './routes/liabilities.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { isSupabaseConfigured, hasServiceRoleKey } from './lib/supabase.js';
 import { isMidtransConfigured } from './lib/midtrans.js';
@@ -13,6 +15,7 @@ import { isGoogleConfigured, googleRedirectUri } from './lib/google.js';
 import { describeOtpDelivery, otpRuntimeInfo } from './modules/otp/index.js';
 import { nlpModuleInfo, initializeNlpParser, getMlServiceUrl, isMlClassifierEnabled } from './modules/nlp/index.js';
 import { registerCleanupJobs } from './modules/jobs/cleanup-otp.job.js';
+import { registerLiabilityJobs } from './modules/jobs/liability-payment.job.js';
 
 dotenv.config();
 
@@ -41,6 +44,7 @@ app.get('/api/health', (_req, res) => {
       otpVerification: true,
       googleConnected: isGoogleConfigured,
       nlpTransactionParser: true,
+      incomeTracker: true,
     },
     otp: {
       ...otpRuntimeInfo(),
@@ -64,6 +68,10 @@ app.use('/api/subscription', subscriptionRouter);
 app.use('/api/midtrans', midtransRouter);
 app.use('/api/v1/nlp', nlpRouter);
 app.use('/api/nlp', nlpRouter);
+app.use('/api/v1/incomes', incomesRouter);
+app.use('/api/incomes', incomesRouter);
+app.use('/api/v1/liabilities', liabilitiesRouter);
+app.use('/api/liabilities', liabilitiesRouter);
 
 // Global Error Handler
 app.use(errorHandler);
@@ -97,6 +105,7 @@ app.listen(PORT, () => {
   }
 
   registerCleanupJobs();
+  registerLiabilityJobs();
 
   // Dictionary bootstrap is best-effort: until it resolves (or if it fails)
   // the NLP parser runs on the seed lexicons, which is Fase 1's baseline.

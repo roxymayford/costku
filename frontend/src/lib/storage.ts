@@ -17,6 +17,8 @@ export type BudgetSettings = {
   needs_percentage: number;
   wants_percentage: number;
   savings_percentage: number;
+  carry_over_daily?: boolean; // Aktifkan carry-over sisa harian
+  month_end_mode?: 'carry_over' | 'savings' | 'reset'; // Sisa akhir bulan: bawa ke bulan depan, masukkan tabungan, atau reset
 };
 
 export type Transaction = {
@@ -26,6 +28,12 @@ export type Transaction = {
   category: 'Needs' | 'Wants' | 'Savings';
   transaction_date: string;
   created_at: string;
+  spread_days?: number | null;
+  spread_start?: string | null;
+  is_outlier?: boolean;
+  outlier_level?: 'hard' | 'soft' | null;
+  outlier_reason?: string | null;
+  confirmed_by_user?: boolean;
 };
 
 const LS_KEYS = {
@@ -64,6 +72,8 @@ export async function getBudgetSettings(userId: string): Promise<BudgetSettings>
     needs_percentage: 50,
     wants_percentage: 30,
     savings_percentage: 20,
+    carry_over_daily: true,
+    month_end_mode: 'carry_over',
   };
 
   if (isSupabaseConfigured) {
@@ -73,12 +83,18 @@ export async function getBudgetSettings(userId: string): Promise<BudgetSettings>
       .eq('user_id', userId)
       .single();
     return data
-      ? { needs_percentage: data.needs_percentage, wants_percentage: data.wants_percentage, savings_percentage: data.savings_percentage }
+      ? {
+          needs_percentage: data.needs_percentage ?? defaults.needs_percentage,
+          wants_percentage: data.wants_percentage ?? defaults.wants_percentage,
+          savings_percentage: data.savings_percentage ?? defaults.savings_percentage,
+          carry_over_daily: data.carry_over_daily ?? defaults.carry_over_daily,
+          month_end_mode: data.month_end_mode ?? defaults.month_end_mode,
+        }
       : defaults;
   }
 
   const raw = localStorage.getItem(LS_KEYS.budget);
-  return raw ? JSON.parse(raw) : defaults;
+  return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
 }
 
 export async function saveBudgetSettings(userId: string, settings: BudgetSettings): Promise<void> {

@@ -4,6 +4,8 @@ import { gsap } from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import {
   Transaction,
+  UserProfile,
+  getProfile,
   getTransactions,
   addTransaction,
   deleteTransaction,
@@ -18,6 +20,7 @@ export const TransactionsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -53,8 +56,12 @@ export const TransactionsPage: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
-      const txs = await getTransactions(user.id);
+      const [txs, p] = await Promise.all([
+        getTransactions(user.id),
+        getProfile(user.id),
+      ]);
       setTransactions(txs);
+      setProfile(p);
     } catch (err) {
       console.error('Error loading transactions:', err);
     } finally {
@@ -143,7 +150,16 @@ export const TransactionsPage: React.FC = () => {
 
       <div className="transactions-content-layout">
         <div className="transactions-form-col">
-          <TransactionForm onAddTransaction={handleAddTransaction} />
+          <TransactionForm
+            onAddTransaction={handleAddTransaction}
+            monthlyIncome={profile?.monthly_salary || 5000000}
+            dailyLimit={
+              profile?.monthly_salary
+                ? Math.round((profile.monthly_salary - (profile.fixed_expenses || 0)) / 30)
+                : 150000
+            }
+            recentAmounts={transactions.map((t) => t.amount)}
+          />
         </div>
 
         <div className="transactions-list-col">
