@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "test:otp": "tsx --test test/otp.crypto.test.ts test/otp.service.test.ts",
+    "test:nlp": "tsx --test test/nlp.*.test.ts",
     "test": "tsx --test test/*.test.ts"
   },
   "keywords": [

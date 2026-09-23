@@ -10,6 +10,7 @@ import { isSupabaseConfigured, hasServiceRoleKey } from './lib/supabase.js';
 import { isMidtransConfigured } from './lib/midtrans.js';
 import { isGoogleConfigured, googleRedirectUri } from './lib/google.js';
 import { describeOtpDelivery, otpRuntimeInfo } from './modules/otp/index.js';
+import { nlpModuleInfo, initializeNlpParser } from './modules/nlp/index.js';
 import { registerCleanupJobs } from './modules/jobs/cleanup-otp.job.js';
 
 dotenv.config();
@@ -38,11 +39,13 @@ app.get('/api/health', (_req, res) => {
       midtransConnected: isMidtransConfigured,
       otpVerification: true,
       googleConnected: isGoogleConfigured,
+      nlpTransactionParser: true,
     },
     otp: {
       ...otpRuntimeInfo(),
       delivery: describeOtpDelivery(),
     },
+    nlp: nlpModuleInfo(),
   });
 });
 
@@ -84,4 +87,18 @@ app.listen(PORT, () => {
   }
 
   registerCleanupJobs();
+
+  // Dictionary bootstrap is best-effort: until it resolves (or if it fails)
+  // the NLP parser runs on the seed lexicons, which is Fase 1's baseline.
+  void initializeNlpParser()
+    .then((bundle) => {
+      console.log(
+        `[costKu API] NLP parser ready — ${bundle.keywords.length} keywords, ` +
+          `${Object.keys(bundle.slang).length} slang entries, ${bundle.products.length} products ` +
+          `(slang: ${bundle.loadedFrom.slang}, keywords: ${bundle.loadedFrom.keywords}, products: ${bundle.loadedFrom.products}).`
+      );
+    })
+    .catch((err: unknown) => {
+      console.warn('[costKu API] NLP dictionary bootstrap failed, using seed lexicons:', err);
+    });
 });
