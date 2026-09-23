@@ -76,7 +76,7 @@ export const AllocationChart: React.FC<AllocationChartProps> = ({
                   border: '1px solid #111',
                   borderRadius: 0,
                   fontSize: '11px',
-                  fontFamily: 'inherit',
+                  fontFamily: "'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                   letterSpacing: '0.05em',
                 }}
               />

@@ -138,7 +138,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                               gap: '0.25rem',
                             }}
                           >
-                            📅 Dibagi {tx.spread_days} hari ({formatRupiah(Math.round(tx.amount / tx.spread_days))}/hari)
+                            <Icon name="calendar" size={11} /> Dibagi {tx.spread_days} hari ({formatRupiah(Math.round(tx.amount / tx.spread_days))}/hari)
                           </span>
                         )}
                         {tx.is_outlier && (
@@ -156,7 +156,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                             }}
                             title={tx.outlier_reason || 'Pengeluaran signifikan'}
                           >
-                            ⚠️ Pengeluaran Besar
+                            <Icon name="alert" size={11} /> Pengeluaran Besar
                           </span>
                         )}
                       </div>
@@ -203,7 +203,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           color: '#60a5fa',
                         }}
                       >
-                        📅 {tx.spread_days} hari ({formatRupiah(Math.round(tx.amount / tx.spread_days))}/hr)
+                        <Icon name="calendar" size={10} /> {tx.spread_days} hari ({formatRupiah(Math.round(tx.amount / tx.spread_days))}/hr)
                       </span>
                     )}
                     {tx.is_outlier && (
@@ -216,7 +216,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           color: '#f87171',
                         }}
                       >
-                        ⚠️ Outlier
+                        <Icon name="alert" size={10} /> Outlier
                       </span>
                     )}
                   </div>

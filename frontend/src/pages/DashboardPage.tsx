@@ -29,6 +29,7 @@ import { HealthScoreCard } from '../components/HealthScoreCard';
 import { AlertBanner } from '../components/AlertBanner';
 import { TransactionForm } from '../components/TransactionForm';
 import { TransactionList } from '../components/TransactionList';
+import { NlpTransactionBox } from '../components/NlpTransactionBox';
 import { Icon } from '../components/Icon';
 
 export const DashboardPage: React.FC = () => {
@@ -123,6 +124,13 @@ export const DashboardPage: React.FC = () => {
         duration: 0.6,
         stagger: 0.08,
         delay: 0.1,
+        ease: 'power2.out',
+      });
+      gsap.from('.dashboard-nlp-strip', {
+        y: 20,
+        opacity: 0,
+        duration: 0.6,
+        delay: 0.18,
         ease: 'power2.out',
       });
 
@@ -392,6 +400,14 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* SMART NLP TRANSACTION INPUT STRIP (AREA CORETAN ORANYE) */}
+      <NlpTransactionBox
+        onAddTransaction={handleAddTransaction}
+        monthlyIncome={effectiveIncome}
+        dailyLimit={budgetStatus.baseDailyLimit}
+        recentAmounts={transactions.map((t) => t.amount)}
+      />
 
       {/* MAIN TWO-COLUMN DASHBOARD GRID */}
       <section className="dashboard-columns-grid">

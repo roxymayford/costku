@@ -41,22 +41,27 @@ export const supabaseAdmin: SupabaseClient | null = isSupabaseConfigured
 export async function findAuthUserByEmail(email: string): Promise<{ id: string } | null> {
   if (!supabaseAdmin) return null;
   const target = email.trim().toLowerCase();
-  try {
-    for (let page = 1; page <= 5; page += 1) {
-      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
-      if (error) {
-        console.warn('[Supabase] listUsers failed:', error.message);
-        return null;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      for (let page = 1; page <= 5; page += 1) {
+        const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+        if (error) {
+          console.warn(`[Supabase] listUsers failed (attempt ${attempt}):`, error.message);
+          break;
+        }
+        const match = data?.users?.find((u) => u.email?.toLowerCase() === target);
+        if (match) return { id: match.id };
+        if (!data?.users || data.users.length < 200) return null;
       }
-      const match = data?.users?.find((u) => u.email?.toLowerCase() === target);
-      if (match) return { id: match.id };
-      if (!data?.users || data.users.length < 200) break;
+    } catch (err) {
+      console.warn(`[Supabase] findAuthUserByEmail error (attempt ${attempt}):`, (err as Error).message);
     }
-    return null;
-  } catch (err) {
-    console.warn('[Supabase] findAuthUserByEmail error:', (err as Error).message);
-    return null;
+    if (attempt === 1) {
+      await new Promise((r) => setTimeout(r, 400));
+    }
   }
+  return null;
 }
 
 /**

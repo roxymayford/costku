@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { CurrencyInput } from './CurrencyInput';
+import { Icon } from './Icon';
 import { formatRupiah } from '../lib/calculator';
 import { checkTransactionOutlier, OutlierCheckResult } from '../lib/outlierEngine';
 import { OutlierWarning } from './OutlierWarning';
-import { Icon } from './Icon';
 
 interface TransactionFormProps {
   onAddTransaction: (tx: {
@@ -176,7 +176,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
               {dailySplitAmount && (
                 <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--accent)' }}>
-                  💡 Efektif memotong batas harian <b>{formatRupiah(dailySplitAmount)}/hari</b> selama {spreadDays} hari (tidak membebani 1 hari sekaligus).
+                  <Icon name="lightbulb" size={12} /> Efektif memotong batas harian <b>{formatRupiah(dailySplitAmount)}/hari</b> selama {spreadDays} hari (tidak membebani 1 hari sekaligus).
                 </div>
               )}
             </div>

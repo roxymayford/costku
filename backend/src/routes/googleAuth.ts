@@ -129,7 +129,10 @@ googleAuthRouter.get('/google/callback', async (req: Request, res: Response) => 
       )
     );
   } catch (err) {
-    console.error('[Google OAuth] Callback failed:', (err as Error).message);
+    const e = err as Error & { cause?: unknown };
+    console.error('[Google OAuth] Callback failed:', e.message);
+    console.error('[Google OAuth] Stack:', e.stack);
+    if (e.cause) console.error('[Google OAuth] Cause:', e.cause);
     return failRedirect(res, 'oauth_failed');
   }
 });
@@ -187,11 +190,25 @@ async function provisionUser(input: ProvisionInput): Promise<ProvisionResult> {
       });
 
       if (error || !data?.user) {
-        console.error('[Google OAuth] createUser failed:', error?.message);
-        return { userId: '', error: 'provision_failed' };
+        if (error?.message?.toLowerCase().includes('already')) {
+          console.log('[Google OAuth] User already registered in Supabase. Recovering existing account...');
+          const recovered = await findAuthUserByEmail(email);
+          if (recovered) {
+            userId = recovered.id;
+            await supabaseAdmin!.auth.admin.updateUserById(userId, {
+              user_metadata: { name, avatar_url: avatarUrl, provider: 'google' },
+            }).catch(() => {});
+          } else {
+            console.error('[Google OAuth] Failed to recover existing user by email:', error.message);
+            return { userId: '', error: 'provision_failed' };
+          }
+        } else {
+          console.error('[Google OAuth] createUser failed:', error?.message);
+          return { userId: '', error: 'provision_failed' };
+        }
+      } else {
+        userId = data.user.id;
       }
-
-      userId = data.user.id;
     }
   } else {
     /*

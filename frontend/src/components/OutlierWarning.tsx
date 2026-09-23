@@ -35,7 +35,9 @@ export const OutlierWarning: React.FC<OutlierWarningProps> = ({
         </div>
 
         <small className={level === 'hard' ? 'red-text' : 'accent'} style={{ fontWeight: 700, letterSpacing: '0.05em' }}>
-          {level === 'hard' ? '⚠️ PERINGATAN PENGELUARAN SANGAT BESAR' : '💡 DETEKSI TRANSAKSI ANOMALI'}
+          {level === 'hard'
+            ? <><Icon name="alert" size={13} /> PERINGATAN PENGELUARAN SANGAT BESAR</>
+            : <><Icon name="lightbulb" size={13} /> DETEKSI TRANSAKSI ANOMALI</>}
         </small>
 
         <h3 style={{ margin: '0.4rem 0 0.6rem 0', fontSize: '1.25rem' }}>

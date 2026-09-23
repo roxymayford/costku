@@ -1,6 +1,15 @@
+import dns from 'node:dns';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Force Node.js to resolve IPv4 first on Windows/dual-stack networks
+// Prevents intermittent 10-second connect timeouts (UND_ERR_CONNECT_TIMEOUT) to Google and Supabase
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {
+  // Ignore on older Node runtimes
+}
 import { authRouter } from './routes/auth.js';
 import { googleAuthRouter } from './routes/googleAuth.js';
 import { subscriptionRouter } from './routes/subscription.js';

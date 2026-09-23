@@ -254,6 +254,513 @@
   color: #5a5a5a;
 }
 
+/* ==========================================================================
+   Dashboard NLP Smart Input Strip
+   ========================================================================== */
+.dashboard-nlp-strip {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+  padding: 28px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-nlp-strip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--orange);
+}
+
+.nlp-strip-content {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nlp-strip-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nlp-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.nlp-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 77, 37, 0.1);
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  padding: 3px 9px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nlp-icon-sparkle {
+  color: var(--orange);
+}
+
+.nlp-tag-hint {
+  font-size: 11px;
+  color: #777;
+  letter-spacing: 0.04em;
+}
+
+.nlp-strip-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: #111;
+}
+
+.nlp-strip-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  max-width: 780px;
+  line-height: 1.45;
+}
+
+/* Input Form Row */
+.nlp-input-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.nlp-input-wrapper {
+  flex: 1 1 500px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nlp-input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--orange);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.nlp-text-input {
+  width: 100%;
+  padding: 14px 40px 14px 42px;
+  font-size: 15px;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  color: #111;
+  font-family: inherit;
+  font-weight: 500;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.nlp-text-input:focus {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255, 77, 37, 0.2);
+}
+
+.nlp-text-input::placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+.nlp-clear-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.nlp-clear-btn:hover {
+  color: #111;
+}
+
+.nlp-actions-row {
+  display: flex;
+  gap: 10px;
+}
+
+.nlp-parse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: #111;
+  color: #fff;
+  border: 2px solid #111;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nlp-parse-btn:hover:not(:disabled) {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.nlp-parse-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Preset Chips */
+.nlp-suggestions-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nlp-suggestions-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.nlp-suggestions-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nlp-chip-btn {
+  background: var(--paper);
+  border: 1px solid #ddd;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.nlp-chip-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: #fff;
+}
+
+/* Alert Notification Banner */
+.nlp-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid;
+  animation: nlpSlideIn 0.2s ease-out;
+}
+
+.nlp-alert--success {
+  background: #eefbf3;
+  border-color: #008547;
+  color: #006033;
+}
+
+.nlp-alert--warning {
+  background: #fff8f0;
+  border-color: var(--orange);
+  color: #aa3012;
+}
+
+.nlp-alert--error {
+  background: #fdf2f2;
+  border-color: #c90000;
+  color: #8f0000;
+}
+
+.nlp-alert-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.nlp-alert-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  flex: 1;
+}
+
+.nlp-alert-body strong {
+  font-size: 13px;
+}
+
+.nlp-alert-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.nlp-alert-close:hover {
+  opacity: 1;
+}
+
+/* Parsed Result Preview Card */
+.nlp-preview-card {
+  background: var(--paper);
+  border: 2px solid var(--line);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: nlpCardPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nlp-preview-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid #e0ded8;
+  padding-bottom: 12px;
+}
+
+.nlp-preview-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nlp-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #008547;
+  color: #fff;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.nlp-method-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  background: #eee;
+  padding: 3px 8px;
+}
+
+.nlp-preview-tip {
+  font-size: 11px;
+  color: #777;
+}
+
+.nlp-preview-fields-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr 1.8fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .nlp-preview-fields-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .nlp-preview-fields-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nlp-preview-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nlp-preview-field label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #444;
+}
+
+.nlp-field-input {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: #111;
+}
+
+.nlp-field-input:focus {
+  outline: 2px solid var(--orange);
+}
+
+.nlp-amount-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nlp-amount-formatted {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+.nlp-category-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.nlp-cat-btn {
+  flex: 1;
+  padding: 9px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nlp-cat-btn.active-needs {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.nlp-cat-btn.active-wants {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+}
+
+.nlp-cat-btn.active-savings {
+  background: #008547;
+  color: #fff;
+  border-color: #008547;
+}
+
+.nlp-preview-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #e0ded8;
+  padding-top: 14px;
+}
+
+.nlp-cancel-btn {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #aaa;
+  color: #444;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nlp-cancel-btn:hover {
+  border-color: #111;
+  color: #111;
+}
+
+.nlp-confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--orange);
+  color: #fff;
+  border: 2px solid var(--orange);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.nlp-confirm-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.nlp-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nlp-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: nlpSpin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes nlpSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes nlpSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nlpCardPop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Dashboard 2-Column Grid
    Track sizes MUST be expressed in `fr`, never in `%`.
    Percentages resolve against the grid's content box only, so `42% 58%` already

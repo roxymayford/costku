@@ -152,7 +152,7 @@ export const LiabilityList: React.FC<LiabilityListProps> = ({
                   </td>
                   <td className="tx-date-cell">
                     {item.status === 'paid_off' ? (
-                      <span className="green-text" style={{ fontWeight: 600 }}>✅ Lunas</span>
+                      <span className="green-text" style={{ fontWeight: 600 }}><Icon name="check" size={13} /> Lunas</span>
                     ) : item.remaining_tenor !== null ? (
                       <span><b>{item.remaining_tenor}</b> bln lagi</span>
                     ) : (

@@ -6,7 +6,8 @@ type IconName =
   | 'menu' | 'close' | 'trash' | 'plus' | 'minus' | 'home' | 'wallet' | 'list' | 'user'
   | 'arrowDown' | 'search'
   | 'hand' | 'dot' | 'store' | 'utensils' | 'bus' | 'shield' | 'chart'
-  | 'target' | 'clock' | 'fire' | 'coffee' | 'cart';
+  | 'target' | 'clock' | 'fire' | 'coffee' | 'cart'
+  | 'calendar' | 'lightbulb' | 'fuel' | 'film' | 'brain';
 
 interface IconProps {
   name: IconName;
@@ -59,6 +60,11 @@ const paths: Record<IconName, React.ReactNode> = {
   ),
   coffee: <path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Zm13 1h2a2.5 2.5 0 0 1 0 5h-2M4 21h13" />,
   cart: <path d="M3 4h2.5l2.2 10.5a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 7H6M10 19.5h.01M17 19.5h.01" />,
+  calendar: <path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2M4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M4 8h16M8 2v4m8-4v4m-8 6h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />,
+  lightbulb: <path d="M9 21h6m-3-3v-4m0 0a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-2.5-3.5h5" />,
+  fuel: <path d="M4 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M4 20h10M14 10h2a2 2 0 0 1 2 2v3a1 1 0 0 0 1 1 1 1 0 0 0 1-1V8l-2-2M7 10h4" />,
+  film: <path d="M4 4h16v16H4V4Zm4 0v16m8-16v16M4 8h4m8 0h4M4 12h16M4 16h4m8 0h4" />,
+  brain: <path d="M12 3a5 5 0 0 0-4.8 3.5A4 4 0 0 0 4 10.5a4 4 0 0 0 2.2 3.6A5 5 0 0 0 12 21a5 5 0 0 0 5.8-6.9A4 4 0 0 0 20 10.5a4 4 0 0 0-3.2-3.9A5 5 0 0 0 12 3Zm0 0v18" />,
 };
 
 export function Icon({ name, className, size = 16, 'aria-hidden': ariaHidden = true }: IconProps) {

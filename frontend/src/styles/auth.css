@@ -102,7 +102,8 @@
   background: transparent;
   padding: 0 2px;
   color: #c42f0d;
-  font: 700 13px inherit;
+  font-size: 13px;
+  font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -135,7 +136,8 @@
   border: 0;
   padding: 0;
   color: #111;
-  font: 700 12px inherit;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: .01em;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -174,7 +176,8 @@
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 999px;
-  font: 700 12px inherit;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: .01em;
   color: #111;
   cursor: pointer;

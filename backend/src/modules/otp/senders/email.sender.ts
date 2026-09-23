@@ -100,9 +100,33 @@ export class EmailOtpSender implements OtpSender {
         text: buildOtpMessage(payload.code, payload.ttlMinutes),
         html: buildOtpEmailHtml(payload.code, payload.ttlMinutes, payload.recipientName),
       });
+
+      console.log(`[OTP EmailSender] Email OTP terkirim ke ${payload.destination} (Message ID: ${info?.messageId || 'unknown'}).`);
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`\n┌──────────────────────────────────────────────────────────────`);
+        console.log(`│ [DEV OTP HELPER]`);
+        console.log(`│ Tujuan : ${payload.destination}`);
+        console.log(`│ KODE   : ${payload.code}`);
+        console.log(`│ Berlaku: ${payload.ttlMinutes} menit`);
+        console.log(`└──────────────────────────────────────────────────────────────\n`);
+      }
+
       return { ok: true, providerMessageId: info?.messageId };
     } catch (err) {
-      return { ok: false, error: (err as Error).message };
+      const errorMsg = (err as Error).message;
+      console.error(`[OTP EmailSender] GAGAL kirim email ke ${payload.destination}:`, errorMsg);
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`\n┌──────────────────────────────────────────────────────────────`);
+        console.log(`│ [DEV OTP FALLBACK - EMAIL GAGAL DIKIRIM]`);
+        console.log(`│ Tujuan : ${payload.destination}`);
+        console.log(`│ KODE   : ${payload.code}`);
+        console.log(`│ Error  : ${errorMsg}`);
+        console.log(`└──────────────────────────────────────────────────────────────\n`);
+      }
+
+      return { ok: false, error: errorMsg };
     }
   }
 }

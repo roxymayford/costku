@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from './Icon';
 import { formatRupiah } from '../lib/calculator';
 
 interface DailyLimitCardProps {
@@ -57,7 +58,7 @@ export const DailyLimitCard: React.FC<DailyLimitCardProps> = ({
                 color: 'var(--text-muted)',
               }}
             >
-              🔄 Rollover Aktif
+              <Icon name="swap" size={11} /> Rollover Aktif
             </span>
           )}
           <span className={`status-pill ${statusClass}`}>{statusText}</span>
@@ -82,8 +83,8 @@ export const DailyLimitCard: React.FC<DailyLimitCardProps> = ({
             }}
           >
             {yesterdaySurplus > 0
-              ? `✨ Sisa ${formatRupiah(yesterdaySurplus)} dari hari sebelumnya otomatis terbawa ke hari ini!`
-              : `⚠️ Overbudget ${formatRupiah(Math.abs(yesterdaySurplus))} dari hari sebelumnya dipotong ke hari ini.`}
+              ? <><Icon name="sparkle" size={13} /> Sisa {formatRupiah(yesterdaySurplus)} dari hari sebelumnya otomatis terbawa ke hari ini!</>
+              : <><Icon name="alert" size={13} /> Overbudget {formatRupiah(Math.abs(yesterdaySurplus))} dari hari sebelumnya dipotong ke hari ini.</>}
           </div>
         )}
 

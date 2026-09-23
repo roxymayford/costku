@@ -1,5 +1,6 @@
 :root {
-  font-family: 'Hanken Grotesk', sans-serif;
+  --font-base: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-base);
   color: #111;
   background: #efece6;
   --paper: #fcf9f3;
@@ -7,7 +8,9 @@
   --line: #111;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -15,9 +18,23 @@ html {
   scroll-behavior: smooth;
 }
 
+html,
 body {
   margin: 0;
   background: #efece6;
+  font-family: var(--font-base) !important;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure ALL interactive and form elements consistently use Hanken Grotesk */
+input,
+button,
+select,
+textarea,
+optgroup {
+  font-family: var(--font-base) !important;
 }
 
 a {

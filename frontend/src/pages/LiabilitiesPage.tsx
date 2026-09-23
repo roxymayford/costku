@@ -179,9 +179,12 @@ export const LiabilitiesPage: React.FC = () => {
               borderRadius: '6px',
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid var(--border)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
             }}
           >
-            🛡️ {summary.activeCount} Fasilitas Aktif · {summary.paidOffCount} Lunas
+            <Icon name="shield" size={14} /> {summary.activeCount} Fasilitas Aktif · {summary.paidOffCount} Lunas
           </span>
         </div>
       </div>
@@ -204,8 +207,8 @@ export const LiabilitiesPage: React.FC = () => {
         </div>
         <div className="tally-item">
           <span>Status Sistem:</span>
-          <span className="green-text" style={{ fontWeight: 600 }}>
-            ⚡ Auto-cut Aktif
+          <span className="green-text" style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Icon name="bolt" size={13} /> Auto-cut Aktif
           </span>
         </div>
       </div>

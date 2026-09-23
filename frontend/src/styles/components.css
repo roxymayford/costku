@@ -1,28 +1,53 @@
 /* Buttons & Navigation Links */
 .pill {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   padding: 14px 22px;
-  border: 0;
-  font: 700 11px inherit;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: .1em;
   cursor: pointer;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: all 0.15s ease;
 }
 
 .dark {
   background: #111;
   color: #fff;
+  border-color: #111;
+}
+
+.dark:hover:not(:disabled) {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
 }
 
 .outline {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #111;
+  border-radius: 999px;
   padding: 14px 22px;
-  margin-left: 10px;
+  margin: 0;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .1em;
+  background: transparent;
+  color: #111;
   cursor: pointer;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.outline:hover:not(:disabled) {
+  background: #111;
+  color: #fff;
 }
 
 .nav-link {
@@ -38,7 +63,8 @@
   background: transparent;
   padding: 0;
   color: var(--orange);
-  font: 700 11px inherit;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: .08em;
   cursor: pointer;
   margin-top: 18px;
