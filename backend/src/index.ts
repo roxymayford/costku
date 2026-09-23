@@ -5,12 +5,13 @@ import { authRouter } from './routes/auth.js';
 import { googleAuthRouter } from './routes/googleAuth.js';
 import { subscriptionRouter } from './routes/subscription.js';
 import { midtransRouter } from './routes/midtrans.js';
+import { nlpRouter } from './routes/nlp.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { isSupabaseConfigured, hasServiceRoleKey } from './lib/supabase.js';
 import { isMidtransConfigured } from './lib/midtrans.js';
 import { isGoogleConfigured, googleRedirectUri } from './lib/google.js';
 import { describeOtpDelivery, otpRuntimeInfo } from './modules/otp/index.js';
-import { nlpModuleInfo, initializeNlpParser } from './modules/nlp/index.js';
+import { nlpModuleInfo, initializeNlpParser, getMlServiceUrl, isMlClassifierEnabled } from './modules/nlp/index.js';
 import { registerCleanupJobs } from './modules/jobs/cleanup-otp.job.js';
 
 dotenv.config();
@@ -61,6 +62,8 @@ app.use('/api/v1/auth', googleAuthRouter);
 app.use('/api/auth', googleAuthRouter);
 app.use('/api/subscription', subscriptionRouter);
 app.use('/api/midtrans', midtransRouter);
+app.use('/api/v1/nlp', nlpRouter);
+app.use('/api/nlp', nlpRouter);
 
 // Global Error Handler
 app.use(errorHandler);
@@ -70,6 +73,13 @@ app.listen(PORT, () => {
   console.log(
     `[costKu API] OTP channel: ${describeOtpDelivery().effectiveSender} ` +
       `(configured: ${describeOtpDelivery().configuredChannel})`
+  );
+  console.log(
+    `[costKu API] ML Microservice: ${
+      isMlClassifierEnabled()
+        ? `Enabled -> ${getMlServiceUrl()} (with automatic rule-based fallback)`
+        : 'Disabled (rule-based only)'
+    }`
   );
   console.log(
     isGoogleConfigured

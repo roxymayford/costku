@@ -33,6 +33,19 @@ version: '3.8'
 # ---------------------------------------------------------------------------
 
 services:
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: costku_ml_service
+    restart: always
+    environment:
+      - PORT=5001
+    ports:
+      - "5001:5001"
+    networks:
+      - costku_network
+
   backend:
     build:
       context: ./backend
@@ -46,8 +59,11 @@ services:
       - NODE_ENV=production
       # Redirect Google balik ke frontend di port 80 (nginx), bukan 5173.
       - FRONTEND_URL=http://localhost
+      - ML_SERVICE_URL=http://ml-service:5001
     ports:
       - "5000:5000"
+    depends_on:
+      - ml-service
     networks:
       - costku_network
 

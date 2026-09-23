@@ -10,8 +10,8 @@
  */
 
 import { supabaseAdmin, hasServiceRoleKey } from '../../lib/supabase.js';
-import { ExtractionMethod, ParseStatus } from './nlp.constants.js';
-import type { TransactionCategoryType } from './nlp.constants.js';
+import { ExtractionMethod, ParseReason, ParseStatus, REVIEW_FORCING_REASONS } from './nlp.constants.js';
+import type { ParseReasonType, TransactionCategoryType } from './nlp.constants.js';
 import { nlpConfig, nlpRuntimeInfo } from './nlp.config.js';
 import { CATEGORY_KEYWORDS } from './data/category-keywords.js';
 import { PRODUCT_DICTIONARY } from './data/product.dictionary.js';
@@ -35,6 +35,11 @@ import {
 } from './transaction.parser.js';
 import type { ParsedTransactionResponse } from './transaction.parser.js';
 import type { NormalizerDictionary, ParsedTransaction, TransactionRow } from './nlp.types.js';
+import {
+  predictCategoryWithML,
+  getMlServiceUrl,
+  isMlClassifierEnabled,
+} from './ml.client.js';
 
 /* ────────────────────────── dictionary bootstrap ────────────────────────── */
 
@@ -99,6 +104,84 @@ export function parseTransactionWithDictionary(rawText: string): ParsedTransacti
   });
 }
 
+export interface ParseAsyncOptions {
+  /** Explicitly enable/disable ML classification. Defaults to process.env.ENABLE_ML_CLASSIFIER !== 'false'. */
+  useMl?: boolean;
+  confidenceThreshold?: number;
+  timeoutMs?: number;
+}
+
+/**
+ * Hybrid parse — first runs full syntactic extraction (normalization, amount, item, multi-item gate),
+ * then queries the Flask ML microservice for classical ML category prediction.
+ * If ML is unavailable or encounters an error, it seamlessly falls back to the deterministic rule-based
+ * category classifier.
+ */
+export async function parseTransactionAsync(
+  rawText: string,
+  options: ParseAsyncOptions = {}
+): Promise<ParsedTransaction> {
+  const threshold = options.confidenceThreshold ?? nlpConfig.confidenceThreshold;
+  const base = parseTransaction(rawText, {
+    dictionary,
+    keywords: bundle.keywords,
+    products: bundle.products,
+    confidenceThreshold: threshold,
+  });
+
+  // Never query ML for empty inputs, multi-item alerts, or sentences with zero transaction signals
+  if (
+    base.parseStatus === ParseStatus.REJECTED_MULTI_ITEM ||
+    !base.normalizedText ||
+    base.reasons.includes(ParseReason.NO_TRANSACTION_SIGNAL)
+  ) {
+    return base;
+  }
+
+  const useMl = options.useMl ?? isMlClassifierEnabled();
+  if (!useMl) {
+    return base;
+  }
+
+  const mlResult = await predictCategoryWithML(base.normalizedText, {
+    timeoutMs: options.timeoutMs,
+  });
+
+  if (!mlResult) {
+    // Graceful fallback to rule-based classification
+    return base;
+  }
+
+  // ML model prediction successful:
+  const category = mlResult.category;
+  const confidence = mlResult.confidence;
+
+  // Filter out rule-based ambiguity/unknown reasons since ML model made an informed prediction
+  const reasons: ParseReasonType[] = base.reasons.filter(
+    (reason) =>
+      reason !== ParseReason.AMBIGUOUS_KEYWORD &&
+      reason !== ParseReason.UNKNOWN_ITEM &&
+      reason !== ParseReason.LOW_CONFIDENCE
+  );
+
+  if (confidence < threshold) {
+    reasons.push(ParseReason.LOW_CONFIDENCE);
+  }
+
+  const forcedReview = reasons.some((reason) => REVIEW_FORCING_REASONS.includes(reason));
+  const parseStatus =
+    forcedReview || confidence < threshold ? ParseStatus.NEEDS_REVIEW : ParseStatus.AUTO;
+
+  return {
+    ...base,
+    category,
+    categoryConfidence: confidence,
+    extractionMethod: ExtractionMethod.ML_MODEL,
+    parseStatus,
+    reasons,
+  };
+}
+
 /* ────────────────────────── parse + persist ────────────────────────── */
 
 export interface ParseAndPersistResult {
@@ -110,6 +193,7 @@ export interface ParseAndPersistResult {
 /**
  * Parse one note and store it.
  *
+ * Uses hybrid async parsing (ML model with rule-based fallback).
  * A `rejected_multi_item` row is still written — with null item/amount and
  * the raw text intact (§6) — because the alert the user saw needs to be
  * explainable afterwards.
@@ -117,9 +201,10 @@ export interface ParseAndPersistResult {
 export async function parseAndPersist(
   userId: string,
   rawText: string,
-  repository: NlpRepository = nlpRepository
+  repository: NlpRepository = nlpRepository,
+  options: ParseAsyncOptions = {}
 ): Promise<ParseAndPersistResult> {
-  const parsed = parseTransactionWithDictionary(rawText);
+  const parsed = await parseTransactionAsync(rawText, options);
   const { id } = await repository.saveTransaction(toTransactionRow(parsed, userId));
   return { parsed, transactionId: id, response: toParsedTransactionResponse(parsed) };
 }
@@ -197,6 +282,10 @@ export function nlpModuleInfo() {
   return {
     ...nlpRuntimeInfo(),
     defaultCategory: nlpConfig.defaultCategory,
+    mlService: {
+      enabled: isMlClassifierEnabled(),
+      url: getMlServiceUrl(),
+    },
     dictionary: {
       initialized,
       slang: Object.keys(bundle.slang).length,

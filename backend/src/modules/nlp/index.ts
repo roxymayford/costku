@@ -32,3 +32,4 @@ export * from './nlp.service.js';
 export * from './data/slang.dictionary.js';
 export * from './data/category-keywords.js';
 export * from './data/product.dictionary.js';
+export * from './ml.client.js';
