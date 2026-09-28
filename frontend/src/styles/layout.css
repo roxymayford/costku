@@ -44,6 +44,18 @@
   font-weight: 800;
 }
 
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand-logo.drawer-logo {
+  width: 36px;
+  height: 36px;
+}
+
 .topbar nav {
   display: flex;
   gap: 25px;

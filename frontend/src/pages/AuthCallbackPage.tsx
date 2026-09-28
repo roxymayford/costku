@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon } from '../components/Icon';
+import logoSrc from '../assets/logo.png';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 type Phase = 'working' | 'error';
@@ -121,7 +122,7 @@ export const AuthCallbackPage: React.FC = () => {
     <main className="auth-page">
       <section className="auth-panel">
         <button className="auth-brand" type="button" onClick={() => navigate('/')}>
-          <span className="avatar">CK</span>
+          <img src={logoSrc} alt="costKu" className="brand-logo" />
           <b>COSTKU</b>
           <i>/</i>
           <span>PENDAMPING KEUANGAN PRIBADI</span>

@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from 'react';
+import logoSrc from '../assets/logo.png';
 
 export type Transaction = {
   id: number;
@@ -60,7 +61,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
     <main className="dashboard-page">
       <header className="dashboard-header">
         <button className="auth-brand" type="button" onClick={onLogout}>
-          <span className="avatar">K</span>
+          <img src={logoSrc} alt="costKu" className="brand-logo" />
           <b>costKu</b>
           <i>/</i>
           <span>PERSONAL FINANCE</span>

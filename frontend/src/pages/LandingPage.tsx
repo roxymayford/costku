@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon } from '../components/Icon';
+import logoSrc from '../assets/logo.png';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -311,7 +312,7 @@ export const LandingPage: React.FC = () => {
       {/* TOPBAR */}
       <header className="topbar">
         <div className="brand">
-          <span className="avatar">FA</span>
+          <img src={logoSrc} alt="costKu" className="brand-logo" />
           <b>COSTKU</b>
           <i>/</i>
           <span className="landing-brand-sub">PENDAMPING KEUANGAN PRIBADI</span>

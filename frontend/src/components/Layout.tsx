@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { Icon } from './Icon';
+import logoSrc from '../assets/logo.png';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -66,7 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className="fatrack-topbar">
         <div className="topbar-left">
           <NavLink to="/dashboard" className="brand" aria-label="costKu, ke dashboard">
-            <span className="avatar">FA</span>
+            <img src={logoSrc} alt="costKu" className="brand-logo" />
             <b>COSTKU</b>
             <i className="brand-divider">/</i>
             <span className="brand-sub">PENDAMPING KEUANGAN PRIBADI</span>
@@ -134,7 +135,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         aria-hidden={!isMenuOpen}
       >
         <div className="drawer-head">
-          <span className="avatar">{initials}</span>
+          <img src={logoSrc} alt="costKu" className="brand-logo drawer-logo" />
           <div className="drawer-user">
             <b>{displayName}</b>
             <small>{isPremium ? 'Pro Advisor aktif' : 'Paket Money Tracker (gratis)'}</small>

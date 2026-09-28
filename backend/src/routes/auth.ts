@@ -1,6 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth.js';
 import {
+  checkLoginAllowed,
+  recordFailedLogin,
+  clearFailedLogins,
+} from '../lib/loginLimiter.js';
+import { validatePasswordStrength } from '../lib/passwordStrength.js';
+import {
   supabaseAdmin,
   isSupabaseConfigured,
   hasServiceRoleKey,
@@ -47,8 +53,13 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   if (!email || typeof email !== 'string' || !EMAIL_RE.test(email.trim())) {
     issues.push({ field: 'email', message: 'Alamat email tidak valid.' });
   }
-  if (!password || typeof password !== 'string' || password.length < 6) {
-    issues.push({ field: 'password', message: 'Kata sandi minimal 6 karakter.' });
+  if (!password || typeof password !== 'string') {
+    issues.push({ field: 'password', message: 'Kata sandi wajib diisi.' });
+  } else {
+    const pwErrors = validatePasswordStrength(password);
+    if (pwErrors.length > 0) {
+      issues.push({ field: 'password', message: pwErrors.join(' ') });
+    }
   }
   if (phone && (typeof phone !== 'string' || !PHONE_RE.test(phone.trim()))) {
     issues.push({ field: 'phone', message: 'Nomor HP tidak valid (format internasional, mis. +62812...).' });
@@ -290,10 +301,23 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     ]);
   }
 
+  const cleanEmail = String(email).trim().toLowerCase();
+
+  /* ---- login rate limiting ---- */
+  const limitCheck = checkLoginAllowed(cleanEmail);
+  if (!limitCheck.allowed) {
+    return sendOtpError(res, OtpErrorCode.OTP_RATE_LIMITED, {
+      message: `Akun dikunci sementara karena terlalu banyak percobaan login gagal. Coba lagi dalam ${limitCheck.retryAfterSeconds} detik.`,
+      retryAfter: limitCheck.retryAfterSeconds,
+      remainingAttempts: 0,
+      reason: 'LOGIN_LOCKED',
+    });
+  }
+
   // Supabase handles password auth directly from the client; this endpoint
   // stays for parity and now enforces the ACTIVE gate.
   if (isSupabaseConfigured && supabaseAdmin) {
-    const existing = await findAuthUserByEmail(String(email).trim().toLowerCase());
+    const existing = await findAuthUserByEmail(cleanEmail);
     if (existing) {
       const profile = await getProfile(existing.id);
       if (profile && profile.status === UserStatus.PENDING_VERIFICATION) {
@@ -304,8 +328,43 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         });
       }
     }
+
+    /* ---- verify password via Supabase ---- */
+    const { data: signInData, error: signInError } =
+      await supabaseAdmin.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+
+    if (signInError || !signInData?.user) {
+      const limitResult = recordFailedLogin(cleanEmail);
+      return sendOtpError(res, OtpErrorCode.VALIDATION_ERROR, {
+        message: limitResult.remainingAttempts > 0
+          ? `Email atau kata sandi salah. Sisa ${limitResult.remainingAttempts} percobaan.`
+          : `Terlalu banyak percobaan login gagal. Akun dikunci selama ${Math.ceil(limitResult.retryAfterSeconds / 60)} menit.`,
+        remainingAttempts: limitResult.remainingAttempts,
+        retryAfter: limitResult.retryAfterSeconds > 0 ? limitResult.retryAfterSeconds : undefined,
+        reason: limitResult.remainingAttempts === 0 ? 'LOGIN_LOCKED' : 'INVALID_CREDENTIALS',
+      });
+    }
+
+    // Successful login — clear attempts.
+    clearFailedLogins(cleanEmail);
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Autentikasi berhasil.',
+      token: signInData.session?.access_token ?? 'session_token',
+      user: {
+        id: signInData.user.id,
+        email: signInData.user.email,
+        name: signInData.user.user_metadata?.name,
+      },
+    });
   }
 
+  // Demo mode — no real password check, just return success.
+  clearFailedLogins(cleanEmail);
   return res.status(200).json({
     status: 'success',
     message: 'Autentikasi berhasil.',

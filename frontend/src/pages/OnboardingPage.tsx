@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import logoSrc from '../assets/logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import { CurrencyInput } from '../components/CurrencyInput';
 import { getProfile, upsertProfile } from '../lib/storage';
@@ -90,7 +91,7 @@ export const OnboardingPage: React.FC = () => {
     <div className="onboarding-page-wrap">
       <header className="onboarding-header">
         <div className="brand">
-          <span className="avatar">FA</span>
+          <img src={logoSrc} alt="costKu" className="brand-logo" />
           <b>COSTKU</b>
           <i>/</i>
           <span>ATUR PROFIL KEUANGAN</span>

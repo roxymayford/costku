@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon } from '../components/Icon';
+import logoSrc from '../assets/logo.png';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import {
   clearPendingVerification,
@@ -34,6 +35,8 @@ export const OtpVerifyPage: React.FC = () => {
   const [notice, setNotice] = useState<Notice>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [otpAttemptsLeft, setOtpAttemptsLeft] = useState<number | null>(null);
+  const [otpLocked, setOtpLocked] = useState(false);
 
   const [now, setNow] = useState(() => Date.now());
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
@@ -209,10 +212,19 @@ export const OtpVerifyPage: React.FC = () => {
 
     setIsVerifying(false);
 
+    /* ---- track remaining OTP attempts ---- */
+    if (result.remainingAttempts !== undefined) {
+      setOtpAttemptsLeft(result.remainingAttempts);
+    }
+
     // A burned OTP cannot be retried — clear the boxes and route to resend.
     if (result.code === 'OTP_MAX_ATTEMPTS' || result.code === 'OTP_EXPIRED') {
       setDigits(Array(CODE_LENGTH).fill(''));
       inputsRef.current[0]?.focus();
+      if (result.code === 'OTP_MAX_ATTEMPTS') {
+        setOtpLocked(true);
+        setOtpAttemptsLeft(0);
+      }
     }
 
     // Already active (e.g. verified in another tab) — just proceed.
@@ -246,6 +258,8 @@ export const OtpVerifyPage: React.FC = () => {
       savePendingVerification(refreshed);
       setDigits(Array(CODE_LENGTH).fill(''));
       inputsRef.current[0]?.focus();
+      setOtpAttemptsLeft(null);
+      setOtpLocked(false);
       setNotice({ tone: 'info', text: `Kode baru telah dikirim ke ${result.otp.destination}.` });
     } else {
       setNotice({ tone: 'error', text: describeFailure(result) });
@@ -268,7 +282,7 @@ export const OtpVerifyPage: React.FC = () => {
     <main className="auth-page">
       <section className="auth-panel">
         <button className="auth-brand" type="button" onClick={() => navigate('/')}>
-          <span className="avatar">FA</span>
+          <img src={logoSrc} alt="costKu" className="brand-logo" />
           <b>COSTKU</b>
           <i>/</i>
           <span>PERSONAL FINANCE ADVISOR</span>
@@ -325,6 +339,30 @@ export const OtpVerifyPage: React.FC = () => {
               />
             ))}
           </div>
+
+          {/* ---- OTP attempts remaining indicator ---- */}
+          {otpAttemptsLeft !== null && (
+            <div className={`otp-attempts-indicator ${otpLocked ? 'otp-attempts--locked' : ''}`}>
+              {otpLocked ? (
+                <>
+                  <span className="otp-attempts__icon">🔒</span>
+                  <span>Kode terkunci — percobaan habis. Kirim ulang kode untuk melanjutkan.</span>
+                </>
+              ) : (
+                <>
+                  <span className="otp-attempts__dots">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`otp-attempt-dot ${i < otpAttemptsLeft ? 'otp-dot--active' : 'otp-dot--used'}`}
+                      />
+                    ))}
+                  </span>
+                  <span>Sisa <b>{otpAttemptsLeft}</b> percobaan</span>
+                </>
+              )}
+            </div>
+          )}
 
           {/* ---- progress / expiry line ---- */}
           <div className="otp-meta">

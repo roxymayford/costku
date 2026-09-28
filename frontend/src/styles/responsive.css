@@ -273,7 +273,8 @@
     display: none;
   }
 
-  .fatrack-topbar .avatar {
+  .fatrack-topbar .avatar,
+  .fatrack-topbar .brand-logo {
     width: 28px;
     height: 28px;
     flex: 0 0 auto;
