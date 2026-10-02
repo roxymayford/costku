@@ -56,7 +56,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   if (!password || typeof password !== 'string') {
     issues.push({ field: 'password', message: 'Kata sandi wajib diisi.' });
   } else {
-    const pwErrors = validatePasswordStrength(password);
+    const pwErrors = await validatePasswordStrength(password);
     if (pwErrors.length > 0) {
       issues.push({ field: 'password', message: pwErrors.join(' ') });
     }

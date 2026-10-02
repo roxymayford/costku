@@ -57,12 +57,17 @@ export async function predictCategoryWithML(
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (process.env.INTERNAL_API_KEY) {
+      headers['X-Internal-Key'] = process.env.INTERNAL_API_KEY;
+    }
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify({ text }),
       signal: controller.signal,
     });
@@ -122,7 +127,13 @@ export async function checkMlServiceHealth(): Promise<MlServiceHealth> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2000);
 
+    const headers: Record<string, string> = {};
+    if (process.env.INTERNAL_API_KEY) {
+      headers['X-Internal-Key'] = process.env.INTERNAL_API_KEY;
+    }
+
     const response = await fetch(`${url.replace(/\/+$/, '')}/health`, {
+      headers,
       signal: controller.signal,
     });
     clearTimeout(timer);

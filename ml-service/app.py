@@ -1,23 +1,46 @@
 """
 Flask Microservice for CostKu Classical ML Transaction Category Classification.
 Serves scikit-learn TF-IDF + Classifier pipeline.
+Secured with internal API key and hardened for internal-only communication.
 """
 
 import os
 import time
 import json
+import hmac
 import joblib
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 
 from train import PIPELINE_PATH, METADATA_PATH, train_and_export
 
 app = Flask(__name__)
-CORS(app)
+
+# Security: Limit maximum payload size to 32KB to prevent memory exhaustion / DoS
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024
+
+INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
 
 START_TIME = time.time()
 PIPELINE = None
 METADATA = None
+
+@app.before_request
+def authenticate_internal_request():
+    """
+    Authenticate that incoming requests originate from the trusted Express backend.
+    Checks X-Internal-Key header against INTERNAL_API_KEY using constant-time comparison.
+    Health check is excluded to allow Docker/Kubernetes container health probes.
+    """
+    if request.path == "/health":
+        return None
+
+    if INTERNAL_API_KEY:
+        client_key = request.headers.get("X-Internal-Key", "")
+        if not client_key or not hmac.compare_digest(client_key, INTERNAL_API_KEY):
+            return jsonify({
+                "status": "error",
+                "error": "Unauthorized: invalid or missing internal key"
+            }), 401
 
 def load_or_train_pipeline():
     global PIPELINE, METADATA
@@ -66,6 +89,13 @@ def predict():
         }), 400
 
     clean_text = text.strip()
+
+    # Security: Restrict maximum input text length
+    if len(clean_text) > 1000:
+        return jsonify({
+            "error": "Text too long (maximum 1000 characters)",
+            "status": "error"
+        }), 400
     
     try:
         # Predict class
@@ -94,8 +124,10 @@ def predict():
         }), 200
         
     except Exception as err:
+        # Suppress internal stack trace / error details from API response
+        app.logger.error(f"[ML Service] Prediction failed: {err}")
         return jsonify({
-            "error": f"Prediction failed: {str(err)}",
+            "error": "Prediction service error",
             "extraction_method": "rule_based"
         }), 500
 
@@ -110,12 +142,15 @@ def retrain():
             "metadata": METADATA
         }), 200
     except Exception as err:
+        # Suppress internal stack trace / error details from API response
+        app.logger.error(f"[ML Service] Retraining failed: {err}")
         return jsonify({
             "status": "error",
-            "error": f"Retraining failed: {str(err)}"
+            "error": "Retraining failed"
         }), 500
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5001))
-    print(f"[ML Service] Starting Flask app on port {port}...")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    host = os.getenv("FLASK_RUN_HOST", "127.0.0.1")
+    print(f"[ML Service] Starting Flask app on {host}:{port}...")
+    app.run(host=host, port=port, debug=False)

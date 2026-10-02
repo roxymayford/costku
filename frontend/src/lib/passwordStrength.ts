@@ -8,41 +8,36 @@ export interface PasswordRule {
   id: string;
   label: string;
   test: (pw: string) => boolean;
+  required?: boolean;
 }
 
 export const PASSWORD_RULES: PasswordRule[] = [
   {
-    id: 'length',
-    label: 'Minimal 8 karakter',
-    test: (pw) => pw.length >= 8,
+    id: 'min_length',
+    label: 'Minimal 12 karakter',
+    test: (pw) => pw.length >= 12,
+    required: true,
   },
   {
-    id: 'upper',
-    label: 'Huruf besar (A-Z)',
-    test: (pw) => /[A-Z]/.test(pw),
+    id: 'max_length',
+    label: 'Maksimal 128 karakter',
+    test: (pw) => pw.length <= 128,
+    required: true,
   },
   {
-    id: 'lower',
-    label: 'Huruf kecil (a-z)',
-    test: (pw) => /[a-z]/.test(pw),
-  },
-  {
-    id: 'digit',
-    label: 'Angka (0-9)',
-    test: (pw) => /[0-9]/.test(pw),
-  },
-  {
-    id: 'special',
-    label: 'Karakter khusus (!@#$%...)',
-    test: (pw) => /[^A-Za-z0-9]/.test(pw),
+    id: 'variety',
+    label: 'Variasi huruf & angka/simbol (disarankan)',
+    test: (pw) => /[a-zA-Z]/.test(pw) && /[0-9!@#$%^&*()_+\-=[\]{}|;':",.<>?/`~]/.test(pw),
+    required: false,
   },
 ];
 
 /**
- * Returns true if all rules pass.
+ * Returns true if mandatory password rules pass (min 12 chars, max 128 chars).
  */
 export function isStrongPassword(password: string): boolean {
-  return PASSWORD_RULES.every((rule) => rule.test(password));
+  if (!password) return false;
+  return PASSWORD_RULES.filter((r) => r.required !== false).every((rule) => rule.test(password));
 }
 
 /**
@@ -50,8 +45,12 @@ export function isStrongPassword(password: string): boolean {
  */
 export function passwordStrength(password: string): number {
   if (!password) return 0;
-  const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
-  return passed / PASSWORD_RULES.length;
+  if (password.length < 8) return 0.2;
+  if (password.length < 12) return 0.5;
+  const hasVariety = /[a-zA-Z]/.test(password) && /[0-9!@#$%^&*()_+\-=[\]{}|;':",.<>?/`~]/.test(password);
+  if (password.length >= 16 && hasVariety) return 1.0;
+  if (password.length >= 12 && hasVariety) return 0.85;
+  return 0.7;
 }
 
 /**
@@ -59,16 +58,16 @@ export function passwordStrength(password: string): number {
  */
 export function strengthLabel(ratio: number): string {
   if (ratio === 0) return '';
-  if (ratio < 0.4) return 'Lemah';
-  if (ratio < 0.8) return 'Sedang';
-  if (ratio < 1) return 'Kuat';
+  if (ratio < 0.4) return 'Sangat Pendek';
+  if (ratio < 0.7) return 'Kurang (Min. 12 Karakter)';
+  if (ratio < 0.9) return 'Kuat';
   return 'Sangat Kuat';
 }
 
 export function strengthColor(ratio: number): string {
   if (ratio === 0) return 'transparent';
   if (ratio < 0.4) return '#e53935';
-  if (ratio < 0.8) return '#fb8c00';
-  if (ratio < 1) return '#43a047';
+  if (ratio < 0.7) return '#fb8c00';
+  if (ratio < 0.9) return '#43a047';
   return '#2e7d32';
 }

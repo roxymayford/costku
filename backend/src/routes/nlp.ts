@@ -29,6 +29,13 @@ nlpRouter.post('/parse', async (req: Request, res: Response, next: NextFunction)
       });
     }
 
+    if (text.length > 1000) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Teks transaksi maksimal 1000 karakter.',
+      });
+    }
+
     const parsed = await parseTransactionAsync(text, {
       useMl: typeof useMl === 'boolean' ? useMl : undefined,
     });
@@ -59,6 +66,13 @@ nlpRouter.post('/persist', optionalAuth, async (req: AuthenticatedRequest, res: 
       return res.status(400).json({
         status: 'error',
         message: 'Field "text" string is required',
+      });
+    }
+
+    if (text.length > 1000) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Teks transaksi maksimal 1000 karakter.',
       });
     }
 

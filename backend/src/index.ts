@@ -26,6 +26,8 @@ import { nlpModuleInfo, initializeNlpParser, getMlServiceUrl, isMlClassifierEnab
 import { registerCleanupJobs } from './modules/jobs/cleanup-otp.job.js';
 import { registerLiabilityJobs } from './modules/jobs/liability-payment.job.js';
 
+import helmet from 'helmet';
+
 dotenv.config();
 
 const app = express();
@@ -35,9 +37,36 @@ const PORT = process.env.PORT || 5000;
 // which the OTP rate limiter depends on.
 app.set('trust proxy', 1);
 
+// Allowed origins for CORS (default to common local dev & frontend docker port)
+const rawAllowed = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map((u) => u.trim())
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost'];
+const allowedOrigins = new Set(rawAllowed);
+
+// Security Headers via Helmet
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
 // Middlewares
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, or server-to-server)
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+      } else {
+        const corsErr: any = new Error('Origin tidak diizinkan oleh CORS');
+        corsErr.statusCode = 403;
+        callback(corsErr);
+      }
+    },
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: '50kb' }));
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {

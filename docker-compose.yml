@@ -41,8 +41,8 @@ services:
     restart: always
     environment:
       - PORT=5001
-    ports:
-      - "5001:5001"
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-costku_internal_secret_key}
+    # ports removed to prevent direct host/internet exposure; only accessible via costku_network
     networks:
       - costku_network
 
@@ -60,6 +60,7 @@ services:
       # Redirect Google balik ke frontend di port 80 (nginx), bukan 5173.
       - FRONTEND_URL=http://localhost
       - ML_SERVICE_URL=http://ml-service:5001
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-costku_internal_secret_key}
     ports:
       - "5000:5000"
     depends_on:
