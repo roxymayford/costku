@@ -26,6 +26,15 @@ const NAV_ENTRIES: NavEntry[] = [
   { to: '/subscription', label: 'Langganan', icon: 'star' },
 ];
 
+// Bottom nav: Dashboard, Pemasukan, Cicilan, Alokasi, Gaya Hidup
+const BOTTOM_NAV_ENTRIES: NavEntry[] = [
+  { to: '/dashboard', label: 'Dashboard', icon: 'home' },
+  { to: '/pemasukan', label: 'Pemasukan', icon: 'wallet' },
+  { to: '/cicilan', label: 'Cicilan', icon: 'clock' },
+  { to: '/alokasi', label: 'Alokasi', icon: 'chart', premiumOnly: true },
+  { to: '/rekomendasi', label: 'Gaya Hidup', icon: 'sparkle', premiumOnly: true },
+];
+
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const { isPremium } = useSubscription();
@@ -195,9 +204,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </button>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      {/* MOBILE BOTTOM NAVIGATION BAR - 4 items only */}
       <nav className="fatrack-mobile-bottom-nav mobile-only" aria-label="Navigasi cepat">
-        {NAV_ENTRIES.map((entry) => (
+        {BOTTOM_NAV_ENTRIES.map((entry) => (
           <NavLink
             key={entry.to}
             to={entry.to}
