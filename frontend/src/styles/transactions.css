@@ -66,7 +66,8 @@
 .transaction-quick-form {
   background: #fff;
   border: 1px solid var(--line);
-  padding: 28px;
+  border-radius: var(--radius);
+  padding: var(--card-padding);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -90,7 +91,7 @@
   background: #fff;
   color: #111;
   outline: none;
-  border-radius: 0;
+  border-radius: var(--radius);
   transition: border-color 0.15s ease;
 }
 
@@ -145,7 +146,8 @@
 .transaction-ledger-section {
   background: #fff;
   border: 1px solid var(--line);
-  padding: 28px;
+  border-radius: var(--radius);
+  padding: var(--card-padding);
 }
 
 .ledger-controls-bar {

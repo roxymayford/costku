@@ -6,6 +6,51 @@
   --paper: #fcf9f3;
   --orange: #ff4d25;
   --line: #111;
+
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Card & Section Layout Tokens */
+  --card-padding-mobile: 16px;
+  --card-padding-desktop: 20px;
+  --card-padding: var(--card-padding-mobile);
+
+  --section-gap-mobile: 16px;
+  --section-gap-desktop: 24px;
+  --section-gap: var(--section-gap-mobile);
+
+  /* Radius & Hairlines */
+  --radius: 4px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --border-hairline: 1px solid var(--line);
+  --border-hairline-subtle: 1px solid rgba(0, 0, 0, 0.12);
+
+  /* Typography Scale */
+  --font-hero-mobile: 32px;
+  --font-hero-desktop: 40px;
+  --font-title: 14px;
+  --font-label: 11px;
+  --font-body: 14px;
+  --font-caption: 12px;
+
+  /* Component Dimensions */
+  --tile-size-mobile: 56px;
+  --tile-size-desktop: 64px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --card-padding: var(--card-padding-desktop);
+    --section-gap: var(--section-gap-desktop);
+  }
 }
 
 *,

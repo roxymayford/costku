@@ -205,22 +205,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* FOOTER */}
       <footer className="fatrack-footer">
-        <div className="footer-col">
-          <small>COSTKU</small>
-          <p>Pendamping keuangan pribadi untuk pekerja muda Indonesia: atur gaji, pantau jajan harian, rencanakan gaya hidup.</p>
-        </div>
-        <div className="footer-col">
-          <small>KEAMANAN DATA</small>
-          <p>Data disimpan dengan enkripsi Supabase Row Level Security. Kode OTP tidak pernah disimpan dalam bentuk teks asli.</p>
-        </div>
-        <div className="footer-col">
-          <small>CARA KERJA</small>
-          <p>Menghitung batas aman harian dan pembagian 50/30/20 yang menyesuaikan tanggal gajian kamu.</p>
-        </div>
-        <div className="footer-col">
-          <small>VERSI</small>
-          <p>costKu v1.0 — Rilis awal</p>
-        </div>
+        <p className="fatrack-footer-text">
+          costKu v1.0 · Dibuat untuk pekerja muda Indonesia
+        </p>
       </footer>
     </div>
   );

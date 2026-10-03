@@ -6,7 +6,8 @@
 .allocation-chart-widget {
   background: #fff;
   border: 1px solid var(--line);
-  padding: 28px;
+  border-radius: var(--radius);
+  padding: var(--card-padding);
 }
 
 .chart-header {

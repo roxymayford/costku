@@ -115,13 +115,11 @@
   .category-tally-bar,
   .kost-cards-grid,
   .meal-plans-grid,
-  .allocation-sliders-grid,
-  .fatrack-footer {
+  .allocation-sliders-grid {
     grid-template-columns: 1fr 1fr;
   }
 
-  .kpi-cell:nth-child(2),
-  .footer-col:nth-child(2) {
+  .kpi-cell:nth-child(2) {
     border-right: 0;
   }
 
@@ -433,14 +431,12 @@
   .kost-cards-grid,
   .meal-plans-grid,
   .allocation-sliders-grid,
-  .fatrack-footer,
   .basket-items-grid {
     grid-template-columns: 1fr;
   }
 
   .kpi-cell,
-  .tally-item,
-  .footer-col {
+  .tally-item {
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 16px;

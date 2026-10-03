@@ -2,6 +2,73 @@
    Dashboard Page & Widgets
    ========================================================================== */
 
+/* ==========================================================================
+   Dashboard Shell Layout
+   Mobile-first: 1 column vertical stack
+   Desktop (>=1024px): 12-column grid (8 cols main + 4 cols rail)
+   Tablet (768-1023px): 1 column, rail below main
+   ========================================================================== */
+
+.dashboard-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-page-container {
+    padding: var(--space-6) var(--space-6) var(--space-8);
+  }
+}
+
+.dashboard-grid-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  width: 100%;
+}
+
+.dashboard-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  min-width: 0;
+  width: 100%;
+}
+
+.dashboard-rail-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid-shell {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--section-gap-desktop);
+    align-items: start;
+  }
+
+  .dashboard-main-col {
+    grid-column: span 8;
+  }
+
+  .dashboard-rail-col {
+    grid-column: span 4;
+    position: sticky;
+    top: 76px;
+    align-self: start;
+  }
+}
+
 /* Legacy Dashboard & Tracker */
 .dashboard-page {
   min-height: 100vh;
@@ -167,13 +234,14 @@
 
 /* Dashboard Hero Strip */
 .dashboard-hero-strip {
-  padding: 30px 40px;
+  padding: var(--card-padding);
   background: #fff;
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
@@ -208,11 +276,13 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   background: #fff;
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .kpi-cell {
-  padding: 24px 30px;
+  padding: var(--space-3) var(--space-4);
   border-right: 1px solid var(--line);
 }
 
@@ -259,8 +329,9 @@
    ========================================================================== */
 .dashboard-nlp-strip {
   background: #ffffff;
-  border-bottom: 1px solid var(--line);
-  padding: 28px 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--card-padding);
   position: relative;
   overflow: hidden;
 }
@@ -362,9 +433,10 @@
 
 .nlp-text-input {
   width: 100%;
-  padding: 14px 40px 14px 42px;
-  font-size: 15px;
-  border: 2px solid var(--line);
+  padding: 12px 40px 12px 42px;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   background: var(--paper);
   color: #111;
   font-family: inherit;
@@ -408,10 +480,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 24px;
+  padding: 12px 20px;
   background: #111;
   color: #fff;
-  border: 2px solid #111;
+  border: 1px solid #111;
+  border-radius: var(--radius);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -535,11 +608,12 @@
 /* Parsed Result Preview Card */
 .nlp-preview-card {
   background: var(--paper);
-  border: 2px solid var(--line);
-  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--card-padding);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   animation: nlpCardPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -706,7 +780,8 @@
   padding: 10px 22px;
   background: var(--orange);
   color: #fff;
-  border: 2px solid var(--orange);
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -773,22 +848,23 @@
 .dashboard-columns-grid {
   display: grid;
   grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
-  padding: 40px;
-  gap: 40px;
+  padding: 0;
+  gap: var(--section-gap);
 }
 
 .dashboard-left-col,
 .dashboard-right-col {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: var(--section-gap);
 }
 
 /* Daily Limit Widget */
 .daily-limit-widget {
   background: #fff;
   border: 1px solid var(--line);
-  padding: 28px;
+  border-radius: var(--radius);
+  padding: var(--card-padding);
 }
 
 .widget-top {
@@ -805,10 +881,11 @@
 }
 
 .daily-amount-display {
-  border: 2px solid var(--orange);
-  padding: 20px;
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  padding: var(--space-4);
   background: var(--paper);
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 .unit-label {
@@ -892,10 +969,11 @@
 .budget-gauge-box {
   background: #fff;
   border: 1px solid var(--line);
-  padding: 24px;
+  border-radius: var(--radius);
+  padding: var(--card-padding);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-4);
 }
 
 .gauge-item-header {
@@ -950,10 +1028,11 @@
 .health-score-widget {
   background: #fff;
   border: 1px solid var(--line);
-  padding: 24px;
+  border-radius: var(--radius);
+  padding: var(--card-padding);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--space-4);
 }
 
 .health-top {
