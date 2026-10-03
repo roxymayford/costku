@@ -39,17 +39,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!isMenuOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsMenuOpen(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = previous;
-      window.removeEventListener('keydown', onKeyDown);
-    };
+    if (isMenuOpen) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') setIsMenuOpen(false);
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => {
+        document.body.style.overflow = previous;
+        window.removeEventListener('keydown', onKeyDown);
+      };
+    }
+    // Drawer ditutup — pastikan overflow selalu di-restore
+    document.body.style.overflow = '';
   }, [isMenuOpen]);
 
   useEffect(() => {

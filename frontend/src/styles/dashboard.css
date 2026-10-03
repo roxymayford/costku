@@ -307,10 +307,13 @@
   gap: 6px;
   cursor: pointer;
   position: relative;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   font: inherit;
   color: #111;
   text-decoration: none;
+  /* Ensure GSAP opacity animation always resets to full opacity */
+  opacity: 1;
+  will-change: transform;
 }
 
 @media (min-width: 1024px) {
@@ -331,11 +334,25 @@
 }
 
 .quick-action-icon {
+  /* Fixed 24x24 container for perfect symmetry across all icons */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
+  /* Consistent color — not transparent/faded */
+  color: #444;
+  /* Ensure SVG inside inherits color and renders consistently */
+  line-height: 0;
+}
+
+.quick-action-icon svg {
+  display: block;
+  /* Override any inherited opacity that could cause transparency */
+  opacity: 1 !important;
+  /* Ensure stroke icons and fill icons render at same visual weight */
+  stroke-width: 2;
 }
 
 .quick-action-tile:hover .quick-action-icon {
@@ -354,6 +371,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  /* Ensure label is also fully opaque */
+  opacity: 1;
 }
 
 .quick-action-badge {

@@ -142,6 +142,7 @@ export const DashboardPage: React.FC = () => {
         stagger: 0.04,
         delay: 0.08,
         ease: 'power2.out',
+        clearProps: 'opacity,transform',
       });
 
       // Left column cards stagger
