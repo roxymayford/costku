@@ -69,6 +69,214 @@
   }
 }
 
+/* ==========================================================================
+   Compact Hero Card (Fase 2)
+   ========================================================================== */
+.compact-hero-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--card-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+}
+
+.compact-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.compact-hero-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.compact-hero-eyebrow {
+  font-size: var(--font-label, 11px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compact-hero-pro-chip {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  color: var(--orange);
+  background: rgba(255, 77, 37, 0.08);
+  border-radius: var(--radius-xs);
+}
+
+.compact-hero-greeting {
+  font-size: var(--font-caption, 12px);
+  color: #555;
+}
+
+.compact-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.compact-hero-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.compact-hero-toggle-btn:hover {
+  background: #111;
+  color: #fff;
+}
+
+.compact-hero-amount-row {
+  margin: 2px 0 0;
+}
+
+.compact-hero-amount {
+  display: block;
+  font-size: var(--font-hero-mobile, 32px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: #111;
+}
+
+@media (min-width: 1024px) {
+  .compact-hero-amount {
+    font-size: var(--font-hero-desktop, 40px);
+  }
+}
+
+.compact-hero-subtitle {
+  font-size: var(--font-caption, 12px);
+  color: #555;
+  line-height: 1.4;
+}
+
+.compact-hero-real-spent {
+  color: #888;
+  font-size: 11px;
+}
+
+.compact-hero-progress-track {
+  height: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: #efece6;
+  overflow: hidden;
+  margin: 4px 0 2px;
+}
+
+.compact-hero-progress-fill {
+  height: 100%;
+  transition: width 0.35s ease;
+}
+
+.compact-hero-meta-line {
+  font-size: var(--font-label, 11px);
+  color: #777;
+  letter-spacing: 0.03em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.compact-hero-rollover-tag {
+  color: var(--orange);
+  font-weight: 600;
+}
+
+.compact-hero-expanded-panel {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid #e5e0d8;
+  animation: nlpCardPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.compact-hero-expanded-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .compact-hero-expanded-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.compact-hero-stat-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compact-hero-stat-cell small {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #777;
+  text-transform: uppercase;
+}
+
+.compact-hero-stat-cell b {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+}
+
+.compact-hero-expanded-links {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.compact-hero-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.compact-hero-link-btn:hover {
+  background: #111;
+  color: #fff;
+}
+
 /* Legacy Dashboard & Tracker */
 .dashboard-page {
   min-height: 100vh;

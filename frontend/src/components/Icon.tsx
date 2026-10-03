@@ -4,7 +4,7 @@ type IconName =
   | 'alert' | 'bolt' | 'check' | 'x' | 'info' | 'star' | 'arrowRight'
   | 'external' | 'settings' | 'swap' | 'lock' | 'sparkle'
   | 'menu' | 'close' | 'trash' | 'plus' | 'minus' | 'home' | 'wallet' | 'list' | 'user'
-  | 'arrowDown' | 'search'
+  | 'arrowDown' | 'search' | 'chevronDown' | 'chevronUp'
   | 'hand' | 'dot' | 'store' | 'utensils' | 'bus' | 'shield' | 'chart'
   | 'target' | 'clock' | 'fire' | 'coffee' | 'cart'
   | 'calendar' | 'lightbulb' | 'fuel' | 'film' | 'brain';
@@ -39,6 +39,8 @@ const paths: Record<IconName, React.ReactNode> = {
   list: <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />,
   user: <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4 0-7 2.2-7 5v1h14v-1c0-2.8-3-5-7-5Z" />,
   arrowDown: <path d="M12 5v14m-6-6 6 6 6-6" />,
+  chevronDown: <path d="m6 9 6 6 6-6" />,
+  chevronUp: <path d="m18 15-6-6-6 6" />,
   search: <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35" />,
   hand: (
     <path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11m0-.5V4.5a1.5 1.5 0 0 1 3 0V11m0-.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-1a6 6 0 0 1-5.2-3l-2-3.3a1.6 1.6 0 0 1 2.6-1.8L9 15V11Z" />

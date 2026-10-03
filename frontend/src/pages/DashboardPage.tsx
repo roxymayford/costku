@@ -22,7 +22,7 @@ import {
 import { getTotalIncome } from '../lib/incomeApi';
 import { getTotalMonthlyLiabilities } from '../lib/liabilityApi';
 import { calculateBudgetStatus } from '../lib/budgetEngine';
-import { DailyLimitCard } from '../components/DailyLimitCard';
+import { CompactHero } from '../components/CompactHero';
 import { AllocationChart } from '../components/AllocationChart';
 import { BudgetGauge } from '../components/BudgetGauge';
 import { HealthScoreCard } from '../components/HealthScoreCard';
@@ -276,52 +276,50 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div ref={rootRef} className="dashboard-page-container">
-      {/* DASHBOARD HERO HEADER */}
-      <section className="dashboard-hero-strip">
-        <div className="strip-title-box">
-          <small className="accent">RINGKASAN BULAN INI</small>
-          <h2>
-            Hai{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
-            <Icon name="hand" size={20} className="heading-inline-icon" />
-          </h2>
-          <p>
-            Total pemasukan <b>{formatRupiah(effectiveIncome)}</b>
-            {incomeSummary.count > 0 && ` (${incomeSummary.count} sumber)`} · Biaya tetap{' '}
-            <b>{formatRupiah(fixedExpenses)}</b>
-            {totalLiabilities > 0 && (
-              <span>
-                {' '}
-                · Cicilan/PayLater <b className="red-text">{formatRupiah(totalLiabilities)}</b>
-              </span>
-            )}{' '}
-            · Gajian tiap tanggal <b>{paydayDate}</b>
-          </p>
-        </div>
+      {/* COMPACT HERO (FASE 2) */}
+      <CompactHero
+        userName={profile?.name}
+        dailyLimit={availableDailyLimit}
+        spentToday={spentTodayEffective}
+        spentTodayReal={spentTodayReal}
+        baseDailyLimit={budgetStatus.baseDailyLimit}
+        yesterdaySurplus={budgetStatus.yesterdaySurplus}
+        carryOverEnabled={budget.carry_over_daily ?? true}
+        paydayDate={paydayDate}
+        daysRemaining={daysRemaining}
+        isPremium={isPremium}
+        effectiveIncome={effectiveIncome}
+        fixedExpenses={fixedExpenses}
+        totalLiabilities={totalLiabilities}
+        disposableMonthly={budgetStatus.disposableMonthly}
+        healthScore={healthScore}
+        onNavigate={navigate}
+      />
 
-        <div className="strip-actions">
-          <button type="button" className="tag-btn" onClick={() => navigate('/pemasukan')}>
-            <Icon name="wallet" size={14} /> + PEMASUKAN
+      {/* QUICK ACTIONS ROW */}
+      <div className="strip-actions">
+        <button type="button" className="tag-btn" onClick={() => navigate('/pemasukan')}>
+          <Icon name="wallet" size={14} /> + PEMASUKAN
+        </button>
+        <button type="button" className="tag-btn" onClick={() => navigate('/cicilan')}>
+          <Icon name="clock" size={14} /> CICILAN ({liabilitySummary.activeCount})
+        </button>
+        <button type="button" className="tag-btn" onClick={() => navigate('/transaksi')}>
+          <Icon name="plus" size={14} /> CATAT TRANSAKSI
+        </button>
+        <button type="button" className="tag-btn" onClick={() => navigate('/onboarding')}>
+          <Icon name="settings" size={14} /> PROFIL &amp; BIAYA
+        </button>
+        {isPremium ? (
+          <button type="button" className="tag-btn" onClick={() => navigate('/alokasi')}>
+            <Icon name="swap" size={14} /> ALOKASI 50/30/20
           </button>
-          <button type="button" className="tag-btn" onClick={() => navigate('/cicilan')}>
-            <Icon name="clock" size={14} /> CICILAN ({liabilitySummary.activeCount})
+        ) : (
+          <button type="button" className="tag-btn tag-btn--upgrade" onClick={() => navigate('/subscription')}>
+            <Icon name="star" size={14} /> BUKA FITUR PRO
           </button>
-          <button type="button" className="tag-btn" onClick={() => navigate('/transaksi')}>
-            <Icon name="plus" size={14} /> CATAT TRANSAKSI
-          </button>
-          <button type="button" className="tag-btn" onClick={() => navigate('/onboarding')}>
-            <Icon name="settings" size={14} /> PROFIL &amp; BIAYA
-          </button>
-          {isPremium ? (
-            <button type="button" className="tag-btn" onClick={() => navigate('/alokasi')}>
-              <Icon name="swap" size={14} /> ALOKASI 50/30/20
-            </button>
-          ) : (
-            <button type="button" className="tag-btn tag-btn--upgrade" onClick={() => navigate('/subscription')}>
-              <Icon name="star" size={14} /> BUKA FITUR PRO
-            </button>
-          )}
-        </div>
-      </section>
+        )}
+      </div>
 
       {/* SYSTEM ALERTS */}
       <AlertBanner
@@ -332,55 +330,6 @@ export const DashboardPage: React.FC = () => {
         dailySpent={spentTodayEffective}
         dailyLimit={availableDailyLimit}
       />
-
-      {/* TOP KPI METRICS STRIP */}
-      <section className="dashboard-kpi-grid">
-        <div className="kpi-cell">
-          <small>
-            BATAS JAJAN HARI INI
-            {!isPremium && <span className="kpi-pro-hint"><Icon name="lock" size={10} /> PRO</span>}
-          </small>
-          <strong>{isPremium ? formatRupiah(availableDailyLimit) : '—'}</strong>
-          <span>
-            {isPremium
-              ? budgetStatus.yesterdaySurplus !== 0
-                ? `Termasuk carry-over ${budgetStatus.yesterdaySurplus > 0 ? '+' : ''}${formatRupiah(budgetStatus.yesterdaySurplus)}`
-                : 'Batas aman pengeluaran hari ini'
-              : 'Tersedia di paket Pro'}
-          </span>
-        </div>
-        <div className="kpi-cell">
-          <small>BEBAN PENGELUARAN HARI INI</small>
-          <strong className={isOverDaily ? 'red-text' : 'green-text'}>
-            {formatRupiah(spentTodayEffective)}
-          </strong>
-          <span>
-            Sisa {formatRupiah(Math.max(0, availableDailyLimit - spentTodayEffective))}
-            {spentTodayReal !== spentTodayEffective && ` (Kas riil: ${formatRupiah(spentTodayReal)})`}
-          </span>
-        </div>
-        <div className="kpi-cell">
-          <small>UANG BEBAS BULAN INI</small>
-          <strong>{formatRupiah(budgetStatus.disposableMonthly)}</strong>
-          <span>Setelah cicilan, biaya tetap &amp; tabungan</span>
-        </div>
-        <div className="kpi-cell">
-          <small>
-            SKOR KESEHATAN KEUANGAN
-            {!isPremium && <span className="kpi-pro-hint"><Icon name="lock" size={10} /> PRO</span>}
-          </small>
-          <strong className={healthScore >= 70 ? 'green-text' : healthScore >= 50 ? 'accent' : 'red-text'}>
-            {isPremium ? `${healthScore} / 100` : '—'}
-          </strong>
-          <span>
-            {!isPremium
-              ? 'Tersedia di paket Pro'
-              : healthScore >= 70
-                ? 'Kondisi sehat, pertahankan'
-                : 'Ada pos yang perlu diperbaiki'}
-          </span>
-        </div>
-      </section>
 
       {/* UPGRADE NOTICE */}
       {!isPremium && (
@@ -411,25 +360,11 @@ export const DashboardPage: React.FC = () => {
 
       {/* MAIN TWO-COLUMN DASHBOARD GRID */}
       <section className="dashboard-columns-grid">
-        {/* LEFT COLUMN: DAILY LIMIT + GAUGES + HEALTH SCORE */}
+        {/* LEFT COLUMN: GAUGES + HEALTH SCORE */}
         <div className="dashboard-left-col">
-          <DailyLimitCard
-            dailyLimit={availableDailyLimit}
-            spentToday={spentTodayEffective}
-            spentTodayReal={spentTodayReal}
-            daysRemaining={daysRemaining}
-            paydayDate={paydayDate}
-            disposableMonthly={budgetStatus.disposableMonthly}
-            baseDailyLimit={budgetStatus.baseDailyLimit}
-            yesterdaySurplus={budgetStatus.yesterdaySurplus}
-            carryOverEnabled={budget.carry_over_daily ?? true}
-          />
-
           <BudgetGauge
             monthlyBudget={budgetStatus.disposableMonthly}
             monthlySpent={budgetStatus.cumulativeSpent}
-            dailyLimit={availableDailyLimit}
-            dailySpent={spentTodayEffective}
           />
 
           <HealthScoreCard

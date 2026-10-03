@@ -4,15 +4,17 @@ import { formatRupiah } from '../lib/calculator';
 interface BudgetGaugeProps {
   monthlyBudget: number;
   monthlySpent: number;
-  dailyLimit: number;
-  dailySpent: number;
+  dailyLimit?: number;
+  dailySpent?: number;
+  showDaily?: boolean;
 }
 
 export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
   monthlyBudget,
   monthlySpent,
-  dailyLimit,
-  dailySpent,
+  dailyLimit = 0,
+  dailySpent = 0,
+  showDaily = false,
 }) => {
   const monthlyPercent = monthlyBudget > 0 ? Math.min(100, (monthlySpent / monthlyBudget) * 100) : 0;
   const monthlyRemaining = Math.max(0, monthlyBudget - monthlySpent);
@@ -24,31 +26,33 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
 
   return (
     <div className="budget-gauge-box">
-      <div className="gauge-item">
-        <div className="gauge-item-header">
-          <div>
-            <small className="accent">HARI INI</small>
-            <b>PENGELUARAN HARI INI</b>
+      {showDaily && (
+        <div className="gauge-item">
+          <div className="gauge-item-header">
+            <div>
+              <small className="accent">HARI INI</small>
+              <b>PENGELUARAN HARI INI</b>
+            </div>
+            <strong>{dailyPercent.toFixed(0)}%</strong>
           </div>
-          <strong>{dailyPercent.toFixed(0)}%</strong>
+          <div className="swiss-gauge-bar">
+            <div
+              className={`gauge-fill ${isDailyExceeded ? 'gauge-red' : dailyPercent > 80 ? 'gauge-orange' : 'gauge-black'}`}
+              style={{ width: `${dailyPercent}%` }}
+            />
+          </div>
+          <div className="gauge-meta">
+            <span>Terpakai: {formatRupiah(dailySpent)}</span>
+            <span>Sisa: <b className={isDailyExceeded ? 'red-text' : 'green-text'}>{formatRupiah(dailyRemaining)}</b></span>
+          </div>
         </div>
-        <div className="swiss-gauge-bar">
-          <div
-            className={`gauge-fill ${isDailyExceeded ? 'gauge-red' : dailyPercent > 80 ? 'gauge-orange' : 'gauge-black'}`}
-            style={{ width: `${dailyPercent}%` }}
-          />
-        </div>
-        <div className="gauge-meta">
-          <span>Terpakai: {formatRupiah(dailySpent)}</span>
-          <span>Sisa: <b className={isDailyExceeded ? 'red-text' : 'green-text'}>{formatRupiah(dailyRemaining)}</b></span>
-        </div>
-      </div>
+      )}
 
       <div className="gauge-item">
         <div className="gauge-item-header">
           <div>
             <small className="accent">BULAN INI</small>
-            <b>TOTAL PENGELUARAN</b>
+            <b>TOTAL PENGELUARAN BULAN INI</b>
           </div>
           <strong>{monthlyPercent.toFixed(0)}%</strong>
         </div>
