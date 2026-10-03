@@ -52,6 +52,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    const handleOpenDrawer = () => setIsMenuOpen(true);
+    window.addEventListener('costku:open-drawer', handleOpenDrawer);
+    return () => window.removeEventListener('costku:open-drawer', handleOpenDrawer);
+  }, []);
+
   const handleLogout = async () => {
     setIsMenuOpen(false);
     await logout();

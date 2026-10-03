@@ -23,6 +23,7 @@ import { getTotalIncome } from '../lib/incomeApi';
 import { getTotalMonthlyLiabilities } from '../lib/liabilityApi';
 import { calculateBudgetStatus } from '../lib/budgetEngine';
 import { CompactHero } from '../components/CompactHero';
+import { QuickActionsGrid } from '../components/QuickActionsGrid';
 import { AllocationChart } from '../components/AllocationChart';
 import { BudgetGauge } from '../components/BudgetGauge';
 import { HealthScoreCard } from '../components/HealthScoreCard';
@@ -296,30 +297,11 @@ export const DashboardPage: React.FC = () => {
         onNavigate={navigate}
       />
 
-      {/* QUICK ACTIONS ROW */}
-      <div className="strip-actions">
-        <button type="button" className="tag-btn" onClick={() => navigate('/pemasukan')}>
-          <Icon name="wallet" size={14} /> + PEMASUKAN
-        </button>
-        <button type="button" className="tag-btn" onClick={() => navigate('/cicilan')}>
-          <Icon name="clock" size={14} /> CICILAN ({liabilitySummary.activeCount})
-        </button>
-        <button type="button" className="tag-btn" onClick={() => navigate('/transaksi')}>
-          <Icon name="plus" size={14} /> CATAT TRANSAKSI
-        </button>
-        <button type="button" className="tag-btn" onClick={() => navigate('/onboarding')}>
-          <Icon name="settings" size={14} /> PROFIL &amp; BIAYA
-        </button>
-        {isPremium ? (
-          <button type="button" className="tag-btn" onClick={() => navigate('/alokasi')}>
-            <Icon name="swap" size={14} /> ALOKASI 50/30/20
-          </button>
-        ) : (
-          <button type="button" className="tag-btn tag-btn--upgrade" onClick={() => navigate('/subscription')}>
-            <Icon name="star" size={14} /> BUKA FITUR PRO
-          </button>
-        )}
-      </div>
+      {/* QUICK ACTIONS GRID (FASE 3) */}
+      <QuickActionsGrid
+        activeLiabilitiesCount={liabilitySummary.activeCount}
+        onNavigate={navigate}
+      />
 
       {/* SYSTEM ALERTS */}
       <AlertBanner
