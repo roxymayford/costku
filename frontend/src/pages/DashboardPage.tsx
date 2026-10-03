@@ -126,60 +126,49 @@ export const DashboardPage: React.FC = () => {
   useLayoutEffect(() => {
     if (loading || !profile) return;
     const ctx = gsap.context(() => {
-      // Header and KPI stagger
-      gsap.from('.dashboard-hero-strip > *', {
-        y: 20,
+      // Hero card entrance
+      gsap.from('.compact-hero-card', {
+        y: 18,
         opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
+        duration: 0.5,
         ease: 'power2.out',
       });
-      gsap.from('.kpi-cell', {
-        y: 24,
+
+      // Quick action tiles stagger
+      gsap.from('.quick-action-tile', {
+        y: 14,
         opacity: 0,
-        duration: 0.6,
-        stagger: 0.08,
-        delay: 0.1,
-        ease: 'power2.out',
-      });
-      gsap.from('.dashboard-nlp-strip', {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.18,
+        duration: 0.4,
+        stagger: 0.04,
+        delay: 0.08,
         ease: 'power2.out',
       });
 
       // Left column cards stagger
       gsap.from('.dashboard-left-col > *', {
-        y: 30,
+        y: 24,
         opacity: 0,
-        duration: 0.7,
-        stagger: 0.12,
-        delay: 0.2,
+        duration: 0.6,
+        stagger: 0.1,
+        delay: 0.16,
         ease: 'power3.out',
       });
 
       // Right column cards stagger
       gsap.from('.dashboard-right-col > *', {
-        y: 30,
+        y: 24,
         opacity: 0,
-        duration: 0.7,
-        stagger: 0.12,
-        delay: 0.25,
+        duration: 0.6,
+        stagger: 0.1,
+        delay: 0.2,
         ease: 'power3.out',
       });
 
       // Progress bar fill growth
       gsap.fromTo(
-        '.progress-fill',
+        '.compact-hero-progress-fill, .gauge-fill',
         { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 1, delay: 0.4, ease: 'power2.out' }
-      );
-      gsap.fromTo(
-        '.gauge-fill',
-        { scaleX: 0, transformOrigin: 'left' },
-        { scaleX: 1, duration: 1, delay: 0.4, ease: 'power2.out' }
+        { scaleX: 1, duration: 0.9, delay: 0.35, ease: 'power2.out' }
       );
     }, rootRef);
 
