@@ -24,13 +24,13 @@ import { getTotalMonthlyLiabilities } from '../lib/liabilityApi';
 import { calculateBudgetStatus } from '../lib/budgetEngine';
 import { CompactHero } from '../components/CompactHero';
 import { QuickActionsGrid } from '../components/QuickActionsGrid';
+import { CompactRailInput } from '../components/CompactRailInput';
+import { CaptureSheet } from '../components/CaptureSheet';
 import { AllocationChart } from '../components/AllocationChart';
 import { BudgetGauge } from '../components/BudgetGauge';
 import { HealthScoreCard } from '../components/HealthScoreCard';
 import { AlertBanner } from '../components/AlertBanner';
-import { TransactionForm } from '../components/TransactionForm';
 import { TransactionList } from '../components/TransactionList';
-import { NlpTransactionBox } from '../components/NlpTransactionBox';
 import { Icon } from '../components/Icon';
 
 export const DashboardPage: React.FC = () => {
@@ -59,6 +59,21 @@ export const DashboardPage: React.FC = () => {
     activeCount: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [isCaptureOpen, setIsCaptureOpen] = useState(false);
+  const [captureTab, setCaptureTab] = useState<'quick' | 'manual'>('quick');
+  const [captureInitialText, setCaptureInitialText] = useState('');
+
+  const handleOpenQuickCapture = (text = '') => {
+    setCaptureTab('quick');
+    setCaptureInitialText(text);
+    setIsCaptureOpen(true);
+  };
+
+  const handleOpenManualCapture = () => {
+    setCaptureTab('manual');
+    setCaptureInitialText('');
+    setIsCaptureOpen(true);
+  };
 
   // Load data
   const loadData = async () => {
@@ -300,6 +315,8 @@ export const DashboardPage: React.FC = () => {
       {/* QUICK ACTIONS GRID (FASE 3) */}
       <QuickActionsGrid
         activeLiabilitiesCount={liabilitySummary.activeCount}
+        onOpenQuickCapture={() => handleOpenQuickCapture('')}
+        onOpenManualCapture={handleOpenManualCapture}
         onNavigate={navigate}
       />
 
@@ -332,18 +349,15 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* SMART NLP TRANSACTION INPUT STRIP (AREA CORETAN ORANYE) */}
-      <NlpTransactionBox
-        onAddTransaction={handleAddTransaction}
-        monthlyIncome={effectiveIncome}
-        dailyLimit={budgetStatus.baseDailyLimit}
-        recentAmounts={transactions.map((t) => t.amount)}
-      />
-
       {/* MAIN TWO-COLUMN DASHBOARD GRID */}
       <section className="dashboard-columns-grid">
-        {/* LEFT COLUMN: GAUGES + HEALTH SCORE */}
+        {/* LEFT COLUMN: RAIL / GAUGES + HEALTH SCORE */}
         <div className="dashboard-left-col">
+          <CompactRailInput
+            onSubmitText={(t) => handleOpenQuickCapture(t)}
+            onOpenManual={handleOpenManualCapture}
+          />
+
           <BudgetGauge
             monthlyBudget={budgetStatus.disposableMonthly}
             monthlySpent={budgetStatus.cumulativeSpent}
@@ -357,7 +371,7 @@ export const DashboardPage: React.FC = () => {
           />
         </div>
 
-        {/* RIGHT COLUMN: CHART + QUICK TRANSACTION + RECENT */}
+        {/* RIGHT COLUMN: CHART + RECENT */}
         <div className="dashboard-right-col">
           <AllocationChart
             targetNeeds={allocation.needsAmount}
@@ -368,15 +382,6 @@ export const DashboardPage: React.FC = () => {
             actualSavings={actualSavings}
           />
 
-          <div className="quick-add-transaction-box">
-            <TransactionForm
-              onAddTransaction={handleAddTransaction}
-              monthlyIncome={effectiveIncome}
-              dailyLimit={budgetStatus.baseDailyLimit}
-              recentAmounts={transactions.map((t) => t.amount)}
-            />
-          </div>
-
           <div className="recent-transactions-box">
             <TransactionList
               transactions={transactions}
@@ -385,6 +390,18 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* UNIFIED TRANSACTION CAPTURE SHEET (FASE 4) */}
+      <CaptureSheet
+        isOpen={isCaptureOpen}
+        onClose={() => setIsCaptureOpen(false)}
+        initialTab={captureTab}
+        initialText={captureInitialText}
+        onAddTransaction={handleAddTransaction}
+        monthlyIncome={effectiveIncome}
+        dailyLimit={budgetStatus.baseDailyLimit}
+        recentAmounts={transactions.map((t) => t.amount)}
+      />
     </div>
   );
 };
