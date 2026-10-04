@@ -213,22 +213,22 @@ export const LiabilitiesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* TWO COLUMN WORKSPACE */}
-      <div className="transactions-content-layout">
-        <div className="transactions-form-col liabilities-form-col">
-          <LiabilityForm
-            onAddLiability={handleAddOrUpdate}
-            initialData={editingLiability}
-            onCancel={editingLiability ? () => setEditingLiability(null) : undefined}
-          />
-        </div>
-
+      {/* TWO COLUMN WORKSPACE — List utama di kiri, Form input di kanan */}
+      <div className="transactions-content-layout liabilities-content-layout">
         <div className="transactions-list-col liabilities-list-col">
           <LiabilityList
             liabilities={liabilities}
             onDeleteLiability={handleDelete}
             onEditLiability={(l) => setEditingLiability(l)}
             onPayMonth={handlePayMonth}
+          />
+        </div>
+
+        <div className="transactions-form-col liabilities-form-col">
+          <LiabilityForm
+            onAddLiability={handleAddOrUpdate}
+            initialData={editingLiability}
+            onCancel={editingLiability ? () => setEditingLiability(null) : undefined}
           />
         </div>
       </div>

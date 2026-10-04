@@ -214,21 +214,21 @@ export const IncomesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* CONTENT TWO COLUMNS */}
-      <div className="transactions-content-layout">
-        <div className="transactions-form-col incomes-form-col">
-          <IncomeForm
-            onAddIncome={handleAddOrUpdate}
-            initialData={editingIncome}
-            onCancel={editingIncome ? () => setEditingIncome(null) : undefined}
-          />
-        </div>
-
+      {/* CONTENT TWO COLUMNS — List utama di kiri, Form input di kanan */}
+      <div className="transactions-content-layout incomes-content-layout">
         <div className="transactions-list-col incomes-list-col">
           <IncomeList
             incomes={incomes}
             onDeleteIncome={handleDelete}
             onEditIncome={(inc) => setEditingIncome(inc)}
+          />
+        </div>
+
+        <div className="transactions-form-col incomes-form-col">
+          <IncomeForm
+            onAddIncome={handleAddOrUpdate}
+            initialData={editingIncome}
+            onCancel={editingIncome ? () => setEditingIncome(null) : undefined}
           />
         </div>
       </div>

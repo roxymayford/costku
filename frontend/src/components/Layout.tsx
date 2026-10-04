@@ -224,7 +224,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* FOOTER */}
       <footer className="fatrack-footer">
         <p className="fatrack-footer-text">
-          costKu v1.0 · Dibuat untuk pekerja muda Indonesia
+          costKu v1.0 · Catat sekali tenang sebulan
         </p>
       </footer>
     </div>

@@ -358,7 +358,7 @@ export const LandingPage: React.FC = () => {
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span /> Dibuat untuk pekerja muda Indonesia
+              <span /> Catat sekali tenang sebulan
             </div>
             <h1>
               Gaji masuk.

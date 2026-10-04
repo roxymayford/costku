@@ -34,12 +34,23 @@
   border-bottom: 1px solid var(--line);
 }
 
+/* Incomes & Liabilities memiliki 4 item tally bar */
+.category-tally-bar.incomes-kpi-strip,
+.category-tally-bar.liabilities-kpi-strip {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .tally-item {
-  padding: 16px 40px;
+  padding: 16px 32px;
   border-right: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.category-tally-bar.incomes-kpi-strip .tally-item,
+.category-tally-bar.liabilities-kpi-strip .tally-item {
+  padding: 16px 24px;
 }
 
 .tally-item:last-child {
@@ -55,11 +66,71 @@
   font-size: 14px;
 }
 
+/* Mobile & Tablet Adaptation untuk Tally Bar Cicilan & Pemasukan (<= 768px) */
+@media (max-width: 768px) {
+  .category-tally-bar.incomes-kpi-strip,
+  .category-tally-bar.liabilities-kpi-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .category-tally-bar.incomes-kpi-strip .tally-item,
+  .category-tally-bar.liabilities-kpi-strip .tally-item {
+    padding: 12px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    border-right: 1px solid var(--line) !important;
+    border-bottom: 1px solid var(--line) !important;
+    box-sizing: border-box;
+    min-height: 58px;
+  }
+
+  /* Kolom kanan (genap): tanpa border kanan */
+  .category-tally-bar.incomes-kpi-strip .tally-item:nth-child(2n),
+  .category-tally-bar.liabilities-kpi-strip .tally-item:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  /* Baris bawah (2 item terakhir): tanpa border bawah (karena container sudah ada border-bottom) */
+  .category-tally-bar.incomes-kpi-strip .tally-item:nth-last-child(-n+2),
+  .category-tally-bar.liabilities-kpi-strip .tally-item:nth-last-child(-n+2) {
+    border-bottom: 0 !important;
+  }
+
+  .category-tally-bar.incomes-kpi-strip .tally-item span,
+  .category-tally-bar.liabilities-kpi-strip .tally-item span {
+    font-size: 10px !important;
+    color: #777 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+    line-height: 1.2 !important;
+  }
+
+  .category-tally-bar.incomes-kpi-strip .tally-item b,
+  .category-tally-bar.incomes-kpi-strip .tally-item strong,
+  .category-tally-bar.liabilities-kpi-strip .tally-item b,
+  .category-tally-bar.liabilities-kpi-strip .tally-item strong {
+    font-size: 13.5px !important;
+    line-height: 1.2 !important;
+  }
+}
+
 .transactions-content-layout {
   display: grid;
   grid-template-columns: 360px 1fr;
   gap: 40px;
   padding: 40px;
+}
+
+/* Pemasukan & Cicilan: list utama di kiri (lebar), form di kanan (sidebar) */
+.incomes-content-layout,
+.liabilities-content-layout {
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  padding: 32px 40px;
+  align-items: start;
 }
 
 /* Transaction Quick Form */

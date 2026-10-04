@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { Layout } from './components/Layout';
+import ScrollToTop from './components/ScrollToTop';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
@@ -22,6 +23,7 @@ export function App() {
     <AuthProvider>
       <SubscriptionProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             {/* Public marketing landing page */}
             <Route path="/" element={<LandingPage />} />
