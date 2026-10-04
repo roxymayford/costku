@@ -5,6 +5,10 @@ import { supabaseAdmin, isSupabaseConfigured } from '../lib/supabase.js';
 
 export const subscriptionRouter = Router();
 
+// Soft launch mode: When active, all users automatically receive full Pro / Advisor plan access,
+// and subscription payment / upgrade features are locked.
+export const IS_SOFTLAUNCH = process.env.SOFTLAUNCH_MODE !== 'false';
+
 // In-memory store for fallback/demo mode when database is not connected
 const demoSubscriptions = new Map<string, any>();
 
@@ -12,7 +16,13 @@ const demoSubscriptions = new Map<string, any>();
 subscriptionRouter.get('/plans', (_req, res) => {
   res.json({
     status: 'success',
-    data: Object.values(SUBSCRIPTION_PLANS),
+    isSoftLaunch: IS_SOFTLAUNCH,
+    lockSubscription: IS_SOFTLAUNCH,
+    softLaunchNotice: 'Selama masa Soft Launch, seluruh fitur Pro Advisor terbuka gratis untuk semua pengguna dan fitur pembayaran dikunci.',
+    data: Object.values(SUBSCRIPTION_PLANS).map((p) => ({
+      ...p,
+      isLocked: IS_SOFTLAUNCH,
+    })),
     midtransConfigured: isMidtransConfigured,
     clientKey: process.env.MIDTRANS_CLIENT_KEY || '',
   });
@@ -21,6 +31,26 @@ subscriptionRouter.get('/plans', (_req, res) => {
 // GET /api/subscription/status - Get current user subscription status
 subscriptionRouter.get('/status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
+
+  // Soft Launch Mode: Automatically grant full Pro / Advisor plan access to all users
+  if (IS_SOFTLAUNCH) {
+    return res.json({
+      status: 'success',
+      data: {
+        id: `softlaunch-${userId}`,
+        plan: 'premium_monthly',
+        planName: 'costKu Pro Advisor (Soft Launch)',
+        status: 'active',
+        isPremium: true,
+        isSoftLaunch: true,
+        lockSubscription: true,
+        message: 'Seluruh pengguna mendapatkan akses penuh fitur Pro Advisor secara gratis selama masa Soft Launch!',
+        startedAt: new Date().toISOString(),
+        expiresAt: null,
+        midtransOrderId: null,
+      },
+    });
+  }
 
   // 1. Supabase Connected Mode
   if (isSupabaseConfigured && supabaseAdmin) {
@@ -91,6 +121,15 @@ subscriptionRouter.get('/status', requireAuth, async (req: AuthenticatedRequest,
 
 // POST /api/subscription/create - Create Midtrans Snap Transaction
 subscriptionRouter.post('/create', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  // During soft launch, subscription payment is locked because all users already have Pro access
+  if (IS_SOFTLAUNCH) {
+    return res.status(403).json({
+      status: 'fail',
+      code: 'SOFTLAUNCH_SUBSCRIPTION_LOCKED',
+      message: 'Fitur pembayaran langganan sedang dikunci selama masa Soft Launch. Akun Anda otomatis mendapatkan akses penuh Pro / Advisor secara gratis!',
+    });
+  }
+
   const { plan: planKey } = req.body;
   const user = req.user!;
 
@@ -193,6 +232,21 @@ subscriptionRouter.post('/create', requireAuth, async (req: AuthenticatedRequest
 
 // POST /api/subscription/simulate-activate - Useful for demo / quick test without real webhook
 subscriptionRouter.post('/simulate-activate', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  if (IS_SOFTLAUNCH) {
+    return res.json({
+      status: 'success',
+      message: 'Akun Anda sudah memiliki akses penuh Pro Advisor selama masa Soft Launch.',
+      data: {
+        plan: 'premium_monthly',
+        planName: 'costKu Pro Advisor (Soft Launch)',
+        status: 'active',
+        isPremium: true,
+        isSoftLaunch: true,
+        expiresAt: null,
+      },
+    });
+  }
+
   const { plan: planKey } = req.body;
   const user = req.user!;
 

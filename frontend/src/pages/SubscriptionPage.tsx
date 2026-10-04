@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubscription, SubscriptionPlan } from '../contexts/SubscriptionContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon } from '../components/Icon';
 
@@ -10,79 +10,17 @@ export function SubscriptionPage() {
   const {
     subscription,
     isPremium,
-    plans,
-    createSnapTransaction,
-    activateSubscription,
-    resetToFree,
+    isSoftLaunch,
+    lockSubscription,
   } = useSubscription();
 
-  const [selectedPlan, setSelectedPlan] = useState<string>('premium_monthly');
-  const [processing, setProcessing] = useState<boolean>(false);
   const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
 
-  // Format currency
-  const formatRupiah = (num: number) => {
-    return 'Rp ' + num.toLocaleString('id-ID');
-  };
-
-  const handleSelectPlanAndPay = async (planKey: string) => {
-    setSelectedPlan(planKey);
-    setProcessing(true);
-    setModalMessage(null);
-
-    try {
-      const snapResult = await createSnapTransaction(planKey);
-
-      // 1. Check if window.snap is available and valid token exists
-      if (window.snap && snapResult.token && !snapResult.isMock) {
-        window.snap.pay(snapResult.token, {
-          onSuccess: async (result) => {
-            console.log('[Midtrans Snap Success]', result);
-            await activateSubscription(planKey);
-            setModalMessage({
-              type: 'success',
-              text: 'Pembayaran berhasil diverifikasi! Fitur Financial Advisor Anda telah aktif.',
-            });
-            setProcessing(false);
-          },
-          onPending: async (result) => {
-            console.log('[Midtrans Snap Pending]', result);
-            setModalMessage({
-              type: 'info',
-              text: 'Menunggu penyelesaian pembayaran. Silakan selesaikan transaksi sesuai instruksi.',
-            });
-            setProcessing(false);
-          },
-          onError: (err) => {
-            console.error('[Midtrans Snap Error]', err);
-            setModalMessage({
-              type: 'error',
-              text: 'Transaksi gagal atau dibatalkan. Silakan coba kembali.',
-            });
-            setProcessing(false);
-          },
-          onClose: () => {
-            setProcessing(false);
-          },
-        });
-      } else {
-        // 2. Demo / Sandbox Mode Fallback
-        // Simulate immediate sandbox payment verification
-        await activateSubscription(planKey);
-        setModalMessage({
-          type: 'success',
-          text: 'Pembayaran berhasil diverifikasi! Fitur Financial Advisor Anda telah aktif.',
-        });
-        setProcessing(false);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setModalMessage({
-        type: 'error',
-        text: err.message || 'Terjadi kesalahan saat memulai pembayaran.',
-      });
-      setProcessing(false);
-    }
+  const handleLockedClick = (planName: string) => {
+    setModalMessage({
+      type: 'info',
+      text: `Fitur transaksi langganan ${planName} saat ini dikunci untuk periode Soft Launch. Akun Anda sudah otomatis memiliki akses penuh Pro Advisor secara gratis!`,
+    });
   };
 
   return (
@@ -91,22 +29,20 @@ export function SubscriptionPage() {
       <div className="subscription-header">
         <div>
           <span className="subscription-header__label">
-            PAKET & LANGGANAN
+            PAKET &amp; LANGGANAN — SOFT LAUNCH SPECIAL
           </span>
-          <h1>Upgrade ke Financial Advisor</h1>
+          <h1>Akses Penuh Pro Advisor</h1>
           <p className="subscription-header__desc">
-            Gunakan costKu sebagai pencatat pengeluaran gratis, atau buka kekuatan penuh rekomendasi finansial 
-            berbasis algoritma Safe-to-Spend, formula 50/30/20, dan batas sewa kost proporsional dengan Midtrans Snap.
+            Selama fase <strong>Soft Launch</strong>, fitur transaksi pembayaran langganan kami kunci sementara.
+            Seluruh pengguna aktif langsung mendapatkan hak akses ke seluruh fitur <strong>costKu Pro Advisor</strong> secara gratis!
           </p>
         </div>
         <div className="subscription-header__status">
           <span className="subscription-header__status-label">Status Akun:</span>
-          <span
-            className={`badge-plan ${isPremium ? 'badge-plan--pro' : 'badge-plan--free'}`}
-          >
-            {isPremium ? (
-              <span className="inline-flex items-center gap-1"><Icon name="star" size={11} /> PREMIUM ADVISOR</span>
-            ) : 'FREE TRACKER'}
+          <span className="badge-plan badge-plan--pro badge-plan--softlaunch">
+            <span className="inline-flex items-center gap-1">
+              <Icon name="star" size={11} /> PRO ADVISOR (SOFT LAUNCH)
+            </span>
           </span>
         </div>
       </div>
@@ -129,62 +65,91 @@ export function SubscriptionPage() {
         </div>
       )}
 
-      {/* Active Subscription Status Banner if Premium */}
-      {isPremium && (
-        <div className="sub-active-banner">
-          <div>
-            <div className="sub-active-banner__label">
-              STATUS LANGGANAN ANDA AKTIF
+      {/* Soft Launch Announcement Showcase Box */}
+      <div className="sub-softlaunch-box">
+        <div className="sub-softlaunch-box__head">
+          <span className="sub-softlaunch-box__tag">
+            <Icon name="lock" size={12} /> FITUR PEMBAYARAN DIKUNCI
+          </span>
+          <span className="sub-softlaunch-box__status">
+            <Icon name="check" size={13} /> Akses Bebas 100% Tanpa Biaya
+          </span>
+        </div>
+        <h2 className="sub-softlaunch-box__title">
+          Semua Pengguna Otomatis Menggunakan costKu Pro Advisor
+        </h2>
+        <p className="sub-softlaunch-box__desc">
+          Kami menonaktifkan seluruh proses checkout / langganan berbayar agar Anda dapat mengeksplorasi seluruh fitur
+          analisis keuangan cerdas kami tanpa batasan pembayaran atau komitmen langganan:
+        </p>
+        <div className="sub-softlaunch-box__grid">
+          <div className="sub-softlaunch-box__item">
+            <span className="sub-softlaunch-box__check"><Icon name="check" size={14} /></span>
+            <div>
+              <strong>Batas Jajan Harian (Safe-to-Spend)</strong>
+              <small>Batas aman jajan per hari yang otomatis beradaptasi dengan sisa hari gajian.</small>
             </div>
-            <div className="sub-active-banner__plan">
-              Paket:{' '}
-              {subscription.plan === 'premium_yearly'
-                ? 'costKu Advisor Tahunan'
-                : 'costKu Advisor Bulanan'}
-            </div>
-            {subscription.expiresAt && (
-              <div className="sub-active-banner__expiry">
-                Berlaku hingga:{' '}
-                {new Date(subscription.expiresAt).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </div>
-            )}
           </div>
-          <div className="sub-active-banner__actions">
-            <button
-              onClick={() => navigate('/alokasi')}
-              className="sub-active-banner__btn"
-            >
-              <span className="inline-flex items-center gap-1.5">Buka Fitur Alokasi <Icon name="arrowRight" size={13} /></span>
-            </button>
-            <button
-              onClick={async () => {
-                await resetToFree();
-                setModalMessage({ type: 'info', text: 'Akun dikembalikan ke Mode Gratis.' });
-              }}
-              className="sub-active-banner__reset"
-            >
-              Reset ke Free (Testing)
-            </button>
+          <div className="sub-softlaunch-box__item">
+            <span className="sub-softlaunch-box__check"><Icon name="check" size={14} /></span>
+            <div>
+              <strong>Formula Alokasi Gaji 50/30/20</strong>
+              <small>Pembagian cerdas antara Kebutuhan Pokok, Keinginan, dan Tabungan/Investasi.</small>
+            </div>
+          </div>
+          <div className="sub-softlaunch-box__item">
+            <span className="sub-softlaunch-box__check"><Icon name="check" size={14} /></span>
+            <div>
+              <strong>Rekomendasi Tipe Kost &amp; Meal Plan</strong>
+              <small>Panduan sewa kost proporsional gaji serta estimasi menu hemat bulanan.</small>
+            </div>
+          </div>
+          <div className="sub-softlaunch-box__item">
+            <span className="sub-softlaunch-box__check"><Icon name="check" size={14} /></span>
+            <div>
+              <strong>Financial Health Score (0–100)</strong>
+              <small>Diagnostik kesehatan arus kas dan ketahanan finansial secara real-time.</small>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Plan Cards */}
+      {/* Active Subscription Status Banner */}
+      <div className="sub-active-banner">
+        <div>
+          <div className="sub-active-banner__label">
+            STATUS LANGGANAN ANDA AKTIF
+          </div>
+          <div className="sub-active-banner__plan">
+            Paket: costKu Pro Advisor (Soft Launch Edition)
+          </div>
+          <div className="sub-active-banner__expiry">
+            Masa aktif: Berlaku gratis tanpa batas selama masa Soft Launch berlangsung
+          </div>
+        </div>
+        <div className="sub-active-banner__actions">
+          <button
+            onClick={() => navigate('/alokasi')}
+            className="sub-active-banner__btn"
+          >
+            <span className="inline-flex items-center gap-1.5">Buka Alokasi 50/30/20 <Icon name="arrowRight" size={13} /></span>
+          </button>
+          <button
+            onClick={() => navigate('/rekomendasi')}
+            className="sub-active-banner__btn"
+          >
+            <span className="inline-flex items-center gap-1.5">Rekomendasi Gaya Hidup <Icon name="arrowRight" size={13} /></span>
+          </button>
+        </div>
+      </div>
+
+      {/* Plan Cards Grid */}
       <div className="plans-grid">
         {/* Card 1: Free Tier */}
-        <div
-          className={`plan-card ${!isPremium ? 'plan-card--active' : 'plan-card--dimmed'}`}
-        >
+        <div className="plan-card plan-card--dimmed">
           <div>
             <div className="plan-card__head">
-              <span className="plan-card__tag">PAKET GRATIS</span>
-              {!isPremium && (
-                <span className="plan-card__status">AKTIF</span>
-              )}
+              <span className="plan-card__tag">PAKET DASAR</span>
             </div>
             <h3 className="plan-card__title">Money Tracker</h3>
             <div className="plan-card__price">
@@ -192,12 +157,12 @@ export function SubscriptionPage() {
               <span className="plan-card__price-unit"> / selamanya</span>
             </div>
             <p className="plan-card__desc">
-              Cukup untuk mulai disiplin mencatat setiap pengeluaran.
+              Pencatatan pengeluaran harian dan pemasukan standar.
             </p>
 
             <ul className="plan-card__features">
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Catat transaksi pemasukan & pengeluaran
+                <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Catat transaksi pemasukan &amp; pengeluaran
               </li>
               <li className="plan-card__feature">
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Riwayat transaksi dan filter tanggal
@@ -205,54 +170,41 @@ export function SubscriptionPage() {
               <li className="plan-card__feature">
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Dashboard ringkasan arus kas
               </li>
-              <li className="plan-card__feature plan-card__feature--locked">
-                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Batas jajan harian
-              </li>
-              <li className="plan-card__feature plan-card__feature--locked">
-                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Alokasi 50/30/20
-              </li>
-              <li className="plan-card__feature plan-card__feature--locked">
-                <span className="plan-card__feature-icon plan-card__feature-icon--x"><Icon name="x" size={14} /></span> Rekomendasi kost &amp; belanja makan
+              <li className="plan-card__feature">
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Terbuka di Soft Launch
               </li>
             </ul>
           </div>
 
           <div className="plan-card__footer">
             <button
-              disabled={!isPremium}
-              onClick={async () => {
-                await resetToFree();
-                setModalMessage({ type: 'info', text: 'Beralih ke mode Money Tracker Gratis.' });
-              }}
-              className={`plan-card__btn ${!isPremium ? 'plan-card__btn--disabled' : 'plan-card__btn--outline'}`}
+              disabled
+              className="plan-card__btn plan-card__btn--disabled"
             >
-              {!isPremium ? 'Paket Aktif Saat Ini' : 'Kembali ke Free'}
+              Ter-upgrade ke Pro Advisor
             </button>
           </div>
         </div>
 
         {/* Card 2: Premium Monthly */}
-        <div
-          className={`plan-card ${
-            isPremium && subscription.plan === 'premium_monthly'
-              ? 'plan-card--active'
-              : ''
-          }`}
-        >
+        <div className="plan-card plan-card--active">
           <div>
             <div className="plan-card__head">
-              <span className="plan-card__tag plan-card__tag--popular">POPULER</span>
-              {isPremium && subscription.plan === 'premium_monthly' && (
-                <span className="plan-card__status">AKTIF</span>
-              )}
+              <span className="plan-card__tag plan-card__tag--softlaunch">AKTIF DI SOFT LAUNCH</span>
+              <span className="plan-card__status">AKTIF</span>
             </div>
             <h3 className="plan-card__title">Advisor Bulanan</h3>
             <div className="plan-card__price">
-              <span className="plan-card__price-val">Rp 29.900</span>
-              <span className="plan-card__price-unit"> / 30 hari</span>
+              <span className="plan-card__price-val" style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '18px', marginRight: '8px' }}>
+                Rp 29.900
+              </span>
+              <span className="plan-card__price-val" style={{ color: '#008547' }}>
+                Rp 0
+              </span>
+              <span className="plan-card__price-unit"> / Soft Launch</span>
             </div>
             <p className="plan-card__desc">
-              Semua fitur pendamping keuangan, aktif penuh.
+              Semua fitur pendamping keuangan, aktif gratis untuk Anda.
             </p>
 
             <ul className="plan-card__features">
@@ -260,7 +212,7 @@ export function SubscriptionPage() {
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Semua fitur Money Tracker
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Batas jajan harian otomatis
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Batas jajan harian otomatis (Safe-to-Spend)
               </li>
               <li className="plan-card__feature">
                 <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Alokasi 50/30/20 yang bisa diatur
@@ -279,45 +231,33 @@ export function SubscriptionPage() {
 
           <div className="plan-card__footer">
             <button
-              disabled={processing || (isPremium && subscription.plan === 'premium_monthly')}
-              onClick={() => handleSelectPlanAndPay('premium_monthly')}
-              className={`plan-card__btn ${
-                isPremium && subscription.plan === 'premium_monthly'
-                  ? 'plan-card__btn--active'
-                  : 'plan-card__btn--dark'
-              }`}
+              onClick={() => handleLockedClick('Bulanan')}
+              className="plan-card__btn plan-card__btn--locked"
             >
-              {processing && selectedPlan === 'premium_monthly'
-                ? 'Memproses...'
-                : isPremium && subscription.plan === 'premium_monthly'
-                ? 'Paket Anda Sedang Aktif'
-                : 'Pilih Bulanan (Rp 29.900)'}
+              🔒 Terkunci (Sedang Aktif Gratis)
             </button>
           </div>
         </div>
 
         {/* Card 3: Premium Yearly */}
-        <div
-          className={`plan-card plan-card--featured ${
-            isPremium && subscription.plan === 'premium_yearly'
-              ? 'plan-card--active'
-              : ''
-          }`}
-        >
+        <div className="plan-card plan-card--featured">
           <div>
             <div className="plan-card__head">
-              <span className="plan-card__tag plan-card__tag--best">HEMAT 30%</span>
-              {isPremium && subscription.plan === 'premium_yearly' && (
-                <span className="plan-card__status">AKTIF</span>
-              )}
+              <span className="plan-card__tag">PAKET TAHUNAN</span>
+              <span className="plan-card__status" style={{ background: '#f1f5f9', color: '#64748b', borderColor: '#cbd5e1' }}>TERKUNCI</span>
             </div>
             <h3 className="plan-card__title">Advisor Tahunan</h3>
             <div className="plan-card__price">
-              <span className="plan-card__price-val">Rp 249.000</span>
-              <span className="plan-card__price-unit"> / tahun</span>
+              <span className="plan-card__price-val" style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '18px', marginRight: '8px' }}>
+                Rp 249.000
+              </span>
+              <span className="plan-card__price-val" style={{ color: '#008547' }}>
+                Rp 0
+              </span>
+              <span className="plan-card__price-unit"> / Soft Launch</span>
             </div>
             <p className="plan-card__desc">
-              Pilihan paling hemat — setara Rp 20.750 per bulan.
+              Pilihan hemat 12 bulan — akan tersedia setelah fase soft launch.
             </p>
 
             <ul className="plan-card__features">
@@ -325,32 +265,20 @@ export function SubscriptionPage() {
                 <span className="plan-card__feature-icon plan-card__feature-icon--check"><Icon name="check" size={14} /></span> Semua fitur Advisor Bulanan
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Hemat 30% dibanding bulanan
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Akses prioritas update fitur AI &amp; analitik
               </li>
               <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Bayar sekali untuk 12 bulan
-              </li>
-              <li className="plan-card__feature">
-                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Harga terkunci selama satu tahun
+                <span className="plan-card__feature-icon plan-card__feature-icon--star"><Icon name="star" size={14} /></span> Akses fitur Pro saat ini sudah terbuka gratis
               </li>
             </ul>
           </div>
 
           <div className="plan-card__footer">
             <button
-              disabled={processing || (isPremium && subscription.plan === 'premium_yearly')}
-              onClick={() => handleSelectPlanAndPay('premium_yearly')}
-              className={`plan-card__btn ${
-                isPremium && subscription.plan === 'premium_yearly'
-                  ? 'plan-card__btn--active'
-                  : 'plan-card__btn--orange'
-              }`}
+              onClick={() => handleLockedClick('Tahunan')}
+              className="plan-card__btn plan-card__btn--locked"
             >
-              {processing && selectedPlan === 'premium_yearly'
-                ? 'Memproses...'
-                : isPremium && subscription.plan === 'premium_yearly'
-                ? 'Paket Anda Sedang Aktif'
-                : 'Pilih Tahunan (Hemat 30%)'}
+              🔒 Pembayaran Dikunci Sementara
             </button>
           </div>
         </div>
@@ -359,15 +287,14 @@ export function SubscriptionPage() {
       {/* Payment Gateway Information footer */}
       <div className="sub-payment-info">
         <div className="sub-payment-info__title">
-          PEMBAYARAN DIAMANKAN MIDTRANS
+          PEMBAYARAN DITANGGUHKAN SEMENTARA (SOFT LAUNCH)
         </div>
         <p>
-          Transaksi diproses lewat Midtrans (PT Midtrans Indonesia) dengan enkripsi standar perbankan.
-          Pembayaran bisa lewat GoPay, QRIS, BCA Virtual Account, Mandiri Bill, BNI, BRI, serta kartu
-          kredit dan debit berstandar PCI-DSS.
+          Gerbang pembayaran Midtrans saat ini dinonaktifkan secara sengaja untuk masa Soft Launch.
+          Seluruh pengguna dapat memanfaatkan seluruh fitur premium costKu Pro Advisor tanpa dipungut biaya
+          dan tanpa perlu mendaftarkan metode pembayaran apa pun.
         </p>
       </div>
     </div>
   );
-
 }

@@ -30,8 +30,13 @@ import { upsertProfile, UserStatus } from '../modules/otp/index.js';
 
 export const googleAuthRouter = Router();
 
-/** Trailing slashes are stripped so the redirect never doubles up. */
-const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
+/** Trailing slashes are stripped so the redirect never doubles up.
+ * If comma-separated URLs are provided (for CORS), the first one is used as the primary redirect target.
+ */
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')[0]
+  .trim()
+  .replace(/\/+$/, '');
 
 /* ══════════════════════════════════════════════════════════
    GET /google

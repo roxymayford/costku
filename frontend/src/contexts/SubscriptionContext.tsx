@@ -8,13 +8,18 @@ export type SubscriptionPlan = {
   price: number;
   durationDays: number;
   description: string;
+  isLocked?: boolean;
 };
 
 export type UserSubscription = {
   id?: string;
-  plan: 'free' | 'premium_monthly' | 'premium_yearly';
+  plan: 'free' | 'premium_monthly' | 'premium_yearly' | 'advisor_softlaunch';
+  planName?: string;
   status: 'active' | 'expired' | 'pending' | 'cancelled';
   isPremium: boolean;
+  isSoftLaunch?: boolean;
+  lockSubscription?: boolean;
+  message?: string;
   startedAt?: string | null;
   expiresAt?: string | null;
   midtransOrderId?: string | null;
@@ -27,6 +32,7 @@ const DEFAULT_PLANS: SubscriptionPlan[] = [
     price: 29900,
     durationDays: 30,
     description: 'Akses penuh fitur rekomendasi finansial cerdas & Safe-to-Spend selama 30 hari.',
+    isLocked: true,
   },
   {
     id: 'premium_yearly',
@@ -34,12 +40,15 @@ const DEFAULT_PLANS: SubscriptionPlan[] = [
     price: 249000,
     durationDays: 365,
     description: 'Hemat 30%! Akses prioritas semua fitur penasihat keuangan selama 1 tahun penuh.',
+    isLocked: true,
   },
 ];
 
 type SubscriptionContextType = {
   subscription: UserSubscription;
   isPremium: boolean;
+  isSoftLaunch: boolean;
+  lockSubscription: boolean;
   loading: boolean;
   plans: SubscriptionPlan[];
   fetchStatus: () => Promise<void>;
@@ -62,9 +71,12 @@ const LS_SUB_KEY = 'fatrack-subscription';
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<UserSubscription>({
-    plan: 'free',
+    plan: 'premium_monthly',
+    planName: 'costKu Pro Advisor (Soft Launch)',
     status: 'active',
-    isPremium: false,
+    isPremium: true,
+    isSoftLaunch: true,
+    lockSubscription: true,
     expiresAt: null,
   });
   const [plans, setPlans] = useState<SubscriptionPlan[]>(DEFAULT_PLANS);
@@ -83,13 +95,20 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   // Fetch status from Backend or LocalStorage
   const fetchStatus = useCallback(async () => {
+    // Soft Launch defaults: all users get Pro Advisor access
+    const softLaunchSub: UserSubscription = {
+      plan: 'premium_monthly',
+      planName: 'costKu Pro Advisor (Soft Launch)',
+      status: 'active',
+      isPremium: true,
+      isSoftLaunch: true,
+      lockSubscription: true,
+      expiresAt: null,
+      message: 'Seluruh pengguna mendapatkan akses penuh fitur Pro Advisor secara gratis selama masa Soft Launch!',
+    };
+
     if (!user) {
-      setSubscription({
-        plan: 'free',
-        status: 'active',
-        isPremium: false,
-        expiresAt: null,
-      });
+      setSubscription(softLaunchSub);
       setLoading(false);
       return;
     }
@@ -105,43 +124,26 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const json = await res.json();
         if (json.status === 'success' && json.data) {
-          setSubscription(json.data);
-          localStorage.setItem(LS_SUB_KEY, JSON.stringify(json.data));
+          const mergedData: UserSubscription = {
+            ...json.data,
+            // Guaranteed true during softlaunch
+            isPremium: true,
+            isSoftLaunch: json.data.isSoftLaunch ?? true,
+            lockSubscription: json.data.lockSubscription ?? true,
+          };
+          setSubscription(mergedData);
+          localStorage.setItem(LS_SUB_KEY, JSON.stringify(mergedData));
           setLoading(false);
           return;
         }
       }
     } catch (err) {
-      // Backend not reached or offline -> Fallback to localStorage
-      console.warn('[SubscriptionContext] Backend unavailable, using local persistence.');
+      console.warn('[SubscriptionContext] Backend unavailable, using soft launch defaults.');
     }
 
-    // Fallback: localStorage
-    const saved = localStorage.getItem(LS_SUB_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const isExpired = parsed.expiresAt ? new Date(parsed.expiresAt) < new Date() : false;
-        const isPrem = (parsed.plan === 'premium_monthly' || parsed.plan === 'premium_yearly') &&
-          parsed.status === 'active' &&
-          !isExpired;
-        setSubscription({
-          ...parsed,
-          status: isExpired ? 'expired' : parsed.status,
-          isPremium: isPrem,
-        });
-      } catch (e) {
-        // ignore JSON parse error
-      }
-    } else {
-      setSubscription({
-        plan: 'free',
-        status: 'active',
-        isPremium: false,
-        expiresAt: null,
-      });
-    }
-
+    // Fallback: Soft launch guarantees Pro access
+    setSubscription(softLaunchSub);
+    localStorage.setItem(LS_SUB_KEY, JSON.stringify(softLaunchSub));
     setLoading(false);
   }, [user]);
 
@@ -164,8 +166,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       });
   }, []);
 
-  // Create Snap Transaction
+  // Create Snap Transaction - Locked during Soft Launch
   const createSnapTransaction = async (planKey: string) => {
+    if (subscription.lockSubscription || subscription.isSoftLaunch) {
+      return {
+        error: 'Fitur langganan sedang dikunci selama masa Soft Launch. Akun Anda telah mendapatkan akses penuh Pro Advisor secara gratis!',
+      };
+    }
+
     try {
       const token = await getAuthToken();
       const res = await fetch(`${BACKEND_URL}/api/subscription/create`, {
@@ -185,13 +193,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return json.data;
     } catch (err: any) {
       console.warn('[SubscriptionContext] Create Snap failed:', err.message);
-      // Mock Snap token for fallback demo
-      const mockToken = `mock_snap_${Date.now()}`;
       return {
-        token: mockToken,
-        redirectUrl: '#',
-        orderId: `COSTKU-DEMO-${Date.now()}`,
-        isMock: true,
+        error: err.message || 'Fitur pembayaran saat ini tidak tersedia.',
       };
     }
   };
@@ -205,10 +208,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     const newSubData: UserSubscription = {
       plan: planKey as any,
+      planName: 'costKu Pro Advisor (Soft Launch)',
       status: 'active',
       isPremium: true,
+      isSoftLaunch: true,
+      lockSubscription: true,
       startedAt: new Date().toISOString(),
-      expiresAt: expires.toISOString(),
+      expiresAt: null,
     };
 
     try {
@@ -225,28 +231,33 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       console.warn('[SubscriptionContext] Server activation sync fallback to local.');
     }
 
-    // Always update client state & local persistence
     setSubscription(newSubData);
     localStorage.setItem(LS_SUB_KEY, JSON.stringify(newSubData));
     return { success: true };
   };
 
   const resetToFree = async (): Promise<void> => {
-    const freeSub: UserSubscription = {
-      plan: 'free',
+    // During softlaunch, user remains on Pro Advisor
+    const softLaunchSub: UserSubscription = {
+      plan: 'premium_monthly',
+      planName: 'costKu Pro Advisor (Soft Launch)',
       status: 'active',
-      isPremium: false,
+      isPremium: true,
+      isSoftLaunch: true,
+      lockSubscription: true,
       expiresAt: null,
     };
-    setSubscription(freeSub);
-    localStorage.setItem(LS_SUB_KEY, JSON.stringify(freeSub));
+    setSubscription(softLaunchSub);
+    localStorage.setItem(LS_SUB_KEY, JSON.stringify(softLaunchSub));
   };
 
   return (
     <SubscriptionContext.Provider
       value={{
         subscription,
-        isPremium: subscription.isPremium,
+        isPremium: true, // Guaranteed true for all users during Soft Launch
+        isSoftLaunch: subscription.isSoftLaunch ?? true,
+        lockSubscription: subscription.lockSubscription ?? true,
         loading,
         plans,
         fetchStatus,

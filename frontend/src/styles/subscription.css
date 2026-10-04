@@ -695,3 +695,140 @@
 .sub-gate__cta-secondary:hover {
   color: var(--line);
 }
+
+/* ==========================================================================
+   Soft Launch Edition Styles
+   ========================================================================== */
+
+.badge-plan--softlaunch {
+  background: #0f172a;
+  color: #f8fafc;
+  border-color: #0f172a;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+}
+
+.sub-softlaunch-box {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  box-shadow: 4px 4px 0 var(--line);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sub-softlaunch-box__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sub-softlaunch-box__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--line);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: var(--radius-xs, 2px);
+}
+
+.sub-softlaunch-box__status {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #008547;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sub-softlaunch-box__title {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--line);
+}
+
+.sub-softlaunch-box__desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 840px;
+  margin: 0;
+}
+
+.sub-softlaunch-box__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sub-softlaunch-box__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-xs, 2px);
+}
+
+.sub-softlaunch-box__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e6f5ec;
+  color: #008547;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sub-softlaunch-box__item strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--line);
+  margin-bottom: 3px;
+}
+
+.sub-softlaunch-box__item small {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.plan-card__tag--softlaunch {
+  background: #008547;
+  color: #fff;
+}
+
+.plan-card__btn--locked {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #cbd5e1 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+.plan-card__btn--locked:hover {
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+  transform: none !important;
+}

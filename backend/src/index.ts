@@ -59,7 +59,11 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, or server-to-server)
-      if (!origin || allowedOrigins.has(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.has(origin) ||
+        (origin.startsWith('https://') && origin.endsWith('.vercel.app'))
+      ) {
         callback(null, true);
       } else {
         const corsErr: any = new Error('Origin tidak diizinkan oleh CORS');
@@ -130,8 +134,8 @@ app.use('/api/recommendations', recommendationsRouter);
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`[costKu API] Server running at http://localhost:${PORT}`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`[costKu API] Server running at http://0.0.0.0:${PORT}`);
   console.log(
     `[costKu API] OTP channel: ${describeOtpDelivery().effectiveSender} ` +
       `(configured: ${describeOtpDelivery().configuredChannel})`

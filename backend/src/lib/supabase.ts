@@ -73,13 +73,8 @@ export async function findAuthUserByEmail(email: string): Promise<{ id: string }
  * from any anonymous caller. So it stays closed unless we are clearly not
  * running in production.
  */
-const allowDemoTokens = process.env.NODE_ENV !== 'production';
-
-/**
- * Verify a bearer token using Supabase Auth.
- * Returns the authenticated user object or null.
- */
 export async function verifySupabaseToken(token: string) {
+  const allowDemoTokens = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEMO_TOKENS === 'true';
   // Allow demo token for offline testing & demo login (never in production).
   if (allowDemoTokens && (token === 'kontor_session_dummy_token' || token.startsWith('demo-'))) {
     return {

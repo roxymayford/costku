@@ -43,9 +43,9 @@ function resolvePepper(): string {
   const configured = process.env.OTP_PEPPER;
   if (configured && configured.length > 0) return configured;
 
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      '[OTP] OTP_PEPPER is required in production. Set it via your secret manager.'
+  if (process.env.NODE_ENV === 'production' && (!configured || configured.length === 0)) {
+    console.warn(
+      '[OTP WARNING] OTP_PEPPER is not configured in production. Using ephemeral fallback pepper. Set OTP_PEPPER in environment variables to persist OTP hashes.'
     );
   }
 

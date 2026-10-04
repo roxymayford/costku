@@ -19,6 +19,7 @@ type AuthContextType = {
    * verification flow, where the backend issues tokens after a valid code.
    */
   adoptSession: (user: User, accessToken?: string, refreshToken?: string) => void;
+  loginDemo: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -218,9 +219,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  function loginDemo(): void {
+    const demoUser: User = {
+      id: 'demo-user',
+      email: 'demo@costku.id',
+      name: 'Demo User',
+    };
+    adoptSession(demoUser, 'demo-access-token', 'demo-refresh-token');
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, loginWithGoogle, logout, adoptSession }}
+      value={{ user, loading, login, register, loginWithGoogle, logout, adoptSession, loginDemo }}
     >
       {children}
     </AuthContext.Provider>

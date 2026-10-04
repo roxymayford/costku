@@ -18,7 +18,7 @@ export function SubscriptionGate({
   description = 'Buka batas jajan harian, pembagian gaji 50/30/20, dan rekomendasi kost serta belanja makan.',
   featureName = 'costKu Pro',
 }: SubscriptionGateProps) {
-  const { isPremium, loading } = useSubscription();
+  const { isPremium, isSoftLaunch, loading } = useSubscription();
 
   if (loading) {
     return (
@@ -29,8 +29,8 @@ export function SubscriptionGate({
     );
   }
 
-  // If user is premium, render children directly
-  if (isPremium) {
+  // If user is premium or soft launch is active, render children directly
+  if (isPremium || isSoftLaunch) {
     return <>{children}</>;
   }
 

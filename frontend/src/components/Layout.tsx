@@ -158,7 +158,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <img src={logoSrc} alt="costKu" className="brand-logo drawer-logo" />
           <div className="drawer-user">
             <b>{displayName}</b>
-            <small>{isPremium ? 'Pro Advisor aktif' : 'Paket Money Tracker (gratis)'}</small>
+            <small>{isPremium ? 'Pro Advisor (Soft Launch)' : 'Paket Money Tracker (gratis)'}</small>
           </div>
           <button
             type="button"
