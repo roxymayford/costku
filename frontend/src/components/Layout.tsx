@@ -100,6 +100,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               to={entry.to}
               className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
             >
+              {entry.to === '/subscription' && (
+                <Icon
+                  name="star"
+                  size={12}
+                  fill="currentColor"
+                  className="nav-item-star"
+                  aria-hidden={true}
+                />
+              )}
               <span className="nav-item-label">{entry.label}</span>
               {entry.premiumOnly && !isPremium && (
                 <span className="nav-lock-tag" title="Tersedia di paket Pro">
@@ -111,13 +120,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         <div className="topbar-right">
-          {!isPremium && (
-            <NavLink to="/subscription" className="badge-plan badge-plan--free">
-              <span className="inline-flex items-center gap-1">
-                <Icon name="star" size={12} /> Buka Fitur Pro
-              </span>
-            </NavLink>
-          )}
           <span className="user-greeting">
             Halo, <b>{displayName}</b>
           </span>

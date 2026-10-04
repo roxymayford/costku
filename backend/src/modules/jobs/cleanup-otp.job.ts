@@ -11,7 +11,7 @@
 import { supabaseAdmin, isSupabaseConfigured } from '../../lib/supabase.js';
 import { otpConfig } from '../otp/otp.config.js';
 import { audit } from '../otp/otp.service.js';
-import { isSchemaMissingError, isOtpTableMissing } from '../otp/otp.repository.js';
+import { isSchemaMissingError, isOtpTableMissing, usingMemoryStore } from '../otp/otp.repository.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -41,8 +41,8 @@ export function resetCleanupWarnings(): void {
 
 /** Purge OTP rows past expiry + 24h. */
 async function cleanupExpiredOtpCodes(): Promise<number> {
-  if (!isSupabaseConfigured || !supabaseAdmin) {
-    // Demo mode: there is no persistent table to sweep.
+  if (usingMemoryStore() || !isSupabaseConfigured || !supabaseAdmin) {
+    // Demo/test mode: there is no persistent table to sweep.
     return 0;
   }
 
@@ -66,7 +66,7 @@ async function cleanupExpiredOtpCodes(): Promise<number> {
             'to enable expiry cleanup.'
         );
       } else {
-        console.warn('[Cleanup] otp_codes sweep failed:', deleteError.message);
+        warnOnce('otp_codes_fail', `[Cleanup] otp_codes sweep failed: ${deleteError.message}`);
       }
       return 0;
     }
@@ -78,7 +78,7 @@ async function cleanupExpiredOtpCodes(): Promise<number> {
 
 /** Remove accounts that never completed verification. */
 async function cleanupUnverifiedUsers(): Promise<number> {
-  if (!isSupabaseConfigured || !supabaseAdmin) return 0;
+  if (usingMemoryStore() || !isSupabaseConfigured || !supabaseAdmin) return 0;
 
   const ttlDays = otpConfig.unverifiedUserTtlDays;
 
@@ -94,7 +94,7 @@ async function cleanupUnverifiedUsers(): Promise<number> {
           'otp_schema.sql to enable it.'
       );
     } else {
-      console.warn('[Cleanup] unverified user sweep failed:', error.message);
+      warnOnce('unverified_users_fail', `[Cleanup] unverified user sweep failed: ${error.message}`);
     }
     return 0;
   }
@@ -106,7 +106,7 @@ async function cleanupUnverifiedUsers(): Promise<number> {
 export async function runCleanup(): Promise<CleanupResult> {
   const ranAt = new Date().toISOString();
   const backend: CleanupResult['backend'] =
-    isSupabaseConfigured && supabaseAdmin ? 'supabase' : 'memory';
+    usingMemoryStore() || !isSupabaseConfigured || !supabaseAdmin ? 'memory' : 'supabase';
 
   try {
     const expiredOtpDeleted = await cleanupExpiredOtpCodes();

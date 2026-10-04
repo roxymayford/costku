@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { Layout } from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
+import { SmoothScroll } from './providers/SmoothScroll';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
@@ -23,6 +24,7 @@ export function App() {
     <AuthProvider>
       <SubscriptionProvider>
         <BrowserRouter>
+          <SmoothScroll>
           <ScrollToTop />
           <Routes>
             {/* Public marketing landing page */}
@@ -96,6 +98,7 @@ export function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </SmoothScroll>
         </BrowserRouter>
       </SubscriptionProvider>
     </AuthProvider>

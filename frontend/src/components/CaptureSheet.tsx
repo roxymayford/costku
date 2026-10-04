@@ -5,6 +5,7 @@ import { parseTransactionNote, ParsedTransactionResult } from '../lib/nlpApi';
 import { formatRupiah } from '../lib/calculator';
 import { checkTransactionOutlier, OutlierCheckResult } from '../lib/outlierEngine';
 import { OutlierWarning } from './OutlierWarning';
+import { stopLenis, startLenis } from '../providers/SmoothScroll';
 
 export interface CaptureSheetProps {
   isOpen: boolean;
@@ -74,6 +75,38 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
     message: string;
   } | null>(null);
 
+  // Mobile Bottom Sheet expand state ("naikin" sheet)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleHandlebarTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleHandlebarTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartY.current = null;
+    if (diff < -25) {
+      // Swipe UP: expand to full screen ("naikin")
+      setIsExpanded(true);
+    } else if (diff > 45) {
+      // Swipe DOWN: collapse or close
+      if (isExpanded) {
+        setIsExpanded(false);
+      } else {
+        onClose();
+      }
+    }
+  };
+
+  const handleInputFocus = () => {
+    // Only auto-expand on mobile viewports (< 768px)
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsExpanded(true);
+    }
+  };
+
   const nlpInputRef = useRef<HTMLInputElement>(null);
   const manualInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,18 +114,22 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
   useEffect(() => {
     if (isOpen) {
       setActiveTab(initialTab);
+      setIsExpanded(false);
       if (initialText) {
         setNlpText(initialText);
       }
       setFeedback(null);
       setPendingOutlier(null);
-      setTimeout(() => {
-        if (initialTab === 'quick') {
-          nlpInputRef.current?.focus();
-        } else {
-          manualInputRef.current?.focus();
-        }
-      }, 120);
+      // Only auto-focus on desktop to prevent mobile keyboard layout jumps upon opening sheet
+      if (window.innerWidth >= 768) {
+        setTimeout(() => {
+          if (initialTab === 'quick') {
+            nlpInputRef.current?.focus();
+          } else {
+            manualInputRef.current?.focus();
+          }
+        }, 120);
+      }
     }
   }, [isOpen, initialTab, initialText]);
 
@@ -107,13 +144,28 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when open
+  // Bulletproof mobile scroll lock: freeze body with position fixed & pause Lenis so dashboard never scrolls
   useEffect(() => {
     if (isOpen) {
+      stopLenis();
+      const scrollY = window.scrollY;
       const prevOverflow = document.body.style.overflow;
+      const prevPosition = document.body.style.position;
+      const prevTop = document.body.style.top;
+      const prevWidth = document.body.style.width;
+
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
       return () => {
         document.body.style.overflow = prevOverflow;
+        document.body.style.position = prevPosition;
+        document.body.style.top = prevTop;
+        document.body.style.width = prevWidth;
+        window.scrollTo(0, scrollY);
+        startLenis();
       };
     }
   }, [isOpen]);
@@ -288,8 +340,38 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
   };
 
   return (
-    <div className="capture-sheet-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Catat Transaksi">
-      <div className="capture-sheet-modal" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="capture-sheet-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Catat Transaksi"
+      data-lenis-prevent
+      onTouchMove={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <div
+        className={`capture-sheet-modal ${isExpanded ? 'expanded' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+        data-lenis-prevent
+      >
+        {/* MOBILE HANDLEBAR / DRAG HANDLE ("HAMBURGER" HANDLE) */}
+        <div
+          className="capture-sheet-handlebar-wrap"
+          aria-label="Tarik ke atas untuk memperluas sheet"
+          onTouchStart={handleHandlebarTouchStart}
+          onTouchEnd={handleHandlebarTouchEnd}
+          onClick={() => setIsExpanded((prev) => !prev)}
+        >
+          <div className="capture-sheet-handlebar" />
+          <span className="capture-sheet-handlebar-hint">
+            {isExpanded ? 'Geser ke bawah untuk memperkecil' : 'Tarik ke atas untuk memperbesar'}
+          </span>
+        </div>
+
         {/* HEADER & TABS */}
         <div className="capture-sheet-header">
           <div className="capture-sheet-tabs" role="tablist">
@@ -339,7 +421,7 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
         )}
 
         {/* TAB BODY */}
-        <div className="capture-sheet-body">
+        <div className="capture-sheet-body" data-lenis-prevent>
           {activeTab === 'quick' ? (
             /* QUICK NLP TAB */
             <div className="capture-nlp-section">
@@ -350,6 +432,7 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
                   className="capture-nlp-input"
                   placeholder="Ketik pengeluaran (misal: kopi kenangan 25rb)..."
                   value={nlpText}
+                  onFocus={handleInputFocus}
                   onChange={(e) => setNlpText(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !isParsing) {
@@ -476,6 +559,7 @@ export const CaptureSheet: React.FC<CaptureSheetProps> = ({
                   type="text"
                   placeholder="Contoh: Makan siang / Token PLN"
                   value={manualTitle}
+                  onFocus={handleInputFocus}
                   onChange={(e) => setManualTitle(e.target.value)}
                   required
                 />

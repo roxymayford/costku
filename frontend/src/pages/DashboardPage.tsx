@@ -21,6 +21,14 @@ import {
 } from '../lib/calculator';
 import { getTotalIncome } from '../lib/incomeApi';
 import { getTotalMonthlyLiabilities } from '../lib/liabilityApi';
+import {
+  getBudgetStatus,
+  getAllocation,
+  getFinancialHealthScore,
+  BudgetStatusResult,
+  AllocationResult,
+  FinancialHealthResult,
+} from '../lib/budgetApi';
 import { calculateBudgetStatus } from '../lib/budgetEngine';
 import { CompactHero } from '../components/CompactHero';
 import { QuickActionsGrid } from '../components/QuickActionsGrid';
@@ -58,6 +66,9 @@ export const DashboardPage: React.FC = () => {
     totalMonthly: 0,
     activeCount: 0,
   });
+  const [serverBudgetStatus, setServerBudgetStatus] = useState<BudgetStatusResult | null>(null);
+  const [serverAllocation, setServerAllocation] = useState<AllocationResult | null>(null);
+  const [serverHealthScore, setServerHealthScore] = useState<FinancialHealthResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCaptureOpen, setIsCaptureOpen] = useState(false);
   const [captureTab, setCaptureTab] = useState<'quick' | 'manual'>('quick');
@@ -81,12 +92,15 @@ export const DashboardPage: React.FC = () => {
     setLoading(true);
     try {
       const currentMonth = new Date().toISOString().slice(0, 7);
-      const [p, b, txs, inc, liab] = await Promise.all([
+      const [p, b, txs, inc, liab, bStatus, alloc, hScore] = await Promise.all([
         getProfile(user.id),
         getBudgetSettings(user.id),
         getTransactions(user.id),
         getTotalIncome(user.id, currentMonth),
         getTotalMonthlyLiabilities(user.id),
+        getBudgetStatus().catch(() => null),
+        getAllocation().catch(() => null),
+        getFinancialHealthScore().catch(() => null),
       ]);
 
       if (p) {
@@ -106,6 +120,9 @@ export const DashboardPage: React.FC = () => {
       setTransactions(txs);
       setIncomeSummary({ total: inc.total, count: inc.count });
       setLiabilitySummary({ totalMonthly: liab.totalMonthly, activeCount: liab.activeCount });
+      setServerBudgetStatus(bStatus);
+      setServerAllocation(alloc);
+      setServerHealthScore(hScore);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
@@ -186,6 +203,7 @@ export const DashboardPage: React.FC = () => {
 
   // Run core budget calculation with carry-over, split budget, and liability deductions
   const budgetStatus = useMemo(() => {
+    if (serverBudgetStatus) return serverBudgetStatus;
     return calculateBudgetStatus({
       totalIncome: effectiveIncome,
       totalLiabilities,
@@ -196,10 +214,11 @@ export const DashboardPage: React.FC = () => {
       carryOverDaily: budget.carry_over_daily ?? true,
       monthEndMode: budget.month_end_mode ?? 'carry_over',
     });
-  }, [effectiveIncome, totalLiabilities, fixedExpenses, budget, paydayDate, transactions]);
+  }, [serverBudgetStatus, effectiveIncome, totalLiabilities, fixedExpenses, budget, paydayDate, transactions]);
 
   // Allocation 50/30/20 with payday
   const allocation = useMemo(() => {
+    if (serverAllocation) return serverAllocation;
     return calculateAllocationWithPayday(
       effectiveIncome,
       totalFixed,
@@ -210,7 +229,7 @@ export const DashboardPage: React.FC = () => {
       },
       paydayDate
     );
-  }, [effectiveIncome, totalFixed, budget, paydayDate]);
+  }, [serverAllocation, effectiveIncome, totalFixed, budget, paydayDate]);
 
   const daysRemaining = budgetStatus.daysRemaining;
   const spentTodayEffective = budgetStatus.spentTodayEffective;
@@ -233,6 +252,7 @@ export const DashboardPage: React.FC = () => {
 
   // Financial Health Score
   const healthScore = useMemo(() => {
+    if (serverHealthScore) return serverHealthScore.healthScore;
     return calculateFinancialHealthScore({
       totalSpent,
       needsSpent: actualNeeds,
@@ -242,10 +262,18 @@ export const DashboardPage: React.FC = () => {
       targetWants: allocation.wantsAmount,
       targetSavings: allocation.savingsAmount,
     });
-  }, [totalSpent, actualNeeds, actualWants, actualSavings, allocation]);
+  }, [serverHealthScore, totalSpent, actualNeeds, actualWants, actualSavings, allocation]);
 
-  const savingsRatio = totalSpent > 0 ? (actualSavings / totalSpent) * 100 : 0;
-  const wantsRatio = totalSpent > 0 ? (actualWants / totalSpent) * 100 : 0;
+  const savingsRatio = serverHealthScore
+    ? serverHealthScore.savingsRatio
+    : totalSpent > 0
+    ? (actualSavings / totalSpent) * 100
+    : 0;
+  const wantsRatio = serverHealthScore
+    ? serverHealthScore.wantsRatio
+    : totalSpent > 0
+    ? (actualWants / totalSpent) * 100
+    : 0;
 
   // Transaction handlers
   const handleAddTransaction = async (txData: {

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubscription, SubscriptionPlan } from '../contexts/SubscriptionContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -71,7 +71,7 @@ export function SubscriptionPage() {
         await activateSubscription(planKey);
         setModalMessage({
           type: 'success',
-          text: 'Mode Sandbox/Dev: Pembayaran berhasil diverifikasi secara instan! Fitur Financial Advisor telah aktif.',
+          text: 'Pembayaran berhasil diverifikasi! Fitur Financial Advisor Anda telah aktif.',
         });
         setProcessing(false);
       }

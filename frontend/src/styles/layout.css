@@ -158,6 +158,16 @@
   border-color: #111;
 }
 
+.nav-item-star {
+  color: var(--orange);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.fatrack-nav .nav-item.active .nav-item-star {
+  color: #fff;
+}
+
 /* PRO lock chip inside nav items */
 .nav-lock-tag {
   display: inline-flex;

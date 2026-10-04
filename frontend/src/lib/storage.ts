@@ -1,40 +1,16 @@
 // ──────────────────────────────────────────────────────────
-// costKu — Data Persistence Layer
-// Supports Supabase (primary) with localStorage fallback
+// costKu — Data Persistence Layer (deprecated wrapper)
+//
+// ⚠  DEPRECATION NOTICE: This file is a thin delegation layer
+// that forwards calls to the specific *Api.ts clients.
+// New code should import directly from:
+//   - lib/profileApi.ts     → getProfile, updateProfile, saveOnboarding
+//   - lib/budgetApi.ts      → getBudgetSettings, saveBudgetSettings
+//   - lib/transactionApi.ts → getTransactions, addTransaction, deleteTransaction
+//
+// This file will be removed once all components are migrated.
 // ──────────────────────────────────────────────────────────
 
-import { supabase, isSupabaseConfigured } from './supabase';
-
-export type UserProfile = {
-  id: string;
-  name: string;
-  monthly_salary: number;
-  payday_date: number;
-  fixed_expenses: number;
-};
-
-export type BudgetSettings = {
-  needs_percentage: number;
-  wants_percentage: number;
-  savings_percentage: number;
-  carry_over_daily?: boolean; // Aktifkan carry-over sisa harian
-  month_end_mode?: 'carry_over' | 'savings' | 'reset'; // Sisa akhir bulan: bawa ke bulan depan, masukkan tabungan, atau reset
-};
-
-export type Transaction = {
-  id: string;
-  title: string;
-  amount: number;
-  category: 'Needs' | 'Wants' | 'Savings';
-  transaction_date: string;
-  created_at: string;
-  spread_days?: number | null;
-  spread_start?: string | null;
-  is_outlier?: boolean;
-  outlier_level?: 'hard' | 'soft' | null;
-  outlier_reason?: string | null;
-  confirmed_by_user?: boolean;
-};
 
 const LS_KEYS = {
   profile: 'fatrack-profile',
@@ -42,32 +18,49 @@ const LS_KEYS = {
   transactions: 'fatrack-transactions',
 };
 
+
+import {
+  UserProfile,
+  getProfile as apiGetProfile,
+  updateProfile as apiUpdateProfile,
+} from './profileApi';
+import {
+  BudgetSettings,
+  getBudgetSettings as apiGetBudgetSettings,
+  saveBudgetSettings as apiSaveBudgetSettings,
+} from './budgetApi';
+
+export type { UserProfile, BudgetSettings };
+
 // ─── Profile ─────────────────────────────────────────────
 
-export async function getProfile(userId: string): Promise<UserProfile | null> {
-  if (isSupabaseConfigured) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    return data;
+export async function getProfile(_userId?: string): Promise<UserProfile | null> {
+  try {
+    return await apiGetProfile();
+  } catch (err) {
+    console.warn('[storage] apiGetProfile error, fallback to local:', err);
+    const raw = localStorage.getItem(LS_KEYS.profile);
+    return raw ? JSON.parse(raw) : null;
   }
-  const raw = localStorage.getItem(LS_KEYS.profile);
-  return raw ? JSON.parse(raw) : null;
 }
 
 export async function upsertProfile(profile: UserProfile): Promise<void> {
-  if (isSupabaseConfigured) {
-    await supabase.from('profiles').upsert(profile);
-    return;
+  try {
+    await apiUpdateProfile({
+      name: profile.name,
+      monthly_salary: profile.monthly_salary,
+      payday_date: profile.payday_date,
+      fixed_expenses: profile.fixed_expenses,
+    });
+  } catch (err) {
+    console.warn('[storage] apiUpdateProfile error, fallback to local:', err);
+    localStorage.setItem(LS_KEYS.profile, JSON.stringify(profile));
   }
-  localStorage.setItem(LS_KEYS.profile, JSON.stringify(profile));
 }
 
 // ─── Budget Settings ─────────────────────────────────────
 
-export async function getBudgetSettings(userId: string): Promise<BudgetSettings> {
+export async function getBudgetSettings(_userId?: string): Promise<BudgetSettings> {
   const defaults: BudgetSettings = {
     needs_percentage: 50,
     wants_percentage: 30,
@@ -76,109 +69,56 @@ export async function getBudgetSettings(userId: string): Promise<BudgetSettings>
     month_end_mode: 'carry_over',
   };
 
-  if (isSupabaseConfigured) {
-    const { data } = await supabase
-      .from('budget_settings')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-    return data
-      ? {
-          needs_percentage: data.needs_percentage ?? defaults.needs_percentage,
-          wants_percentage: data.wants_percentage ?? defaults.wants_percentage,
-          savings_percentage: data.savings_percentage ?? defaults.savings_percentage,
-          carry_over_daily: data.carry_over_daily ?? defaults.carry_over_daily,
-          month_end_mode: data.month_end_mode ?? defaults.month_end_mode,
-        }
-      : defaults;
+  try {
+    return await apiGetBudgetSettings();
+  } catch (err) {
+    console.warn('[storage] apiGetBudgetSettings error, fallback to local:', err);
+    const raw = localStorage.getItem(LS_KEYS.budget);
+    return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
   }
-
-  const raw = localStorage.getItem(LS_KEYS.budget);
-  return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
 }
 
-export async function saveBudgetSettings(userId: string, settings: BudgetSettings): Promise<void> {
-  if (isSupabaseConfigured) {
-    const { data: existing } = await supabase
-      .from('budget_settings')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
-
-    if (existing) {
-      await supabase.from('budget_settings').update({ ...settings, updated_at: new Date().toISOString() }).eq('user_id', userId);
-    } else {
-      await supabase.from('budget_settings').insert({ user_id: userId, ...settings });
-    }
-    return;
+export async function saveBudgetSettings(_userId: string, settings: BudgetSettings): Promise<void> {
+  try {
+    await apiSaveBudgetSettings(settings);
+  } catch (err) {
+    console.warn('[storage] apiSaveBudgetSettings error, fallback to local:', err);
+    localStorage.setItem(LS_KEYS.budget, JSON.stringify(settings));
   }
-  localStorage.setItem(LS_KEYS.budget, JSON.stringify(settings));
 }
+
+import {
+  Transaction,
+  getTransactions as apiGetTransactions,
+  addTransaction as apiAddTransaction,
+  deleteTransaction as apiDeleteTransaction,
+  getTransactionsByMonth as apiGetTransactionsByMonth,
+  aggregateByCategory,
+} from './transactionApi';
+
+export type { Transaction };
+export { aggregateByCategory };
 
 // ─── Transactions ────────────────────────────────────────
 
-export async function getTransactions(userId: string): Promise<Transaction[]> {
-  if (isSupabaseConfigured) {
-    const { data } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('transaction_date', { ascending: false });
-    return data || [];
-  }
-  const raw = localStorage.getItem(LS_KEYS.transactions);
-  return raw ? JSON.parse(raw) : [];
+export async function getTransactions(userId?: string): Promise<Transaction[]> {
+  return apiGetTransactions(userId);
 }
 
-export async function addTransaction(userId: string, tx: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction> {
-  const newTx: Transaction = {
-    ...tx,
-    id: crypto.randomUUID(),
-    created_at: new Date().toISOString(),
-  };
-
-  if (isSupabaseConfigured) {
-    const { data } = await supabase
-      .from('transactions')
-      .insert({ ...newTx, user_id: userId })
-      .select()
-      .single();
-    return data || newTx;
-  }
-
-  const all = await getTransactions(userId);
-  const updated = [newTx, ...all];
-  localStorage.setItem(LS_KEYS.transactions, JSON.stringify(updated));
-  return newTx;
+export async function addTransaction(
+  userId: string,
+  tx: Omit<Transaction, 'id' | 'created_at'>
+): Promise<Transaction> {
+  return apiAddTransaction(userId, tx);
 }
 
 export async function deleteTransaction(userId: string, txId: string): Promise<void> {
-  if (isSupabaseConfigured) {
-    await supabase.from('transactions').delete().eq('id', txId).eq('user_id', userId);
-    return;
-  }
-  const all = await getTransactions(userId);
-  const updated = all.filter((t) => t.id !== txId);
-  localStorage.setItem(LS_KEYS.transactions, JSON.stringify(updated));
+  return apiDeleteTransaction(userId, txId);
 }
 
-/**
- * Get transactions filtered by month (YYYY-MM format).
- */
-export async function getTransactionsByMonth(userId: string, yearMonth: string): Promise<Transaction[]> {
-  const all = await getTransactions(userId);
-  return all.filter((t) => t.transaction_date.startsWith(yearMonth));
-}
-
-/**
- * Aggregate spending by category for a given set of transactions.
- */
-export function aggregateByCategory(transactions: Transaction[]): Record<string, number> {
-  return transactions.reduce(
-    (acc, tx) => {
-      acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+export async function getTransactionsByMonth(
+  userId: string,
+  yearMonth: string
+): Promise<Transaction[]> {
+  return apiGetTransactionsByMonth(userId, yearMonth);
 }

@@ -34,7 +34,7 @@ export const AuthPage: React.FC = () => {
   const [loginLockedUntil, setLoginLockedUntil] = useState<number | null>(null);
   const [lockCountdown, setLockCountdown] = useState(0);
 
-  const { login, loginDemo, loginWithGoogle, user } = useAuth();
+  const { login, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -180,10 +180,6 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  const handleDemo = () => {
-    loginDemo();
-    navigate('/dashboard');
-  };
 
   const handleGoogle = async () => {
     setErrorMsg(null);
@@ -373,12 +369,7 @@ export const AuthPage: React.FC = () => {
             <span>{mode === 'register' ? 'Daftar dengan Google' : 'Masuk dengan Google'}</span>
           </button>
 
-          <div className="auth-demo-divider">
-            <span>Belum siap daftar?</span>
-            <button type="button" className="auth-demo-btn" onClick={handleDemo}>
-              <span className="inline-flex items-center gap-1.5">Coba tanpa daftar <Icon name="arrowRight" size={13} /></span>
-            </button>
-          </div>
+
 
           <p className="auth-switch">
             {mode === 'register' ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}

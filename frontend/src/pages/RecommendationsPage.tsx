@@ -2,8 +2,12 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
-import { UserProfile, getProfile, getBudgetSettings } from '../lib/storage';
-import { kostTiers, getKostTierForSalary } from '../data/recommendations';
+import { UserProfile, getProfile } from '../lib/storage';
+import {
+  getRecommendations,
+  RecommendationsResponse,
+  KostTier,
+} from '../lib/recommendationApi';
 import { formatRupiah, calculateAllocation } from '../lib/calculator';
 import { KostCard } from '../components/KostCard';
 import { MealPlanCard } from '../components/MealPlanCard';
@@ -14,6 +18,7 @@ export const RecommendationsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [recData, setRecData] = useState<RecommendationsResponse | null>(null);
   const [activeTab, setActiveTab] = useState<'kost' | 'meals'>('kost');
   const [loading, setLoading] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -39,16 +44,21 @@ export const RecommendationsPage: React.FC = () => {
       return;
     }
 
-    getProfile(user.id).then((p) => {
+    Promise.all([
+      getProfile(user.id),
+      getRecommendations(),
+    ]).then(([p, rec]) => {
       if (p) setProfile(p);
+      if (rec) setRecData(rec);
       setLoading(false);
     });
   }, [user, navigate]);
 
-  const salary = profile?.monthly_salary || 5500000;
-  const fixedExpenses = profile?.fixed_expenses || 1200000;
-  const maxRentBudget = salary * 0.25;
-  const recommendedTier = getKostTierForSalary(salary);
+  const salary = recData?.salary || profile?.monthly_salary || 5500000;
+  const fixedExpenses = recData?.fixedExpenses || profile?.fixed_expenses || 1200000;
+  const maxRentBudget = recData?.maxRentBudget || Math.round(salary * 0.25);
+  const recommendedTier = recData?.recommendedTier;
+  const kostTiersList = recData?.allKostTiers || [];
 
   const defaultAllocation = calculateAllocation(salary, fixedExpenses, {
     needs: 50,
@@ -127,11 +137,11 @@ export const RecommendationsPage: React.FC = () => {
             </div>
 
             <div className="kost-cards-grid">
-              {kostTiers.map((tier) => (
+              {kostTiersList.map((tier) => (
                 <KostCard
                   key={tier.id}
                   tier={tier}
-                  isRecommended={tier.id === recommendedTier.id}
+                  isRecommended={tier.id === recommendedTier?.id}
                   userSalary={salary}
                 />
               ))}

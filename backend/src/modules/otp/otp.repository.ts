@@ -61,11 +61,18 @@ const memory: MemoryStore = { otp: new Map(), profiles: new Map() };
  * surfacing a database error to the user.
  */
 export function usingMemoryStore(): boolean {
-  return !isSupabaseConfigured || !supabaseAdmin || !hasServiceRoleKey;
+  return (
+    process.env.NODE_ENV === 'test' ||
+    process.env.USE_MEMORY_STORE === 'true' ||
+    !isSupabaseConfigured ||
+    !supabaseAdmin ||
+    !hasServiceRoleKey
+  );
 }
 
 /** Why the memory store is in use — surfaced in diagnostics. */
-export function storageMode(): 'supabase' | 'memory-no-config' | 'memory-no-service-role' {
+export function storageMode(): 'supabase' | 'memory-no-config' | 'memory-no-service-role' | 'memory-test' {
+  if (process.env.NODE_ENV === 'test' || process.env.USE_MEMORY_STORE === 'true') return 'memory-test';
   if (!isSupabaseConfigured || !supabaseAdmin) return 'memory-no-config';
   if (!hasServiceRoleKey) return 'memory-no-service-role';
   return 'supabase';

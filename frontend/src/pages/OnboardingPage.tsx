@@ -4,14 +4,14 @@ import { Icon } from '../components/Icon';
 import logoSrc from '../assets/logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import { CurrencyInput } from '../components/CurrencyInput';
-import { getProfile, upsertProfile } from '../lib/storage';
+import {
+  getOnboardingDefaults,
+  saveOnboarding,
+  type OnboardingDefaultItem,
+} from '../lib/profileApi';
 import { formatRupiah } from '../lib/calculator';
 
-interface FixedExpenseItem {
-  id: string;
-  name: string;
-  amount: number;
-}
+interface FixedExpenseItem extends OnboardingDefaultItem {}
 
 export const OnboardingPage: React.FC = () => {
   const { user } = useAuth();
@@ -19,12 +19,7 @@ export const OnboardingPage: React.FC = () => {
 
   const [salary, setSalary] = useState<number>(5500000);
   const [paydayDate, setPaydayDate] = useState<number>(25);
-  const [expenseItems, setExpenseItems] = useState<FixedExpenseItem[]>([
-    { id: '1', name: 'Cicilan / Utang', amount: 500000 },
-    { id: '2', name: 'Iuran BPJS / Asuransi', amount: 150000 },
-    { id: '3', name: 'Bantuan Keluarga / Kiriman Ortu', amount: 500000 },
-    { id: '4', name: 'Tagihan Listrik & WiFi', amount: 350000 },
-  ]);
+  const [expenseItems, setExpenseItems] = useState<FixedExpenseItem[]>([]);
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -35,14 +30,24 @@ export const OnboardingPage: React.FC = () => {
       return;
     }
 
-    // Load existing profile if available
-    getProfile(user.id).then((profile) => {
-      if (profile && profile.monthly_salary > 0) {
-        setSalary(profile.monthly_salary);
-        setPaydayDate(profile.payday_date || 25);
-      }
-    });
+    // Load default template from backend (no auth required)
+    getOnboardingDefaults()
+      .then((defaults) => {
+        setSalary(defaults.defaultSalary);
+        setPaydayDate(defaults.defaultPaydayDate);
+        setExpenseItems(defaults.templateItems);
+      })
+      .catch(() => {
+        // Fallback: minimal local defaults so page is still usable offline
+        setExpenseItems([
+          { id: '1', name: 'Cicilan / Utang', amount: 500000 },
+          { id: '2', name: 'Iuran BPJS / Asuransi', amount: 150000 },
+          { id: '3', name: 'Bantuan Keluarga / Kiriman Ortu', amount: 500000 },
+          { id: '4', name: 'Tagihan Listrik & WiFi', amount: 350000 },
+        ]);
+      });
   }, [user, navigate]);
+
 
   const totalFixedExpenses = expenseItems.reduce((acc, curr) => acc + curr.amount, 0);
   const disposablePool = Math.max(0, salary - totalFixedExpenses);
@@ -71,12 +76,10 @@ export const OnboardingPage: React.FC = () => {
 
     setIsSaving(true);
     try {
-      await upsertProfile({
-        id: user.id,
-        name: user.name || 'Pengguna costKu',
+      await saveOnboarding({
         monthly_salary: salary,
         payday_date: paydayDate,
-        fixed_expenses: totalFixedExpenses,
+        expense_items: expenseItems,
       });
 
       navigate('/dashboard');

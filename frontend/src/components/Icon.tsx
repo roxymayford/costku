@@ -13,6 +13,7 @@ interface IconProps {
   name: IconName;
   className?: string;
   size?: number;
+  fill?: string;
   'aria-hidden'?: boolean;
 }
 
@@ -69,7 +70,14 @@ const paths: Record<IconName, React.ReactNode> = {
   brain: <path d="M12 3a5 5 0 0 0-4.8 3.5A4 4 0 0 0 4 10.5a4 4 0 0 0 2.2 3.6A5 5 0 0 0 12 21a5 5 0 0 0 5.8-6.9A4 4 0 0 0 20 10.5a4 4 0 0 0-3.2-3.9A5 5 0 0 0 12 3Zm0 0v18" />,
 };
 
-export function Icon({ name, className, size = 16, 'aria-hidden': ariaHidden = true }: IconProps) {
+export function Icon({
+  name,
+  className,
+  size = 16,
+  fill = 'none',
+  'aria-hidden': ariaHidden = true,
+}: IconProps) {
+  const isFilled = fill !== 'none';
   return (
     <svg
       aria-hidden={ariaHidden}
@@ -77,9 +85,9 @@ export function Icon({ name, className, size = 16, 'aria-hidden': ariaHidden = t
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
+      fill={fill}
+      stroke={isFilled ? fill : 'currentColor'}
+      strokeWidth={isFilled ? '0.5' : '2.2'}
       strokeLinecap="round"
       strokeLinejoin="round"
     >

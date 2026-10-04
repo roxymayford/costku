@@ -1,9 +1,9 @@
 // ──────────────────────────────────────────────────────────
-// costKu — Liabilities (Cicilan & Paylater) API Layer
-// Dual mode: Supabase with localStorage fallback
+// costKu — Liabilities (Cicilan & Paylater) API Client
+// Calls backend /api/v1/liabilities
 // ──────────────────────────────────────────────────────────
 
-import { supabase, isSupabaseConfigured } from './supabase';
+import { apiFetch } from './apiClient';
 
 export type LiabilityType = 'cicilan' | 'paylater';
 
@@ -28,126 +28,92 @@ export const LIABILITY_TYPE_LABELS: Record<LiabilityType, string> = {
   paylater: 'PayLater',
 };
 
-/**
- * Fetch list of liabilities for a user.
- */
-export async function getLiabilities(
-  userId: string,
-  statusFilter: 'active' | 'all' = 'all'
-): Promise<Liability[]> {
-  if (isSupabaseConfigured) {
-    try {
-      let query = supabase
-        .from('liabilities')
-        .select('*')
-        .eq('user_id', userId)
-        .order('due_day', { ascending: true });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data, error } = await query;
-      if (!error && data) {
-        return data as Liability[];
-      }
-    } catch (err) {
-      console.warn('[liabilityApi] Supabase query failed, falling back to local:', err);
-    }
-  }
-
-  // Local storage fallback
-  const raw = localStorage.getItem(LS_LIABILITIES_KEY);
-  const all: Liability[] = raw ? JSON.parse(raw) : [];
-  let userItems = all.filter((l) => l.user_id === userId);
-
-  if (statusFilter !== 'all') {
-    userItems = userItems.filter((l) => l.status === statusFilter);
-  }
-
-  userItems.sort((a, b) => a.due_day - b.due_day);
-  return userItems;
+export interface TotalLiabilitySummary {
+  totalMonthly: number;
+  byType: Record<LiabilityType, number>;
+  activeCount: number;
 }
 
 /**
- * Add a new liability entry.
+ * Fetch list of liabilities for authenticated user via backend Express.
+ */
+export async function getLiabilities(
+  _userId?: string,
+  statusFilter: 'active' | 'all' = 'all'
+): Promise<Liability[]> {
+  const query = statusFilter !== 'all' ? `?status=${encodeURIComponent(statusFilter)}` : '';
+  try {
+    const data = await apiFetch<Liability[]>(`/api/v1/liabilities${query}`);
+    return data || [];
+  } catch (err) {
+    console.warn('[liabilityApi] Backend query failed, fallback to local:', err);
+    const raw = localStorage.getItem(LS_LIABILITIES_KEY);
+    const all: Liability[] = raw ? JSON.parse(raw) : [];
+    let userItems = _userId ? all.filter((l) => l.user_id === _userId) : all;
+    if (statusFilter !== 'all') {
+      userItems = userItems.filter((l) => l.status === statusFilter);
+    }
+    userItems.sort((a, b) => a.due_day - b.due_day);
+    return userItems;
+  }
+}
+
+/**
+ * Add a new liability entry via backend Express.
  */
 export async function addLiability(
   userId: string,
   entry: Omit<Liability, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status'>
 ): Promise<Liability> {
-  const now = new Date().toISOString();
-  const newLiability: Liability = {
-    ...entry,
-    id: crypto.randomUUID(),
-    user_id: userId,
-    status: 'active',
-    created_at: now,
-    updated_at: now,
-  };
-
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('liabilities')
-        .insert(newLiability)
-        .select()
-        .single();
-
-      if (!error && data) {
-        return data as Liability;
-      }
-    } catch (err) {
-      console.warn('[liabilityApi] Supabase insert failed, falling back to local:', err);
-    }
+  try {
+    return await apiFetch<Liability>('/api/v1/liabilities', {
+      method: 'POST',
+      body: JSON.stringify(entry),
+    });
+  } catch (err) {
+    console.warn('[liabilityApi] Backend insert failed, fallback to local:', err);
+    const now = new Date().toISOString();
+    const newLiability: Liability = {
+      ...entry,
+      id: crypto.randomUUID(),
+      user_id: userId,
+      status: 'active',
+      created_at: now,
+      updated_at: now,
+    };
+    const raw = localStorage.getItem(LS_LIABILITIES_KEY);
+    const all: Liability[] = raw ? JSON.parse(raw) : [];
+    all.push(newLiability);
+    localStorage.setItem(LS_LIABILITIES_KEY, JSON.stringify(all));
+    return newLiability;
   }
-
-  // Local storage fallback
-  const raw = localStorage.getItem(LS_LIABILITIES_KEY);
-  const all: Liability[] = raw ? JSON.parse(raw) : [];
-  all.push(newLiability);
-  localStorage.setItem(LS_LIABILITIES_KEY, JSON.stringify(all));
-  return newLiability;
 }
 
 /**
- * Update an existing liability entry.
+ * Update an existing liability entry via backend Express.
  */
 export async function updateLiability(
   userId: string,
   id: string,
   updates: Partial<Omit<Liability, 'id' | 'user_id' | 'created_at'>>
 ): Promise<Liability | null> {
-  const now = new Date().toISOString();
-
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('liabilities')
-        .update({ ...updates, updated_at: now })
-        .eq('id', id)
-        .eq('user_id', userId)
-        .select()
-        .single();
-
-      if (!error && data) {
-        return data as Liability;
-      }
-    } catch (err) {
-      console.warn('[liabilityApi] Supabase update failed, falling back to local:', err);
+  try {
+    return await apiFetch<Liability>(`/api/v1/liabilities/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  } catch (err) {
+    console.warn('[liabilityApi] Backend update failed, fallback to local:', err);
+    const raw = localStorage.getItem(LS_LIABILITIES_KEY);
+    const all: Liability[] = raw ? JSON.parse(raw) : [];
+    const idx = all.findIndex((l) => l.id === id && l.user_id === userId);
+    if (idx !== -1) {
+      all[idx] = { ...all[idx], ...updates, updated_at: new Date().toISOString() };
+      localStorage.setItem(LS_LIABILITIES_KEY, JSON.stringify(all));
+      return all[idx];
     }
+    return null;
   }
-
-  // Local storage fallback
-  const raw = localStorage.getItem(LS_LIABILITIES_KEY);
-  const all: Liability[] = raw ? JSON.parse(raw) : [];
-  const idx = all.findIndex((l) => l.id === id && l.user_id === userId);
-  if (idx !== -1) {
-    all[idx] = { ...all[idx], ...updates, updated_at: now };
-    localStorage.setItem(LS_LIABILITIES_KEY, JSON.stringify(all));
-    return all[idx];
-  }
-  return null;
 }
 
 /**
@@ -158,74 +124,76 @@ export async function payLiabilityMonth(
   userId: string,
   id: string
 ): Promise<Liability | null> {
-  const list = await getLiabilities(userId, 'all');
-  const target = list.find((l) => l.id === id);
-  if (!target) return null;
+  try {
+    return await apiFetch<Liability>(`/api/v1/liabilities/${id}/pay`, {
+      method: 'POST',
+    });
+  } catch (err) {
+    console.warn('[liabilityApi] Backend pay failed, fallback to local calculation:', err);
+    const list = await getLiabilities(userId, 'all');
+    const target = list.find((l) => l.id === id);
+    if (!target) return null;
 
-  let newTenor = target.remaining_tenor;
-  let newStatus = target.status;
+    let newTenor = target.remaining_tenor;
+    let newStatus = target.status;
 
-  if (typeof newTenor === 'number') {
-    newTenor = Math.max(0, newTenor - 1);
-    if (newTenor === 0) {
-      newStatus = 'paid_off';
+    if (typeof newTenor === 'number') {
+      newTenor = Math.max(0, newTenor - 1);
+      if (newTenor === 0) {
+        newStatus = 'paid_off';
+      }
     }
-  }
 
-  return updateLiability(userId, id, {
-    remaining_tenor: newTenor,
-    status: newStatus,
-  });
+    return updateLiability(userId, id, {
+      remaining_tenor: newTenor,
+      status: newStatus,
+    });
+  }
 }
 
 /**
- * Delete a liability entry.
+ * Delete a liability entry via backend Express.
  */
 export async function deleteLiability(userId: string, id: string): Promise<void> {
-  if (isSupabaseConfigured) {
-    try {
-      const { error } = await supabase
-        .from('liabilities')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', userId);
-
-      if (!error) return;
-    } catch (err) {
-      console.warn('[liabilityApi] Supabase delete failed, falling back to local:', err);
-    }
+  try {
+    await apiFetch(`/api/v1/liabilities/${id}`, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    console.warn('[liabilityApi] Backend delete failed, fallback to local:', err);
+    const raw = localStorage.getItem(LS_LIABILITIES_KEY);
+    const all: Liability[] = raw ? JSON.parse(raw) : [];
+    const updated = all.filter((l) => !(l.id === id && l.user_id === userId));
+    localStorage.setItem(LS_LIABILITIES_KEY, JSON.stringify(updated));
   }
-
-  // Local storage fallback
-  const raw = localStorage.getItem(LS_LIABILITIES_KEY);
-  const all: Liability[] = raw ? JSON.parse(raw) : [];
-  const updated = all.filter((l) => !(l.id === id && l.user_id === userId));
-  localStorage.setItem(LS_LIABILITIES_KEY, JSON.stringify(updated));
 }
 
 /**
- * Total active monthly commitment of liabilities.
+ * Total active monthly commitment of liabilities calculated by backend Express.
  */
-export async function getTotalMonthlyLiabilities(userId: string): Promise<{
-  totalMonthly: number;
-  byType: Record<LiabilityType, number>;
-  activeCount: number;
-}> {
-  const active = await getLiabilities(userId, 'active');
+export async function getTotalMonthlyLiabilities(
+  _userId?: string
+): Promise<TotalLiabilitySummary> {
+  try {
+    return await apiFetch<TotalLiabilitySummary>('/api/v1/liabilities/total');
+  } catch (err) {
+    console.warn('[liabilityApi] Backend total query failed, fallback to local aggregation:', err);
+    const active = await getLiabilities(_userId, 'active');
 
-  const byType: Record<LiabilityType, number> = {
-    cicilan: 0,
-    paylater: 0,
-  };
+    const byType: Record<LiabilityType, number> = {
+      cicilan: 0,
+      paylater: 0,
+    };
 
-  let totalMonthly = 0;
-  for (const item of active) {
-    const amt = Number(item.monthly_amount) || 0;
-    totalMonthly += amt;
-    if (byType[item.type] !== undefined) {
-      byType[item.type] += amt;
+    let totalMonthly = 0;
+    for (const item of active) {
+      const amt = Number(item.monthly_amount) || 0;
+      totalMonthly += amt;
+      if (byType[item.type] !== undefined) {
+        byType[item.type] += amt;
+      }
     }
-  }
 
-  return { totalMonthly, byType, activeCount: active.length };
+    return { totalMonthly, byType, activeCount: active.length };
+  }
 }

@@ -14,7 +14,6 @@ type AuthContextType = {
   register: (email: string, password: string, name: string) => Promise<{ error?: string }>;
   loginWithGoogle: () => Promise<{ error?: string }>;
   logout: () => Promise<void>;
-  loginDemo: () => void;
   /**
    * Adopt a session produced outside this provider — used by the OTP
    * verification flow, where the backend issues tokens after a valid code.
@@ -167,9 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   function loginWithGoogle(): Promise<{ error?: string }> {
     if (!isSupabaseConfigured) {
-      // Nothing to hand a session to — fall back to the local demo identity.
-      loginDemo();
-      return Promise.resolve({});
+      return Promise.resolve({ error: 'Silakan daftar atau login dengan email.' });
     }
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
@@ -186,12 +183,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(LOCAL_IDENTITY_KEY);
   }
 
-  function loginDemo(): void {
-    const demoUser: User = { id: 'demo-user', email: 'demo@costku.id', name: 'Pengguna Demo' };
-    identitySource.current = 'local';
-    setUser(demoUser);
-    localStorage.setItem(LOCAL_IDENTITY_KEY, JSON.stringify(demoUser));
-  }
 
   /**
    * Adopt a session minted by the backend after OTP verification.
@@ -229,7 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, loginWithGoogle, logout, loginDemo, adoptSession }}
+      value={{ user, loading, login, register, loginWithGoogle, logout, adoptSession }}
     >
       {children}
     </AuthContext.Provider>
