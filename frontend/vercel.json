@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://costku-backend-production.up.railway.app/api/:path*"
+      "destination": "https://costku-backend.up.railway.app/api/:path*"
     },
     {
       "source": "/((?!api/).*)",

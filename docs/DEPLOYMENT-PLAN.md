@@ -51,7 +51,7 @@ Railway sangat ideal untuk backend Express karena mendukung proses latar belakan
    - **Root Directory**: Ubah menjadi `/backend`.
    - **Build Command** (jika memakai Nixpacks): `npm run build`
    - **Start Command**: `npm start` (atau biarkan Railway mendeteksi otomatis dari `Dockerfile`/`package.json`).
-4. Buka tab **Networking** ➔ Klik **Generate Domain** untuk mendapatkan URL publik (misal: `costku-backend-production.up.railway.app`).
+4. Buka tab **Networking** ➔ Klik **Generate Domain** untuk mendapatkan URL publik (domain final costKu: `costku-backend.up.railway.app`).
 
 ### B. Konfigurasi Environment Variables di Railway
 Buka tab **Variables** pada service backend dan masukkan variabel berikut:
@@ -103,7 +103,7 @@ Vercel adalah platform terbaik untuk aplikasi Vite React SPA dengan CDN global b
 |---|---|---|
 | `VITE_SUPABASE_URL` | `https://xxxx.supabase.co` | URL Supabase Anda |
 | `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOi...` | Supabase Anon Key publik |
-| `VITE_BACKEND_URL` | `https://<DOMAIN_RAILWAY>` | URL publik Backend Railway (contoh: `https://costku-backend-production.up.railway.app`, **tanpa** garis miring `/` di ujung) |
+| `VITE_BACKEND_URL` | `https://<DOMAIN_RAILWAY>` | URL publik Backend Railway (domain final costKu: `https://costku-backend.up.railway.app`, **tanpa** garis miring `/` di ujung) |
 
 5. Klik tombol **Deploy**.
 
