@@ -26,8 +26,20 @@ Dokumen ini berisi daftar lengkap variabel lingkungan (**Environment Variables**
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-VITE_BACKEND_URL=https://costku-backend-production.up.railway.app
+VITE_BACKEND_URL=https://costku-production.up.railway.app
 ```
+
+> [!NOTE]
+> Nama domain di dashboard Railway adalah `costku` (project `overlooking-art`),
+> jadi host backend-nya `costku-production.up.railway.app` — **bukan**
+> `costku-backend-production...`. Selalu salin dari Railway ➔ Service ➔
+> **Settings ➔ Networking ➔ Public Networking**.
+>
+> Kalau `VITE_BACKEND_URL` dibiarkan kosong, bundle Vercel akan memanggil
+> `localhost:5000` dari browser pengunjung → request gagal / CORS error.
+> Sebagai jaring pengaman, `frontend/vercel.json` sekarang juga mem-proxy
+> `/api/*` ke domain Railway yang sama, jadi panggilan relatif `/api/...`
+> tetap sampai ke backend tanpa bergantung pada env ini.
 
 ### Penjelasan Variabel:
 
@@ -35,7 +47,7 @@ VITE_BACKEND_URL=https://costku-backend-production.up.railway.app
 |---|---|---|
 | `VITE_SUPABASE_URL` | `https://xxxx.supabase.co` | URL proyek Supabase (*Supabase Dashboard ➔ Project Settings ➔ API*) |
 | `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOi...` | Public Anon Key (*Supabase Dashboard ➔ Project Settings ➔ API*) |
-| `VITE_BACKEND_URL` | `https://costku-backend-production.up.railway.app` | Domain publik dari service backend di Railway |
+| `VITE_BACKEND_URL` | `https://costku-production.up.railway.app` | Domain publik dari service backend di Railway |
 
 ---
 
@@ -61,7 +73,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 # ── GOOGLE OAUTH 2.0 ──
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your-google-client-secret
-GOOGLE_REDIRECT_URI=https://costku-backend-production.up.railway.app/api/v1/auth/google/callback
+GOOGLE_REDIRECT_URI=https://costku-production.up.railway.app/api/v1/auth/google/callback
 OAUTH_STATE_SECRET=64_karakter_hex_acak_atau_samakan_dengan_otp_pepper
 
 # ── OTP VERIFICATION (EMAIL) ──

@@ -4,6 +4,9 @@
   "description": "Backend API service for costKu",
   "main": "dist/index.js",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",

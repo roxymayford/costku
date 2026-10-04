@@ -23,14 +23,42 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
  */
 export const hasServiceRoleKey = Boolean(serviceRoleKey);
 
-export const supabaseAdmin: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseKey, {
+/**
+ * Build the admin client defensively.
+ *
+ * `createClient` is not a pure object construction: @supabase/supabase-js
+ * eagerly instantiates the Realtime client, which requires a WebSocket
+ * constructor. On a runtime without one (notably Node 20, where global
+ * WebSocket only exists from Node 22 onward) that throws
+ * "Node.js detected but native WebSocket not found." at import time — which
+ * kills the whole process before `app.listen` is ever reached, so the deploy
+ * dies as "Crashed" instead of "Service Unavailable".
+ *
+ * A backend that only uses REST + the auth admin API has no business dying
+ * over a missing WebSocket, so we degrade to `null` (same as "not configured")
+ * and let the callers that guard on `supabaseAdmin` fall back gracefully.
+ */
+function createSupabaseAdminClient(): SupabaseClient | null {
+  if (!isSupabaseConfigured) return null;
+
+  try {
+    return createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
-    })
-  : null;
+    });
+  } catch (err) {
+    console.error(
+      '[Supabase] Gagal membuat client — fitur auth/DB akan berjalan dalam mode terbatas.',
+      'Cek versi Node (butuh >=22 untuk global WebSocket):',
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
+}
+
+export const supabaseAdmin: SupabaseClient | null = createSupabaseAdminClient();
 
 /**
  * Look up an auth user by email through the Supabase admin API.
